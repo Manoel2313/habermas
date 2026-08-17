@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>🧓 Jürgen Habermas - Duas Versões</title>
+    <title>🧓 Jürgen Habermas - Três Versões</title>
     <style>
         /* === ESTILOS GERAIS === */
         * {
@@ -54,14 +54,14 @@
         .tabs {
             display: flex;
             justify-content: center;
-            gap: 20px;
+            gap: 15px;
             margin: 25px 0 30px;
             flex-wrap: wrap;
         }
 
         .tab-btn {
-            padding: 14px 40px;
-            font-size: 1.3rem;
+            padding: 14px 30px;
+            font-size: 1.15rem;
             font-weight: bold;
             border: none;
             border-radius: 60px;
@@ -93,6 +93,18 @@
             background: #b0c9dd;
             transform: scale(1.03);
             box-shadow: 0 6px 20px rgba(176, 201, 221, 0.4);
+        }
+
+        .tab-btn.resumo {
+            background: #d5f0e0;
+            color: #1a5d3a;
+        }
+
+        .tab-btn.resumo:hover,
+        .tab-btn.resumo.ativo {
+            background: #a8e0c0;
+            transform: scale(1.03);
+            box-shadow: 0 6px 20px rgba(168, 224, 192, 0.4);
         }
 
         /* === CONTEÚDO DAS ABAS === */
@@ -159,20 +171,26 @@
             position: relative;
         }
 
-        .card ul li::before {
-            position: absolute;
-            left: 0;
-            font-size: 1.4rem;
-        }
-
         .card.infantil ul li::before {
             content: "🧸 ";
+            position: absolute;
+            left: 0;
         }
 
         .card.medio ul li::before {
             content: "▸ ";
             color: #3498db;
             font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        .card.resumo ul li::before {
+            content: "▪ ";
+            color: #27ae60;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
         }
 
         .destaque {
@@ -190,6 +208,34 @@
             color: #2c3e50;
         }
 
+        /* === CARTÃO RESUMO (ESTILO DIFERENCIADO) === */
+        .card.resumo {
+            border-left-color: #27ae60;
+            background: #f5faf7;
+        }
+
+        .card.resumo .destaque {
+            background: #e8f5e9;
+            border-left-color: #43a047;
+        }
+
+        .card.resumo .contexto-box {
+            background: #e8f5e9;
+            border-color: #81c784;
+        }
+
+        .resumo-tag {
+            display: inline-block;
+            background: #27ae60;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: bold;
+            padding: 2px 14px;
+            border-radius: 30px;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+
         /* === QUIZ === */
         .quiz-box {
             background: #f0f6fa;
@@ -199,6 +245,11 @@
             margin-top: 20px;
         }
 
+        .quiz-box.resumo-quiz {
+            background: #f0faf5;
+            border-color: #81c784;
+        }
+
         .pergunta {
             background: white;
             border-radius: 20px;
@@ -206,6 +257,10 @@
             margin: 18px 0;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
             border-left: 6px solid #3498db;
+        }
+
+        .pergunta.resumo-pergunta {
+            border-left-color: #27ae60;
         }
 
         .pergunta .num {
@@ -272,6 +327,15 @@
         .btn-verificar:active {
             transform: translateY(5px);
             box-shadow: 0 1px 0 #1a5276;
+        }
+
+        .btn-verificar.resumo-btn {
+            background: #27ae60;
+            box-shadow: 0 6px 0 #1a7a3a;
+        }
+
+        .btn-verificar.resumo-btn:active {
+            box-shadow: 0 1px 0 #1a7a3a;
         }
 
         .resultado {
@@ -353,8 +417,8 @@
                 font-size: 2rem;
             }
             .tab-btn {
-                padding: 12px 24px;
-                font-size: 1.1rem;
+                padding: 10px 18px;
+                font-size: 1rem;
             }
             .card h2 {
                 font-size: 1.5rem;
@@ -384,16 +448,19 @@
         <!-- CABEÇALHO -->
         <div class="header">
             <h1><span>🧓</span> Jürgen Habermas</h1>
-            <div class="sub">Duas versões: uma para crianças 🧒 e outra para o ensino médio 🧑</div>
+            <div class="sub">Três versões: infantil 🧒 • ensino médio 🧑 • resumo 📝</div>
         </div>
 
         <!-- ABAS -->
         <div class="tabs">
             <button class="tab-btn infantil ativo" onclick="trocarAba('infantil')">
-                🧒 Modo Infantil (8 anos)
+                🧒 Infantil (8 anos)
             </button>
             <button class="tab-btn medio" onclick="trocarAba('medio')">
-                🧑 Modo Ensino Médio
+                🧑 Ensino Médio
+            </button>
+            <button class="tab-btn resumo" onclick="trocarAba('resumo')">
+                📝 Resumo (EM)
             </button>
         </div>
 
@@ -761,14 +828,208 @@
         </div>
         <!-- FIM MODO ENSINO MÉDIO -->
 
+        <!-- ============================================================ -->
+        <!-- ================= MODO RESUMO (ENSINO MÉDIO) =============== -->
+        <!-- ============================================================ -->
+        <div class="tab-content" id="conteudo-resumo">
+
+            <div style="text-align:center; font-size:1.2rem; color:#1a5d3a; background:#d5f0e0; border-radius:60px; padding:12px 20px; margin-bottom:20px;">
+                📝 <strong>Resumo para Ensino Médio — Revisão Rápida</strong> 📝
+            </div>
+
+            <!-- O QUE É -->
+            <div class="card resumo" style="border-left-color:#27ae60;">
+                <h2><span class="icone">📌</span> O que é a filosofia de Habermas? <span class="resumo-tag">RESUMO</span></h2>
+                <p>
+                    <strong>Jürgen Habermas</strong> (1929–2026) foi um filósofo alemão, 
+                    principal representante da <strong>segunda geração da Escola de Frankfurt</strong>. 
+                    Sua filosofia propõe uma <strong>virada comunicativa</strong> na Teoria Crítica: 
+                    a <strong>razão comunicativa</strong> substitui a razão instrumental como 
+                    fundamento da emancipação social.
+                </p>
+                <p>
+                    <strong>Objetivo:</strong> reconstruir a razão moderna a partir do 
+                    <strong>diálogo</strong> e da <strong>intersubjetividade</strong>, 
+                    superando o pessimismo de Horkheimer e Adorno.
+                </p>
+                <div class="destaque">
+                    💡 <strong>Ideia central:</strong> a linguagem é o meio constitutivo da 
+                    sociedade — o entendimento mútuo é a base da democracia e da justiça.
+                </div>
+            </div>
+
+            <!-- O QUE DEFENDE -->
+            <div class="card resumo" style="border-left-color:#2e7d32;">
+                <h2><span class="icone">⚡</span> O que ele defende? <span class="resumo-tag">RESUMO</span></h2>
+                <ul>
+                    <li><strong>Racionalidade comunicativa:</strong> a razão não é só cálculo (meios-fins), mas também busca de entendimento mútuo.</li>
+                    <li><strong>Democracia deliberativa:</strong> leis legítimas vêm do debate público, não só de eleições.</li>
+                    <li><strong>Ética do discurso:</strong> normas morais são válidas se todos os afetados concordarem em diálogo livre.</li>
+                    <li><strong>Esfera pública:</strong> espaço de discussão crítica dos cidadãos, livre do Estado e do mercado.</li>
+                    <li><strong>Emancipação:</strong> a comunicação livre é condição para a autonomia dos indivíduos.</li>
+                </ul>
+            </div>
+
+            <!-- PRINCIPAL TEORIA (RESUMIDA) -->
+            <div class="card resumo" style="border-left-color:#1b8a3a;">
+                <h2><span class="icone">📘</span> Principal teoria: Ação Comunicativa <span class="resumo-tag">RESUMO</span></h2>
+                <p>
+                    A <strong>Teoria da Ação Comunicativa</strong> (1981) é a obra central de Habermas. 
+                    Ela distingue:
+                </p>
+                <ul>
+                    <li><strong>Ação instrumental:</strong> orientada para o sucesso (ex: empresa que maximiza lucros).</li>
+                    <li><strong>Ação comunicativa:</strong> orientada para o entendimento mútuo via linguagem.</li>
+                </ul>
+                <p>
+                    <strong>Quatro pretensões de validade</strong> de todo ato de fala:
+                </p>
+                <ul>
+                    <li><strong>Inteligibilidade</strong> — ser compreensível</li>
+                    <li><strong>Verdade</strong> — ser verdadeiro sobre o mundo</li>
+                    <li><strong>Correção normativa</strong> — estar de acordo com normas legítimas</li>
+                    <li><strong>Sinceridade</strong> — ser autêntico</li>
+                </ul>
+                <p>
+                    Quando essas pretensões são questionadas, entra-se no <strong>discurso</strong> 
+                    — um debate onde vence a <strong>força do melhor argumento</strong>, sem coerção.
+                </p>
+                <div class="destaque" style="background:#e8f5e9; border-left-color:#43a047;">
+                    🎯 <strong>Conclusão:</strong> a sociedade se organiza pela comunicação, 
+                    não pela dominação.
+                </div>
+            </div>
+
+            <!-- CONTEXTUALIZAÇÃO (RESUMIDA) -->
+            <div class="card resumo" style="border-left-color:#6a1b9a;">
+                <h2><span class="icone">🏛️</span> Contextualização <span class="resumo-tag">RESUMO</span></h2>
+
+                <div class="contexto-box" style="background:#e8f5e9; border-color:#81c784;">
+                    <p><strong>📍 Contexto histórico:</strong></p>
+                    <p>
+                        Habermas viveu a <strong>ascensão do nazismo</strong> e a 
+                        <strong>Segunda Guerra Mundial</strong>. Essa experiência o levou a perguntar: 
+                        <em>como a razão moderna pôde gerar o totalitarismo?</em>
+                    </p>
+                    <p>
+                        Sua resposta: a razão não deve ser abandonada, mas <strong>reconstruída</strong> 
+                        a partir da comunicação.
+                    </p>
+                </div>
+
+                <div class="contexto-box" style="background:#e8f5e9; border-color:#81c784;">
+                    <p><strong>📍 Influências principais:</strong></p>
+                    <ul>
+                        <li><strong>Kant:</strong> razão autônoma e universal</li>
+                        <li><strong>Hegel:</strong> reconhecimento intersubjetivo</li>
+                        <li><strong>Marx:</strong> crítica à dominação</li>
+                        <li><strong>Weber:</strong> racionalização moderna</li>
+                        <li><strong>Mead:</strong> interação social e self</li>
+                        <li><strong>Austin & Searle:</strong> atos de fala</li>
+                    </ul>
+                </div>
+
+                <div class="contexto-box" style="background:#e8f5e9; border-color:#81c784;">
+                    <p><strong>📍 Debate com a Escola de Frankfurt:</strong></p>
+                    <p>
+                        <strong>1ª geração</strong> (Horkheimer, Adorno): via a razão instrumental como 
+                        força de dominação. <strong>Habermas</strong> discordou: a razão pode ser 
+                        <strong>comunicativa</strong>, ou seja, base para a democracia.
+                    </p>
+                    <p>
+                        <strong>Virada comunicativa:</strong> substitui o paradigma da consciência 
+                        pelo paradigma da <strong>linguagem</strong>.
+                    </p>
+                </div>
+            </div>
+
+            <!-- QUIZ RESUMO -->
+            <div class="card resumo" style="border-left-color:#27ae60; background:#f0faf5;">
+                <h2><span class="icone">🧠</span> Quiz — Versão Resumo <span class="resumo-tag">RÁPIDO</span></h2>
+                <p>Teste seus conhecimentos com este resumo!</p>
+
+                <div class="quiz-box resumo-quiz" id="quizResumo">
+
+                    <div class="pergunta resumo-pergunta" data-pergunta="1">
+                        <div><span class="num">1.</span> <span class="texto">Qual é a principal inovação de Habermas em relação à primeira geração da Escola de Frankfurt?</span></div>
+                        <div class="alternativas">
+                            <label><input type="radio" name="res-q1" value="a" /> <span>Abandonar a razão como conceito filosófico</span></label>
+                            <label><input type="radio" name="res-q1" value="b" /> <span>Propor a razão comunicativa em vez da razão instrumental</span></label>
+                            <label><input type="radio" name="res-q1" value="c" /> <span>Defender o marxismo-leninismo</span></label>
+                            <label><input type="radio" name="res-q1" value="d" /> <span>Ignorar a linguagem como tema filosófico</span></label>
+                        </div>
+                    </div>
+
+                    <div class="pergunta resumo-pergunta" data-pergunta="2">
+                        <div><span class="num">2.</span> <span class="texto">O que a Teoria da Ação Comunicativa coloca como fundamento da sociedade?</span></div>
+                        <div class="alternativas">
+                            <label><input type="radio" name="res-q2" value="a" /> <span>O mercado e a propriedade privada</span></label>
+                            <label><input type="radio" name="res-q2" value="b" /> <span>A linguagem e o entendimento mútuo</span></label>
+                            <label><input type="radio" name="res-q2" value="c" /> <span>A luta de classes</span></label>
+                            <label><input type="radio" name="res-q2" value="d" /> <span>A vontade de Deus</span></label>
+                        </div>
+                    </div>
+
+                    <div class="pergunta resumo-pergunta" data-pergunta="3">
+                        <div><span class="num">3.</span> <span class="texto">Quais são as quatro pretensões de validade da ação comunicativa?</span></div>
+                        <div class="alternativas">
+                            <label><input type="radio" name="res-q3" value="a" /> <span>Poder, dinheiro, status e fama</span></label>
+                            <label><input type="radio" name="res-q3" value="b" /> <span>Inteligibilidade, verdade, correção normativa e sinceridade</span></label>
+                            <label><input type="radio" name="res-q3" value="c" /> <span>Força, autoridade, tradição e carisma</span></label>
+                            <label><input type="radio" name="res-q3" value="d" /> <span>Clareza, objetividade, emoção e subjetividade</span></label>
+                        </div>
+                    </div>
+
+                    <div class="pergunta resumo-pergunta" data-pergunta="4">
+                        <div><span class="num">4.</span> <span class="texto">O que Habermas entende por "Esfera Pública"?</span></div>
+                        <div class="alternativas">
+                            <label><input type="radio" name="res-q4" value="a" /> <span>O parlamento e os tribunais</span></label>
+                            <label><input type="radio" name="res-q4" value="b" /> <span>O espaço de discussão crítica dos cidadãos</span></label>
+                            <label><input type="radio" name="res-q4" value="c" /> <span>As igrejas e templos religiosos</span></label>
+                            <label><input type="radio" name="res-q4" value="d" /> <span>As empresas e o mercado financeiro</span></label>
+                        </div>
+                    </div>
+
+                    <div class="pergunta resumo-pergunta" data-pergunta="5">
+                        <div><span class="num">5.</span> <span class="texto">Qual experiência histórica motivou Habermas a desenvolver sua teoria?</span></div>
+                        <div class="alternativas">
+                            <label><input type="radio" name="res-q5" value="a" /> <span>A Revolução Francesa</span></label>
+                            <label><input type="radio" name="res-q5" value="b" /> <span>O nazismo e a Segunda Guerra Mundial</span></label>
+                            <label><input type="radio" name="res-q5" value="c" /> <span>A queda do Muro de Berlim</span></label>
+                            <label><input type="radio" name="res-q5" value="d" /> <span>A Revolução Industrial</span></label>
+                        </div>
+                    </div>
+
+                    <button class="btn-verificar resumo-btn" onclick="verificarQuiz('res')">✅ Verificar respostas</button>
+
+                    <div class="resultado" id="resultadoRes">
+                        <div class="nota" id="notaRes">⭐</div>
+                        <div class="mensagem" id="mensagemRes"></div>
+                    </div>
+
+                    <div class="gabarito" id="gabaritoRes">
+                        <p><strong>📖 Gabarito — Resumo:</strong></p>
+                        <p>1. <span class="certa">b</span> — Propor a razão comunicativa em vez da razão instrumental</p>
+                        <p>2. <span class="certa">b</span> — A linguagem e o entendimento mútuo</p>
+                        <p>3. <span class="certa">b</span> — Inteligibilidade, verdade, correção normativa e sinceridade</p>
+                        <p>4. <span class="certa">b</span> — O espaço de discussão crítica dos cidadãos</p>
+                        <p>5. <span class="certa">b</span> — O nazismo e a Segunda Guerra Mundial</p>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+        <!-- FIM MODO RESUMO -->
+
         <!-- RODAPÉ -->
         <div class="footer">
             <div class="icones">🧓 ✨ 💬 🌍 🤝</div>
             <p>
-                <strong>Jürgen Habermas</strong> — Duas versões para aprender de forma divertida e aprofundada.
+                <strong>Jürgen Habermas</strong> — Três versões para aprender de forma divertida, aprofundada ou resumida.
             </p>
             <p style="font-size:0.95rem; margin-top:6px; opacity:0.7;">
-                Conteúdo adaptado para crianças (8 anos) e ensino médio • Quiz interativo incluído
+                Infantil 🧒 • Ensino Médio 🧑 • Resumo 📝 • Quiz interativo incluso
             </p>
             <p style="font-size:0.9rem; margin-top:10px; color:#aab;">
                 Repositório: <strong>github.com/Manoel2313/habermas</strong>
@@ -782,22 +1043,20 @@
         // FUNÇÃO PARA TROCAR DE ABA
         // ============================================================
         function trocarAba(aba) {
-            // Esconde todos os conteúdos
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('ativo'));
-
-            // Remove 'ativo' de todos os botões
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('ativo'));
 
-            // Mostra a aba correta
             if (aba === 'infantil') {
                 document.getElementById('conteudo-infantil').classList.add('ativo');
                 document.querySelector('.tab-btn.infantil').classList.add('ativo');
-            } else {
+            } else if (aba === 'medio') {
                 document.getElementById('conteudo-medio').classList.add('ativo');
                 document.querySelector('.tab-btn.medio').classList.add('ativo');
+            } else {
+                document.getElementById('conteudo-resumo').classList.add('ativo');
+                document.querySelector('.tab-btn.resumo').classList.add('ativo');
             }
 
-            // Rola para o topo
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -806,15 +1065,12 @@
         // ============================================================
         function verificarQuiz(tipo) {
             const respostas = {
-                inf: {
-                    q1: 'b', q2: 'a', q3: 'a', q4: 'b', q5: 'c'
-                },
-                med: {
-                    q1: 'b', q2: 'b', q3: 'b', q4: 'c', q5: 'b'
-                }
+                inf: { q1: 'b', q2: 'a', q3: 'a', q4: 'b', q5: 'c' },
+                med: { q1: 'b', q2: 'b', q3: 'b', q4: 'c', q5: 'b' },
+                res: { q1: 'b', q2: 'b', q3: 'b', q4: 'b', q5: 'b' }
             };
 
-            const prefixo = tipo === 'inf' ? 'inf' : 'med';
+            const prefixo = tipo === 'inf' ? 'inf' : (tipo === 'med' ? 'med' : 'res');
             const certas = respostas[tipo];
             let acertos = 0;
             const total = Object.keys(certas).length;
@@ -827,11 +1083,10 @@
                 }
             }
 
-            // Mostra resultado
-            const resultadoId = tipo === 'inf' ? 'resultadoInf' : 'resultadoMed';
-            const notaId = tipo === 'inf' ? 'notaInf' : 'notaMed';
-            const mensagemId = tipo === 'inf' ? 'mensagemInf' : 'mensagemMed';
-            const gabaritoId = tipo === 'inf' ? 'gabaritoInf' : 'gabaritoMed';
+            const resultadoId = tipo === 'inf' ? 'resultadoInf' : (tipo === 'med' ? 'resultadoMed' : 'resultadoRes');
+            const notaId = tipo === 'inf' ? 'notaInf' : (tipo === 'med' ? 'notaMed' : 'notaRes');
+            const mensagemId = tipo === 'inf' ? 'mensagemInf' : (tipo === 'med' ? 'mensagemMed' : 'mensagemRes');
+            const gabaritoId = tipo === 'inf' ? 'gabaritoInf' : (tipo === 'med' ? 'gabaritoMed' : 'gabaritoRes');
 
             const resultadoDiv = document.getElementById(resultadoId);
             const notaDiv = document.getElementById(notaId);
@@ -860,7 +1115,6 @@
 
         // Inicializa com a aba infantil ativa
         document.addEventListener('DOMContentLoaded', function() {
-            // Garante que a aba infantil esteja ativa
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('ativo'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('ativo'));
             document.getElementById('conteudo-infantil').classList.add('ativo');
