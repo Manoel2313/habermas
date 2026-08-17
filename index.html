@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>🌍 Habermas para Crianças</title>
+    <title>🧓 Jürgen Habermas - Duas Versões</title>
     <style>
         /* === ESTILOS GERAIS === */
         * {
@@ -13,91 +13,137 @@
         }
 
         body {
-            font-family: 'Comic Sans MS', 'Chalkboard SE', 'Arial Rounded', sans-serif;
-            background: linear-gradient(145deg, #fff9e6 0%, #fde9d0 100%);
+            font-family: 'Segoe UI', 'Arial', sans-serif;
+            background: #f5f0eb;
             min-height: 100vh;
             padding: 20px;
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 1100px;
             margin: 0 auto;
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(4px);
-            border-radius: 60px 60px 40px 40px;
-            padding: 30px 30px 50px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
-            border: 3px solid #fff3d6;
+            background: white;
+            border-radius: 30px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
         }
 
         /* === CABEÇALHO === */
         .header {
             text-align: center;
             padding: 20px 0 10px;
+            border-bottom: 4px solid #e8ddd0;
         }
 
         .header h1 {
-            font-size: 3rem;
-            color: #c44b3c;
-            text-shadow: 4px 4px 0 #f7d794;
-            letter-spacing: 2px;
-            word-break: break-word;
+            font-size: 2.8rem;
+            color: #2c3e50;
+        }
+
+        .header h1 span {
+            font-size: 3.5rem;
         }
 
         .header .sub {
-            font-size: 1.5rem;
-            background: #f7d794;
-            display: inline-block;
-            padding: 8px 30px;
-            border-radius: 60px;
-            color: #5d3a1a;
+            font-size: 1.2rem;
+            color: #7f8c8d;
             margin-top: 8px;
-            box-shadow: inset 0 -4px 0 #dbaa5a;
         }
 
-        .header .avozinho {
-            font-size: 4.5rem;
-            margin-top: 5px;
-            display: block;
-        }
-
-        /* === CARTÕES / SEÇÕES === */
-        .card {
-            background: white;
-            border-radius: 50px 20px 50px 20px;
-            padding: 25px 30px;
-            margin: 30px 0;
-            box-shadow: 0 8px 0 #d4b48c, 0 12px 30px rgba(0, 0, 0, 0.08);
-            border: 2px solid #f5e0c8;
-            transition: transform 0.2s;
-        }
-
-        .card:hover {
-            transform: scale(1.01);
-        }
-
-        .card h2 {
-            font-size: 2.2rem;
-            color: #3a6b8f;
-            border-bottom: 6px dotted #f7d794;
-            padding-bottom: 12px;
-            margin-bottom: 18px;
+        /* === ABA DE NAVEGAÇÃO === */
+        .tabs {
             display: flex;
-            align-items: center;
-            gap: 15px;
+            justify-content: center;
+            gap: 20px;
+            margin: 25px 0 30px;
             flex-wrap: wrap;
         }
 
-        .card h2 span {
-            font-size: 2.8rem;
+        .tab-btn {
+            padding: 14px 40px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            font-family: inherit;
         }
 
-        .card p,
-        .card li {
-            font-size: 1.3rem;
-            line-height: 1.7;
-            color: #3d2b1a;
-            margin-bottom: 14px;
+        .tab-btn.infantil {
+            background: #fce8b2;
+            color: #5d3a1a;
+        }
+
+        .tab-btn.infantil:hover,
+        .tab-btn.infantil.ativo {
+            background: #f7d794;
+            transform: scale(1.03);
+            box-shadow: 0 6px 20px rgba(247, 215, 148, 0.4);
+        }
+
+        .tab-btn.medio {
+            background: #d5e5f0;
+            color: #1d4b6e;
+        }
+
+        .tab-btn.medio:hover,
+        .tab-btn.medio.ativo {
+            background: #b0c9dd;
+            transform: scale(1.03);
+            box-shadow: 0 6px 20px rgba(176, 201, 221, 0.4);
+        }
+
+        /* === CONTEÚDO DAS ABAS === */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        .tab-content.ativo {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* === CARTÕES === */
+        .card {
+            background: #faf8f5;
+            border-radius: 25px;
+            padding: 25px 30px;
+            margin: 25px 0;
+            border-left: 8px solid #3498db;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+        }
+
+        .card h2 {
+            font-size: 1.8rem;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .card h2 .icone {
+            font-size: 2.2rem;
+        }
+
+        .card p {
+            font-size: 1.15rem;
+            line-height: 1.8;
+            color: #2d2d2d;
+            margin-bottom: 12px;
         }
 
         .card ul {
@@ -105,257 +151,228 @@
             padding-left: 10px;
         }
 
+        .card ul li {
+            font-size: 1.1rem;
+            line-height: 1.7;
+            padding: 6px 0;
+            padding-left: 30px;
+            position: relative;
+        }
+
         .card ul li::before {
+            position: absolute;
+            left: 0;
+            font-size: 1.4rem;
+        }
+
+        .card.infantil ul li::before {
             content: "🧸 ";
-            font-size: 1.6rem;
         }
 
-        .card .destaque {
-            background: #fef3d7;
-            border-radius: 30px;
-            padding: 15px 22px;
-            border-left: 12px solid #f3b33d;
+        .card.medio ul li::before {
+            content: "▸ ";
+            color: #3498db;
+            font-weight: bold;
+        }
+
+        .destaque {
+            background: #fef9f0;
+            border-radius: 20px;
+            padding: 18px 24px;
+            border-left: 8px solid #f39c12;
             margin: 18px 0;
-            font-weight: bold;
-            font-size: 1.4rem;
+            font-style: italic;
+            font-size: 1.15rem;
         }
 
-        .emoji-grande {
-            font-size: 3.2rem;
-            display: inline-block;
-            margin-right: 12px;
+        .destaque strong {
+            font-style: normal;
+            color: #2c3e50;
         }
 
-        /* === EXEMPLO INTERATIVO === */
-        .exemplo-box {
-            background: #d9e9fa;
-            border-radius: 40px 10px 40px 10px;
-            padding: 20px 25px;
-            border: 4px solid #7fb0d6;
-            margin-top: 20px;
-        }
-
-        .exemplo-box p {
-            font-size: 1.3rem;
-            margin-bottom: 10px;
-        }
-
-        .exemplo-box .fala {
-            background: white;
-            border-radius: 30px;
-            padding: 15px 20px;
-            margin: 12px 0;
-            box-shadow: 0 4px 0 #b0c9dd;
-            font-size: 1.2rem;
-        }
-
-        .exemplo-box .fala span {
-            font-weight: bold;
-            color: #1d5b8e;
-        }
-
-        /* === REGRA DE OURO === */
-        .regra-ouro {
-            background: #fce8b2;
-            border-radius: 100px 20px 100px 20px;
-            padding: 25px;
-            text-align: center;
-            font-size: 1.7rem;
-            font-weight: bold;
-            color: #4f350b;
-            border: 5px dashed #c49a5e;
-            margin: 25px 0;
-        }
-
-        .regra-ouro small {
-            display: block;
-            font-size: 1.2rem;
-            font-weight: normal;
-            margin-top: 12px;
-            color: #62471a;
-        }
-
-        /* === QUIZ - MÚLTIPLA ESCOLHA === */
+        /* === QUIZ === */
         .quiz-box {
-            background: #e1f0fa;
-            border-radius: 40px 20px 40px 20px;
+            background: #f0f6fa;
+            border-radius: 25px;
             padding: 25px 30px;
-            border: 5px solid #6ba3c9;
+            border: 3px solid #b0c9dd;
             margin-top: 20px;
         }
 
-        .pergunta-quiz {
+        .pergunta {
             background: white;
-            border-radius: 30px;
+            border-radius: 20px;
             padding: 18px 22px;
-            margin: 20px 0;
-            box-shadow: 0 4px 0 #b6cfdc;
-            border-left: 10px solid #f3b33d;
+            margin: 18px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+            border-left: 6px solid #3498db;
         }
 
-        .pergunta-quiz .num {
-            font-size: 1.8rem;
+        .pergunta .num {
             font-weight: bold;
-            color: #c44b3c;
-            margin-right: 12px;
+            color: #2980b9;
+            margin-right: 8px;
         }
 
-        .pergunta-quiz .texto-pergunta {
-            font-size: 1.4rem;
-            font-weight: bold;
-            color: #1d4b6e;
+        .pergunta .texto {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: #2c3e50;
         }
 
-        .pergunta-quiz .alternativas {
-            margin-top: 14px;
+        .pergunta .alternativas {
+            margin-top: 12px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
         }
 
-        .pergunta-quiz .alternativas label {
+        .pergunta .alternativas label {
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 12px;
             background: #f7fafc;
-            padding: 10px 18px;
-            border-radius: 40px;
-            border: 3px solid #d5e5f0;
-            font-size: 1.2rem;
+            padding: 10px 16px;
+            border-radius: 30px;
+            border: 2px solid #e8edf2;
+            font-size: 1.05rem;
             cursor: pointer;
             transition: 0.2s;
         }
 
-        .pergunta-quiz .alternativas label:hover {
-            background: #d9e9fa;
+        .pergunta .alternativas label:hover {
+            background: #e8f0f7;
             border-color: #7fb0d6;
-            transform: scale(1.01);
         }
 
-        .pergunta-quiz .alternativas input[type="radio"] {
-            width: 22px;
-            height: 22px;
-            accent-color: #c44b3c;
-            cursor: pointer;
+        .pergunta .alternativas input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #2980b9;
             flex-shrink: 0;
-        }
-
-        .pergunta-quiz .alternativas .emoji-alt {
-            font-size: 1.8rem;
+            cursor: pointer;
         }
 
         .btn-verificar {
-            background: #f7d794;
+            background: #2980b9;
+            color: white;
             border: none;
-            font-size: 1.8rem;
+            font-size: 1.4rem;
             font-weight: bold;
-            padding: 16px 40px;
+            padding: 14px 40px;
             border-radius: 60px;
             cursor: pointer;
-            box-shadow: 0 6px 0 #c49a5e;
+            box-shadow: 0 6px 0 #1a5276;
             transition: 0.1s;
-            color: #4f350b;
-            margin-top: 20px;
             font-family: inherit;
             display: block;
-            margin-left: auto;
-            margin-right: auto;
+            margin: 20px auto 0;
         }
 
         .btn-verificar:active {
             transform: translateY(5px);
-            box-shadow: 0 1px 0 #c49a5e;
+            box-shadow: 0 1px 0 #1a5276;
         }
 
-        .resultado-quiz {
-            background: #fef3d7;
-            border-radius: 40px;
+        .resultado {
+            background: #fef9f0;
+            border-radius: 25px;
             padding: 20px 25px;
             margin-top: 25px;
             text-align: center;
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             font-weight: bold;
-            border: 4px solid #f3b33d;
+            border: 4px solid #f39c12;
             display: none;
         }
 
-        .resultado-quiz .nota {
-            font-size: 3rem;
-            color: #c44b3c;
+        .resultado .nota {
+            font-size: 2.8rem;
+            color: #2980b9;
         }
 
-        .resultado-quiz .mensagem {
-            font-size: 1.4rem;
-            margin-top: 8px;
+        .resultado .mensagem {
+            font-size: 1.2rem;
             font-weight: normal;
+            margin-top: 8px;
         }
 
         .gabarito {
             margin-top: 20px;
-            background: #d5e5f0;
-            border-radius: 30px;
+            background: #e8edf2;
+            border-radius: 20px;
             padding: 18px 22px;
-            font-size: 1.2rem;
+            font-size: 1.05rem;
             display: none;
         }
 
         .gabarito .certa {
-            color: #1f8b3c;
+            color: #27ae60;
             font-weight: bold;
         }
 
         .gabarito .errada {
-            color: #c44b3c;
+            color: #e74c3c;
             font-weight: bold;
+        }
+
+        /* === CONTEXTUALIZAÇÃO ESPECIAL === */
+        .contexto-box {
+            background: #ebf5fb;
+            border-radius: 25px;
+            padding: 20px 25px;
+            border: 3px solid #aed6f1;
+            margin: 15px 0;
+        }
+
+        .contexto-box strong {
+            color: #1a5276;
         }
 
         /* === RODAPÉ === */
         .footer {
             text-align: center;
             margin-top: 40px;
-            font-size: 1.3rem;
-            color: #7a5f3e;
-            border-top: 4px dotted #eaceb0;
-            padding-top: 30px;
+            padding-top: 25px;
+            border-top: 4px dotted #d5d8dc;
+            color: #7f8c8d;
+            font-size: 1.05rem;
         }
 
         .footer .icones {
-            font-size: 2.8rem;
-            letter-spacing: 12px;
+            font-size: 2.2rem;
+            letter-spacing: 10px;
         }
 
         /* === RESPONSIVO === */
-        @media (max-width: 600px) {
+        @media (max-width: 700px) {
             .container {
                 padding: 16px;
             }
             .header h1 {
-                font-size: 2.2rem;
+                font-size: 2rem;
+            }
+            .tab-btn {
+                padding: 12px 24px;
+                font-size: 1.1rem;
             }
             .card h2 {
-                font-size: 1.7rem;
+                font-size: 1.5rem;
             }
             .card p,
             .card li {
-                font-size: 1.1rem;
-            }
-            .regra-ouro {
-                font-size: 1.3rem;
-                padding: 18px;
-            }
-            .exemplo-box p {
-                font-size: 1.1rem;
-            }
-            .pergunta-quiz .texto-pergunta {
-                font-size: 1.2rem;
-            }
-            .pergunta-quiz .alternativas label {
                 font-size: 1rem;
+            }
+            .pergunta .texto {
+                font-size: 1rem;
+            }
+            .pergunta .alternativas label {
+                font-size: 0.95rem;
                 padding: 8px 14px;
             }
             .btn-verificar {
-                font-size: 1.4rem;
-                padding: 14px 28px;
+                font-size: 1.2rem;
+                padding: 12px 28px;
             }
         }
     </style>
@@ -366,345 +383,490 @@
 
         <!-- CABEÇALHO -->
         <div class="header">
-            <span class="avozinho">🧓🗣️</span>
-            <h1>Jürgen Habermas</h1>
-            <div class="sub">👉 O avô que amava conversas 👈</div>
-            <p style="font-size:1.3rem; margin-top:15px; color:#5d3a1a;">
-                <strong>Para crianças de 8 anos… e para os adultos que esqueceram de brincar!</strong>
-            </p>
+            <h1><span>🧓</span> Jürgen Habermas</h1>
+            <div class="sub">Duas versões: uma para crianças 🧒 e outra para o ensino médio 🧑</div>
         </div>
 
-        <!-- 1. QUEM É ELE? -->
-        <div class="card">
-            <h2><span>🧓</span> Quem é esse senhor?</h2>
-            <p>
-                Jürgen Habermas foi um filósofo alemão que viveu até os 96 anos (1929–2026). 
-                Ele passou a vida toda <strong>estudando como as pessoas podem se entender</strong> 
-                sem brigar, sem gritar e sem enganar umas às outras.
-            </p>
-            <p>
-                Ele ficou famoso por dizer que <strong>conversar bem</strong> é a coisa mais 
-                importante do mundo — mais importante que dinheiro, mais importante que poder, 
-                mais importante que ser o mais forte.
-            </p>
-            <div class="destaque">
-                🗨️ <em>“A força do melhor argumento é mais forte que a força do punho.”</em> 
-                — Habermas
-            </div>
-        </div>
-
-        <!-- 2. A CONVERSA MÁGICA -->
-        <div class="card">
-            <h2><span>💬</span> A conversa mágica (Ação Comunicativa)</h2>
-            <p>
-                Habermas inventou um nome bonito para isso: <strong>Ação Comunicativa</strong>. 
-                Mas, na verdade, é bem simples:
-            </p>
-            <ul>
-                <li>Sentar com os outros</li>
-                <li>Escutar com atenção</li>
-                <li>Dar <strong>argumentos</strong> (explicações) verdadeiras</li>
-                <li>Deixar todo mundo falar</li>
-                <li>Decidir juntos o que é melhor</li>
-            </ul>
-            <p>
-                Ele dizia que, quando a gente conversa assim, <strong>ninguém precisa 
-                brigar</strong> — porque a melhor ideia aparece naturalmente!
-            </p>
-        </div>
-
-        <!-- 3. A PRAÇA DOS DEBATES -->
-        <div class="card">
-            <h2><span>🏛️</span> A Praça dos Debates (Esfera Pública)</h2>
-            <p>
-                Há muito tempo, as pessoas se reuniam em praças, cafés e jornais para 
-                <strong>discutir as regras da cidade</strong>. Habermas chamou esse lugar 
-                de <strong>Esfera Pública</strong> — é como se fosse uma grande praça 
-                onde todos podem opinar.
-            </p>
-            <p>
-                Ele ficou triste porque hoje, na TV e nas redes sociais, as pessoas 
-                <strong>gritam mais do que conversam</strong>. E quando a conversa vira 
-                briga, a esfera pública fica doente.
-            </p>
-            <div class="destaque">
-                📢 <strong>Missão:</strong> transformar a internet numa grande praça de 
-                conversas boas!
-            </div>
-        </div>
-
-        <!-- 4. REGRA DE OURO -->
-        <div class="card">
-            <h2><span>⚖️</span> A Regra de Ouro (Ética do Discurso)</h2>
-            <p>
-                Habermas criou uma pergunta mágica para testar se uma decisão é justa:
-            </p>
-            <div class="regra-ouro">
-                “E se eu fosse a pessoa mais prejudicada por essa regra? 
-                <br />Eu ainda acharia ela boa?”
-                <small>👉 Se a resposta for NÃO, a regra não é justa!</small>
-            </div>
-            <p>
-                <strong>Exemplo:</strong> Se você quer proibir os colegas de brincar com 
-                seu brinquedo, pense: <em>“E se eu não pudesse brincar com nada deles?”</em> 
-                — se você não gostar disso, então a regra não vale!
-            </p>
-        </div>
-
-        <!-- 5. EXEMPLO INTERATIVO -->
-        <div class="card">
-            <h2><span>🧩</span> Vamos treinar?</h2>
-            <div class="exemplo-box">
-                <p><span class="emoji-grande">👧</span> <strong>Problema:</strong> 
-                Na sala de aula, só tem um balanço no pátio. Todo mundo quer usar ao mesmo tempo.</p>
-                <p><strong>Como o Habermas resolveria?</strong></p>
-                <div class="fala">
-                    <span>🧓 Habermas:</span> “Vamos sentar em círculo e cada um vai dizer 
-                    por que quer o balanço. Depois, vamos combinar um rodízio: 
-                    <strong>5 minutos para cada um</strong>. Quem acha justo?”
-                </div>
-                <div class="fala">
-                    <span>👧 Criança 1:</span> “Eu acho justo, porque assim todo mundo brinca!”
-                </div>
-                <div class="fala">
-                    <span>👦 Criança 2:</span> “Eu queria mais tempo, mas 5 minutos é melhor 
-                    que nada. Aceito!”
-                </div>
-                <p><strong>Pronto! Decisão tomada em paz. 🎉</strong></p>
-            </div>
-        </div>
-
-        <!-- 6. POR QUE ISSO IMPORTA? -->
-        <div class="card">
-            <h2><span>🌈</span> Por que isso importa?</h2>
-            <p>
-                Porque o mundo fica <strong>mais feliz, mais justo e mais colorido</strong> 
-                quando a gente aprende a conversar.
-            </p>
-            <ul>
-                <li>Menos brigas na escola</li>
-                <li>Menos guerras entre países</li>
-                <li>Mais amizade entre as pessoas</li>
-                <li>Decisões mais inteligentes</li>
-            </ul>
-            <p>
-                Habermas acreditava que <strong>qualquer pessoa</strong> — até uma criança 
-                de 8 anos — pode ajudar a melhorar o mundo só com uma conversa honesta.
-            </p>
-        </div>
-
-        <!-- 7. LIVROS E PRÊMIOS (VERSÃO CRIANÇA) -->
-        <div class="card">
-            <h2><span>📚</span> Ele escreveu livros… e ganhou prêmios!</h2>
-            <p>
-                Habermas escreveu livros enormes com palavras difíceis, mas o que importa 
-                é a <strong>mensagem</strong>: <em>conversem, escutem, respeitem</em>.
-            </p>
-            <ul>
-                <li>🏆 Prêmio da Paz (2001)</li>
-                <li>🏆 Prêmio Príncipe das Astúrias (2003)</li>
-                <li>🏆 Prêmio Kluge — o “Nobel” das humanidades (2015)</li>
-            </ul>
-            <p>
-                Ele ganhou esses prêmios porque <strong>ajudou o mundo a pensar</strong> 
-                melhor sobre a amizade e a justiça.
-            </p>
-        </div>
-
-        <!-- 8. DESAFIO FINAL -->
-        <div class="card" style="background: #f5e6d3;">
-            <h2><span>⭐</span> Seu Desafio Habermas</h2>
-            <p>
-                <strong>Hoje, em casa ou na escola, tente fazer isso:</strong>
-            </p>
-            <ul>
-                <li>Em vez de gritar, <strong>explique</strong> o que você quer</li>
-                <li>Pergunte <strong>“O que você acha?”</strong> para os outros</li>
-                <li>Escute até o fim, mesmo se não concordar</li>
-                <li>Procure uma solução que <strong>todo mundo</strong> ache razoável</li>
-            </ul>
-            <div class="destaque" style="background: #cfe2cf; border-left-color: #3f8f4a;">
-                🏅 Se você fizer isso, está praticando a filosofia de Habermas 
-                — e tornando o mundo um pouquinho melhor!
-            </div>
+        <!-- ABAS -->
+        <div class="tabs">
+            <button class="tab-btn infantil ativo" onclick="trocarAba('infantil')">
+                🧒 Modo Infantil (8 anos)
+            </button>
+            <button class="tab-btn medio" onclick="trocarAba('medio')">
+                🧑 Modo Ensino Médio
+            </button>
         </div>
 
         <!-- ============================================================ -->
-        <!-- 9. QUIZ DE MÚLTIPLA ESCOLHA (NOVO!) -->
+        <!-- ===================== MODO INFANTIL ========================= -->
         <!-- ============================================================ -->
-        <div class="card" style="background: #f3f9fe; border: 4px solid #7fb0d6;">
-            <h2><span>🧠</span> Quiz: O que você aprendeu?</h2>
-            <p style="font-size:1.2rem;">
-                <strong>Marque a resposta que você acha certa</strong> e depois clique no botão 
-                <strong>"Verificar"</strong> para ver seu resultado! 
-                <br>🎯 Não tem problema errar — o importante é aprender!
-            </p>
+        <div class="tab-content ativo" id="conteudo-infantil">
 
-            <div class="quiz-box" id="quizContainer">
-
-                <!-- PERGUNTA 1 -->
-                <div class="pergunta-quiz" data-pergunta="1">
-                    <div>
-                        <span class="num">1.</span>
-                        <span class="texto-pergunta">Qual era a ideia mais importante de Habermas?</span>
-                    </div>
-                    <div class="alternativas">
-                        <label><input type="radio" name="q1" value="a" /> <span class="emoji-alt">💪</span> Quem é mais forte manda</label>
-                        <label><input type="radio" name="q1" value="b" /> <span class="emoji-alt">🗣️</span> Conversar e se entender é o mais importante</label>
-                        <label><input type="radio" name="q1" value="c" /> <span class="emoji-alt">💰</span> Quem tem mais dinheiro tem razão</label>
-                        <label><input type="radio" name="q1" value="d" /> <span class="emoji-alt">📺</span> Ficar quieto e não falar nada</label>
-                    </div>
-                </div>
-
-                <!-- PERGUNTA 2 -->
-                <div class="pergunta-quiz" data-pergunta="2">
-                    <div>
-                        <span class="num">2.</span>
-                        <span class="texto-pergunta">O que a "Regra de Ouro" do Habermas nos ensina a fazer?</span>
-                    </div>
-                    <div class="alternativas">
-                        <label><input type="radio" name="q2" value="a" /> <span class="emoji-alt">🤔</span> Pensar se a regra seria justa para todo mundo, inclusive para mim</label>
-                        <label><input type="radio" name="q2" value="b" /> <span class="emoji-alt">🏃</span> Fugir de todas as regras</label>
-                        <label><input type="radio" name="q2" value="c" /> <span class="emoji-alt">😡</span> Fazer regras só para os outros</label>
-                        <label><input type="radio" name="q2" value="d" /> <span class="emoji-alt">🙈</span> Ignorar as regras e fazer o que quiser</label>
-                    </div>
-                </div>
-
-                <!-- PERGUNTA 3 -->
-                <div class="pergunta-quiz" data-pergunta="3">
-                    <div>
-                        <span class="num">3.</span>
-                        <span class="texto-pergunta">Como Habermas chamava o lugar onde as pessoas se reuniam para discutir as regras da cidade?</span>
-                    </div>
-                    <div class="alternativas">
-                        <label><input type="radio" name="q3" value="a" /> <span class="emoji-alt">🏛️</span> Esfera Pública (a "praça dos debates")</label>
-                        <label><input type="radio" name="q3" value="b" /> <span class="emoji-alt">🎠</span> Parque de diversões</label>
-                        <label><input type="radio" name="q3" value="c" /> <span class="emoji-alt">🏫</span> Sala de aula</label>
-                        <label><input type="radio" name="q3" value="d" /> <span class="emoji-alt">🛒</span> Supermercado</label>
-                    </div>
-                </div>
-
-                <!-- PERGUNTA 4 -->
-                <div class="pergunta-quiz" data-pergunta="4">
-                    <div>
-                        <span class="num">4.</span>
-                        <span class="texto-pergunta">Segundo Habermas, o que é mais forte que a força do punho?</span>
-                    </div>
-                    <div class="alternativas">
-                        <label><input type="radio" name="q4" value="a" /> <span class="emoji-alt">🥊</span> A força do soco</label>
-                        <label><input type="radio" name="q4" value="b" /> <span class="emoji-alt">💬</span> A força do melhor argumento (da melhor explicação)</label>
-                        <label><input type="radio" name="q4" value="c" /> <span class="emoji-alt">🏋️</span> A força do músculo</label>
-                        <label><input type="radio" name="q4" value="d" /> <span class="emoji-alt">🔊</span> A força do grito mais alto</label>
-                    </div>
-                </div>
-
-                <!-- PERGUNTA 5 -->
-                <div class="pergunta-quiz" data-pergunta="5">
-                    <div>
-                        <span class="num">5.</span>
-                        <span class="texto-pergunta">O que Habermas achava que a gente DEVE fazer para resolver uma briga?</span>
-                    </div>
-                    <div class="alternativas">
-                        <label><input type="radio" name="q5" value="a" /> <span class="emoji-alt">🤫</span> Ficar em silêncio e não fazer nada</label>
-                        <label><input type="radio" name="q5" value="b" /> <span class="emoji-alt">👊</span> Brigar até um desistir</label>
-                        <label><input type="radio" name="q5" value="c" /> <span class="emoji-alt">🗣️</span> Sentar, conversar, ouvir e decidir juntos</label>
-                        <label><input type="radio" name="q5" value="d" /> <span class="emoji-alt">📱</span> Chamar os pais ou a professora para resolver</label>
-                    </div>
-                </div>
-
-                <!-- BOTÃO VERIFICAR -->
-                <button class="btn-verificar" onclick="verificarQuiz()">✅ Verificar respostas</button>
-
-                <!-- RESULTADO -->
-                <div class="resultado-quiz" id="resultadoQuiz">
-                    <div class="nota" id="notaFinal">⭐</div>
-                    <div class="mensagem" id="mensagemFinal"></div>
-                </div>
-
-                <!-- GABARITO -->
-                <div class="gabarito" id="gabarito">
-                    <p><strong>📖 Gabarito:</strong></p>
-                    <p>1. <span class="certa">b</span> — Conversar e se entender é o mais importante</p>
-                    <p>2. <span class="certa">a</span> — Pensar se a regra seria justa para todo mundo</p>
-                    <p>3. <span class="certa">a</span> — Esfera Pública (a "praça dos debates")</p>
-                    <p>4. <span class="certa">b</span> — A força do melhor argumento</p>
-                    <p>5. <span class="certa">c</span> — Sentar, conversar, ouvir e decidir juntos</p>
-                </div>
-
+            <div style="text-align:center; font-size:1.3rem; color:#5d3a1a; background:#fce8b2; border-radius:60px; padding:12px 20px; margin-bottom:20px;">
+                🌟 <strong>Bem-vindo ao mundo do avô que amava conversas!</strong> 🌟
             </div>
 
-            <p style="text-align:center; font-size:1.2rem; margin-top:20px; color:#4f6b7a;">
-                🧡 <strong>Parabéns por aprender sobre Habermas!</strong> Agora você já sabe que conversar é a melhor forma de resolver as coisas!
-            </p>
+            <!-- O QUE É -->
+            <div class="card infantil" style="border-left-color:#f39c12;">
+                <h2><span class="icone">🧓</span> O que é a filosofia de Habermas?</h2>
+                <p>
+                    Jürgen Habermas foi um filósofo alemão que viveu até os 96 anos (1929–2026). 
+                    Ele passou a vida inteira pensando em como as pessoas podem <strong>se entender melhor</strong>.
+                </p>
+                <p>
+                    Para ele, a coisa mais importante do mundo é <strong>saber conversar</strong> — 
+                    não é gritar, não é brigar, não é empurrar. É <strong>sentar, ouvir e explicar</strong> 
+                    o que a gente pensa.
+                </p>
+                <div class="destaque">
+                    🗨️ <strong>“A força do melhor argumento é mais forte que a força do punho.”</strong>
+                </div>
+            </div>
+
+            <!-- O QUE DEFENDE -->
+            <div class="card infantil" style="border-left-color:#e67e22;">
+                <h2><span class="icone">🛡️</span> O que ele defende?</h2>
+                <ul>
+                    <li><strong>Conversar é melhor que brigar</strong> — sempre dá para achar um acordo</li>
+                    <li><strong>Todo mundo deve ter voz</strong> — até as crianças podem opinar!</li>
+                    <li><strong>As regras só são justas se servem para todos</strong> — inclusive para quem as criou</li>
+                    <li><strong>Ninguém é dono da verdade</strong> — a verdade aparece quando a gente conversa</li>
+                </ul>
+            </div>
+
+            <!-- PRINCIPAL TEORIA -->
+            <div class="card infantil" style="border-left-color:#2ecc71;">
+                <h2><span class="icone">💬</span> Principal teoria: A Conversa Mágica (Ação Comunicativa)</h2>
+                <p>
+                    Habermas inventou um nome bonito: <strong>Ação Comunicativa</strong>. 
+                    Mas é bem simples:
+                </p>
+                <ul>
+                    <li>Sentar em círculo com os outros</li>
+                    <li>Escutar com atenção o que cada um diz</li>
+                    <li>Dar <strong>argumentos</strong> (explicações) verdadeiras</li>
+                    <li>Deixar todo mundo falar sem interromper</li>
+                    <li>Decidir juntos o que é melhor para todos</li>
+                </ul>
+                <p>
+                    Ele dizia que, quando a gente conversa assim, <strong>ninguém precisa brigar</strong> 
+                    — porque a melhor ideia aparece naturalmente!
+                </p>
+            </div>
+
+            <!-- CONTEXTUALIZAÇÃO -->
+            <div class="card infantil" style="border-left-color:#9b59b6;">
+                <h2><span class="icone">📜</span> De onde veio essa ideia? (Contexto)</h2>
+                <div class="contexto-box">
+                    <p>
+                        <strong>🧓 Habermas era alemão e cresceu durante a Segunda Guerra Mundial.</strong> 
+                        Ele viu seu país ser dominado por um ditador que <strong>não deixava ninguém falar</strong> 
+                        e que usava a força para mandar nas pessoas.
+                    </p>
+                    <p>
+                        Isso o marcou profundamente. Ele pensou: <em>“Como evitar que isso aconteça de novo?”</em> 
+                        E a resposta dele foi: <strong>ensinando as pessoas a conversarem!</strong>
+                    </p>
+                    <p>
+                        Se todo mundo aprender a ouvir e a dar argumentos, <strong>ninguém consegue enganar 
+                        ou mandar nos outros</strong> — porque a verdade aparece quando todos falam.
+                    </p>
+                </div>
+                <p>
+                    Ele também se inspirou em filósofos antigos, como <strong>Sócrates</strong>, que ensinava 
+                    perguntando e conversando, e em pensadores modernos que acreditavam na <strong>democracia</strong> 
+                    (o poder do povo).
+                </p>
+            </div>
+
+            <!-- QUIZ INFANTIL -->
+            <div class="card infantil" style="border-left-color:#3498db; background:#f3f9fe;">
+                <h2><span class="icone">🧠</span> Quiz: O que você aprendeu?</h2>
+                <p>Marque as respostas e clique em <strong>"Verificar"</strong>!</p>
+
+                <div class="quiz-box" id="quizInfantil">
+
+                    <div class="pergunta" data-pergunta="1">
+                        <div><span class="num">1.</span> <span class="texto">Qual era a ideia mais importante de Habermas?</span></div>
+                        <div class="alternativas">
+                            <label><input type="radio" name="inf-q1" value="a" /> <span>💪 Quem é mais forte manda</span></label>
+                            <label><input type="radio" name="inf-q1" value="b" /> <span>🗣️ Conversar e se entender é o mais importante</span></label>
+                            <label><input type="radio" name="inf-q1" value="c" /> <span>💰 Quem tem mais dinheiro tem razão</span></label>
+                            <label><input type="radio" name="inf-q1" value="d" /> <span>📺 Ficar quieto e não falar nada</span></label>
+                        </div>
+                    </div>
+
+                    <div class="pergunta" data-pergunta="2">
+                        <div><span class="num">2.</span> <span class="texto">O que a "Regra de Ouro" do Habermas nos ensina?</span></div>
+                        <div class="alternativas">
+                            <label><input type="radio" name="inf-q2" value="a" /> <span>🤔 Pensar se a regra é justa para todo mundo, inclusive para mim</span></label>
+                            <label><input type="radio" name="inf-q2" value="b" /> <span>🏃 Fugir de todas as regras</span></label>
+                            <label><input type="radio" name="inf-q2" value="c" /> <span>😡 Fazer regras só para os outros</span></label>
+                            <label><input type="radio" name="inf-q2" value="d" /> <span>🙈 Ignorar as regras e fazer o que quiser</span></label>
+                        </div>
+                    </div>
+
+                    <div class="pergunta" data-pergunta="3">
+                        <div><span class="num">3.</span> <span class="texto">Como Habermas chamava o lugar onde as pessoas discutem as regras da cidade?</span></div>
+                        <div class="alternativas">
+                            <label><input type="radio" name="inf-q3" value="a" /> <span>🏛️ Esfera Pública (a "praça dos debates")</span></label>
+                            <label><input type="radio" name="inf-q3" value="b" /> <span>🎠 Parque de diversões</span></label>
+                            <label><input type="radio" name="inf-q3" value="c" /> <span>🏫 Sala de aula</span></label>
+                            <label><input type="radio" name="inf-q3" value="d" /> <span>🛒 Supermercado</span></label>
+                        </div>
+                    </div>
+
+                    <div class="pergunta" data-pergunta="4">
+                        <div><span class="num">4.</span> <span class="texto">Segundo Habermas, o que é mais forte que a força do punho?</span></div>
+                        <div class="alternativas">
+                            <label><input type="radio" name="inf-q4" value="a" /> <span>🥊 A força do soco</span></label>
+                            <label><input type="radio" name="inf-q4" value="b" /> <span>💬 A força do melhor argumento (da melhor explicação)</span></label>
+                            <label><input type="radio" name="inf-q4" value="c" /> <span>🏋️ A força do músculo</span></label>
+                            <label><input type="radio" name="inf-q4" value="d" /> <span>🔊 A força do grito mais alto</span></label>
+                        </div>
+                    </div>
+
+                    <div class="pergunta" data-pergunta="5">
+                        <div><span class="num">5.</span> <span class="texto">O que Habermas achava que devemos fazer para resolver uma briga?</span></div>
+                        <div class="alternativas">
+                            <label><input type="radio" name="inf-q5" value="a" /> <span>🤫 Ficar em silêncio e não fazer nada</span></label>
+                            <label><input type="radio" name="inf-q5" value="b" /> <span>👊 Brigar até um desistir</span></label>
+                            <label><input type="radio" name="inf-q5" value="c" /> <span>🗣️ Sentar, conversar, ouvir e decidir juntos</span></label>
+                            <label><input type="radio" name="inf-q5" value="d" /> <span>📱 Chamar os pais ou a professora para resolver</span></label>
+                        </div>
+                    </div>
+
+                    <button class="btn-verificar" onclick="verificarQuiz('inf')">✅ Verificar respostas</button>
+
+                    <div class="resultado" id="resultadoInf">
+                        <div class="nota" id="notaInf">⭐</div>
+                        <div class="mensagem" id="mensagemInf"></div>
+                    </div>
+
+                    <div class="gabarito" id="gabaritoInf">
+                        <p><strong>📖 Gabarito:</strong></p>
+                        <p>1. <span class="certa">b</span> — Conversar e se entender é o mais importante</p>
+                        <p>2. <span class="certa">a</span> — Pensar se a regra é justa para todo mundo</p>
+                        <p>3. <span class="certa">a</span> — Esfera Pública (a "praça dos debates")</p>
+                        <p>4. <span class="certa">b</span> — A força do melhor argumento</p>
+                        <p>5. <span class="certa">c</span> — Sentar, conversar, ouvir e decidir juntos</p>
+                    </div>
+
+                </div>
+            </div>
+
         </div>
+        <!-- FIM MODO INFANTIL -->
+
+        <!-- ============================================================ -->
+        <!-- ===================== MODO ENSINO MÉDIO ==================== -->
+        <!-- ============================================================ -->
+        <div class="tab-content" id="conteudo-medio">
+
+            <div style="text-align:center; font-size:1.2rem; color:#1d4b6e; background:#d5e5f0; border-radius:60px; padding:12px 20px; margin-bottom:20px;">
+                📚 <strong>Bem-vindo ao estudo aprofundado de Jürgen Habermas</strong> 📚
+            </div>
+
+            <!-- O QUE É -->
+            <div class="card medio" style="border-left-color:#2c3e50;">
+                <h2><span class="icone">📖</span> O que é a filosofia de Habermas?</h2>
+                <p>
+                    <strong>Jürgen Habermas</strong> (1929–2026) foi um dos filósofos e sociólogos 
+                    mais influentes do século XX e XXI. Pertenceu à <strong>segunda geração da Escola de Frankfurt</strong> 
+                    e dedicou sua vida a desenvolver a <strong>Teoria Crítica</strong>, mas com um enfoque inovador: 
+                    a <strong>comunicação</strong> como fundamento da racionalidade e da emancipação social.
+                </p>
+                <p>
+                    Sua obra busca superar o pessimismo da primeira geração (Horkheimer e Adorno) 
+                    e reconstruir a razão a partir do <strong>diálogo</strong> e da <strong>intersubjetividade</strong>.
+                </p>
+                <div class="destaque">
+                    <strong>“A racionalidade comunicativa se realiza no entendimento linguístico, 
+                    na força do melhor argumento.”</strong> — Habermas
+                </div>
+            </div>
+
+            <!-- O QUE DEFENDE -->
+            <div class="card medio" style="border-left-color:#2980b9;">
+                <h2><span class="icone">⚖️</span> O que ele defende?</h2>
+                <ul>
+                    <li><strong>Racionalidade comunicativa</strong> — a razão não é apenas instrumental (meios-fins), mas também se manifesta na busca de entendimento mútuo.</li>
+                    <li><strong>Democracia deliberativa</strong> — a legitimidade das leis vem de um processo público de debate, acessível a todos os afetados.</li>
+                    <li><strong>Ética do discurso</strong> — normas morais só são válidas se puderem ser universalizadas e aceitas em um diálogo livre de coerção.</li>
+                    <li><strong>Esfera pública</strong> — espaço de discussão crítica onde os cidadãos podem formar opinião livre da dominação do Estado e do mercado.</li>
+                    <li><strong>Autonomia e emancipação</strong> — a comunicação livre é condição para que os indivíduos se tornem sujeitos autônomos.</li>
+                </ul>
+            </div>
+
+            <!-- PRINCIPAL TEORIA -->
+            <div class="card medio" style="border-left-color:#27ae60;">
+                <h2><span class="icone">📘</span> Principal teoria: Ação Comunicativa</h2>
+                <p>
+                    A <strong>Teoria da Ação Comunicativa</strong> (1981) é a obra magna de Habermas. 
+                    Nela, ele distingue dois tipos fundamentais de racionalidade:
+                </p>
+                <ul>
+                    <li><strong>Ação instrumental/estratégica:</strong> orientada para o sucesso, 
+                    para o cálculo de meios e fins (ex: uma empresa que maximiza lucros).</li>
+                    <li><strong>Ação comunicativa:</strong> orientada para o entendimento mútuo, 
+                    onde os agentes buscam chegar a um consenso por meio da linguagem.</li>
+                </ul>
+                <p>
+                    Para Habermas, a <strong>linguagem</strong> não é apenas uma ferramenta, mas 
+                    o <strong>meio constitutivo da própria sociedade</strong>. A ação comunicativa 
+                    pressupõe <strong>quatro pretensões de validade</strong>:
+                </p>
+                <ul>
+                    <li><strong>Inteligibilidade</strong> — o que se diz deve ser compreensível</li>
+                    <li><strong>Verdade</strong> — o que se diz sobre o mundo deve ser verdadeiro</li>
+                    <li><strong>Correção normativa</strong> — o que se diz deve estar de acordo com normas legítimas</li>
+                    <li><strong>Sinceridade</strong> — o falante deve ser autêntico e não enganar</li>
+                </ul>
+                <p>
+                    Quando essas pretensões são problematizadas, entra-se no <strong>discurso</strong> 
+                    — um processo argumentativo onde a <strong>força do melhor argumento</strong> 
+                    prevalece, sem coerção externa.
+                </p>
+            </div>
+
+            <!-- CONTEXTUALIZAÇÃO -->
+            <div class="card medio" style="border-left-color:#8e44ad;">
+                <h2><span class="icone">🏛️</span> Contextualização: Origem da Teoria</h2>
+
+                <div class="contexto-box">
+                    <p><strong>📍 Contexto histórico e biográfico:</strong></p>
+                    <p>
+                        Habermas nasceu em 1929, na Alemanha, e viveu a <strong>ascensão do nazismo</strong> 
+                        e a <strong>Segunda Guerra Mundial</strong>. Essa experiência traumática o marcou 
+                        profundamente: como a razão moderna pôde ser usada para legitimar o totalitarismo e o extermínio?
+                    </p>
+                    <p>
+                        Essa pergunta o acompanhou por toda a vida. Ele rejeitou tanto o <strong>pessimismo 
+                        irracionalista</strong> (que via a razão como mera dominação) quanto o <strong>positivismo 
+                        ingênuo</strong> (que via a ciência como valor neutro).
+                    </p>
+                </div>
+
+                <div class="contexto-box">
+                    <p><strong>📍 Influências filosóficas:</strong></p>
+                    <ul>
+                        <li><strong>Immanuel Kant:</strong> a ideia de uma razão autônoma e universal</li>
+                        <li><strong>G.W.F. Hegel:</strong> a noção de reconhecimento intersubjetivo</li>
+                        <li><strong>Karl Marx:</strong> a crítica à dominação e à ideologia</li>
+                        <li><strong>Max Weber:</strong> a análise da racionalização moderna</li>
+                        <li><strong>George Herbert Mead:</strong> a construção do self pela interação social</li>
+                        <li><strong>John L. Austin & Searle:</strong> a teoria dos atos de fala (linguagem como ação)</li>
+                    </ul>
+                    <p>
+                        Habermas sintetizou essas influências para construir uma <strong>teoria social 
+                        com base na linguagem</strong>, rompendo com o paradigma da consciência (típico da 
+                        filosofia moderna) e adotando o <strong>paradigma da comunicação</strong>.
+                    </p>
+                </div>
+
+                <div class="contexto-box">
+                    <p><strong>📍 Debate com a Escola de Frankfurt:</strong></p>
+                    <p>
+                        A primeira geração (Horkheimer, Adorno, Marcuse) via a razão instrumental como 
+                        uma força de dominação que havia se voltado contra si mesma. Para eles, o 
+                        <em>Esclarecimento</em> (Iluminismo) havia gerado o totalitarismo.
+                    </p>
+                    <p>
+                        Habermas discordou: para ele, a razão não precisa ser abandonada, mas 
+                        <strong>reconstruída</strong> a partir da comunicação. A <strong>razão comunicativa</strong> 
+                        é a base para uma sociedade verdadeiramente democrática e emancipada.
+                    </p>
+                    <p>
+                        Essa virada comunicativa foi uma das maiores inovações da filosofia do século XX.
+                    </p>
+                </div>
+            </div>
+
+            <!-- QUIZ ENSINO MÉDIO -->
+            <div class="card medio" style="border-left-color:#3498db; background:#f0f6fa;">
+                <h2><span class="icone">🧠</span> Quiz: Verifique seus conhecimentos</h2>
+                <p>Responda às perguntas e clique em <strong>"Verificar"</strong>.</p>
+
+                <div class="quiz-box" id="quizMedio">
+
+                    <div class="pergunta" data-pergunta="1">
+                        <div><span class="num">1.</span> <span class="texto">Qual é o principal conceito que diferencia a filosofia de Habermas da primeira geração da Escola de Frankfurt?</span></div>
+                        <div class="alternativas">
+                            <label><input type="radio" name="med-q1" value="a" /> <span>A crítica ao capitalismo</span></label>
+                            <label><input type="radio" name="med-q1" value="b" /> <span>A ênfase na razão comunicativa em vez da razão instrumental</span></label>
+                            <label><input type="radio" name="med-q1" value="c" /> <span>A defesa do marxismo ortodoxo</span></label>
+                            <label><input type="radio" name="med-q1" value="d" /> <span>O abandono total da razão</span></label>
+                        </div>
+                    </div>
+
+                    <div class="pergunta" data-pergunta="2">
+                        <div><span class="num">2.</span> <span class="texto">O que a Teoria da Ação Comunicativa propõe como fundamento da sociedade?</span></div>
+                        <div class="alternativas">
+                            <label><input type="radio" name="med-q2" value="a" /> <span>A luta de classes como motor da história</span></label>
+                            <label><input type="radio" name="med-q2" value="b" /> <span>A linguagem e o entendimento mútuo como base da intersubjetividade</span></label>
+                            <label><input type="radio" name="med-q2" value="c" /> <span>O mercado como regulador das relações sociais</span></label>
+                            <label><input type="radio" name="med-q2" value="d" /> <span>A vontade de poder como força motriz</span></label>
+                        </div>
+                    </div>
+
+                    <div class="pergunta" data-pergunta="3">
+                        <div><span class="num">3.</span> <span class="texto">Quais são as quatro pretensões de validade da ação comunicativa?</span></div>
+                        <div class="alternativas">
+                            <label><input type="radio" name="med-q3" value="a" /> <span>Verdade, poder, dinheiro e status</span></label>
+                            <label><input type="radio" name="med-q3" value="b" /> <span>Inteligibilidade, verdade, correção normativa e sinceridade</span></label>
+                            <label><input type="radio" name="med-q3" value="c" /> <span>Força, autoridade, tradição e carisma</span></label>
+                            <label><input type="radio" name="med-q3" value="d" /> <span>Clareza, objetividade, subjetividade e emoção</span></label>
+                        </div>
+                    </div>
+
+                    <div class="pergunta" data-pergunta="4">
+                        <div><span class="num">4.</span> <span class="texto">O que Habermas entende por "Esfera Pública"?</span></div>
+                        <div class="alternativas">
+                            <label><input type="radio" name="med-q4" value="a" /> <span>O espaço físico onde ocorrem eleições</span></label>
+                            <label><input type="radio" name="med-q4" value="b" /> <span>O conjunto de instituições estatais</span></label>
+                            <label><input type="radio" name="med-q4" value="c" /> <span>O espaço de discussão crítica dos cidadãos, livre da dominação do Estado e do mercado</span></label>
+                            <label><input type="radio" name="med-q4" value="d" /> <span>A mídia de massa e as redes sociais</span></label>
+                        </div>
+                    </div>
+
+                    <div class="pergunta" data-pergunta="5">
+                        <div><span class="num">5.</span> <span class="texto">Qual foi a principal motivação histórica que levou Habermas a desenvolver sua teoria?</span></div>
+                        <div class="alternativas">
+                            <label><input type="radio" name="med-q5" value="a" /> <span>A Revolução Industrial</span></label>
+                            <label><input type="radio" name="med-q5" value="b" /> <span>A experiência do nazismo e a necessidade de reconstruir a razão democrática</span></label>
+                            <label><input type="radio" name="med-q5" value="c" /> <span>A Guerra Fria e a corrida armamentista</span></label>
+                            <label><input type="radio" name="med-q5" value="d" /> <span>A crise econômica de 1929</span></label>
+                        </div>
+                    </div>
+
+                    <button class="btn-verificar" onclick="verificarQuiz('med')">✅ Verificar respostas</button>
+
+                    <div class="resultado" id="resultadoMed">
+                        <div class="nota" id="notaMed">⭐</div>
+                        <div class="mensagem" id="mensagemMed"></div>
+                    </div>
+
+                    <div class="gabarito" id="gabaritoMed">
+                        <p><strong>📖 Gabarito:</strong></p>
+                        <p>1. <span class="certa">b</span> — A ênfase na razão comunicativa em vez da razão instrumental</p>
+                        <p>2. <span class="certa">b</span> — A linguagem e o entendimento mútuo como base da intersubjetividade</p>
+                        <p>3. <span class="certa">b</span> — Inteligibilidade, verdade, correção normativa e sinceridade</p>
+                        <p>4. <span class="certa">c</span> — O espaço de discussão crítica dos cidadãos, livre da dominação do Estado e do mercado</p>
+                        <p>5. <span class="certa">b</span> — A experiência do nazismo e a necessidade de reconstruir a razão democrática</p>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+        <!-- FIM MODO ENSINO MÉDIO -->
 
         <!-- RODAPÉ -->
         <div class="footer">
             <div class="icones">🧓 ✨ 💬 🌍 🤝</div>
             <p>
-                <strong>Site feito com carinho</strong> — porque todo mundo merece 
-                entender o avô das conversas.
+                <strong>Jürgen Habermas</strong> — Duas versões para aprender de forma divertida e aprofundada.
             </p>
-            <p style="font-size:1rem; margin-top:10px; opacity:0.7;">
-                Baseado nas ideias de Jürgen Habermas • Versão para crianças
+            <p style="font-size:0.95rem; margin-top:6px; opacity:0.7;">
+                Conteúdo adaptado para crianças (8 anos) e ensino médio • Quiz interativo incluído
+            </p>
+            <p style="font-size:0.9rem; margin-top:10px; color:#aab;">
+                Repositório: <strong>github.com/Manoel2313/habermas</strong>
             </p>
         </div>
 
     </div>
-    <!-- fim container -->
 
     <script>
-        function verificarQuiz() {
-            // Respostas corretas
-            const respostasCertas = {
-                q1: 'b',
-                q2: 'a',
-                q3: 'a',
-                q4: 'b',
-                q5: 'c'
+        // ============================================================
+        // FUNÇÃO PARA TROCAR DE ABA
+        // ============================================================
+        function trocarAba(aba) {
+            // Esconde todos os conteúdos
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('ativo'));
+
+            // Remove 'ativo' de todos os botões
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('ativo'));
+
+            // Mostra a aba correta
+            if (aba === 'infantil') {
+                document.getElementById('conteudo-infantil').classList.add('ativo');
+                document.querySelector('.tab-btn.infantil').classList.add('ativo');
+            } else {
+                document.getElementById('conteudo-medio').classList.add('ativo');
+                document.querySelector('.tab-btn.medio').classList.add('ativo');
+            }
+
+            // Rola para o topo
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ============================================================
+        // FUNÇÃO PARA VERIFICAR QUIZ (GENÉRICA)
+        // ============================================================
+        function verificarQuiz(tipo) {
+            const respostas = {
+                inf: {
+                    q1: 'b', q2: 'a', q3: 'a', q4: 'b', q5: 'c'
+                },
+                med: {
+                    q1: 'b', q2: 'b', q3: 'b', q4: 'c', q5: 'b'
+                }
             };
 
+            const prefixo = tipo === 'inf' ? 'inf' : 'med';
+            const certas = respostas[tipo];
             let acertos = 0;
-            let total = Object.keys(respostasCertas).length;
+            const total = Object.keys(certas).length;
 
-            // Verifica cada pergunta
             for (let i = 1; i <= total; i++) {
-                const nome = 'q' + i;
+                const nome = prefixo + '-q' + i;
                 const selecionado = document.querySelector(`input[name="${nome}"]:checked`);
-                if (selecionado) {
-                    if (selecionado.value === respostasCertas[nome]) {
-                        acertos++;
-                    }
+                if (selecionado && selecionado.value === certas['q' + i]) {
+                    acertos++;
                 }
             }
 
-            // Mostra o resultado
-            const resultadoDiv = document.getElementById('resultadoQuiz');
-            const notaFinal = document.getElementById('notaFinal');
-            const mensagemFinal = document.getElementById('mensagemFinal');
-            const gabaritoDiv = document.getElementById('gabarito');
+            // Mostra resultado
+            const resultadoId = tipo === 'inf' ? 'resultadoInf' : 'resultadoMed';
+            const notaId = tipo === 'inf' ? 'notaInf' : 'notaMed';
+            const mensagemId = tipo === 'inf' ? 'mensagemInf' : 'mensagemMed';
+            const gabaritoId = tipo === 'inf' ? 'gabaritoInf' : 'gabaritoMed';
+
+            const resultadoDiv = document.getElementById(resultadoId);
+            const notaDiv = document.getElementById(notaId);
+            const mensagemDiv = document.getElementById(mensagemId);
+            const gabaritoDiv = document.getElementById(gabaritoId);
 
             resultadoDiv.style.display = 'block';
             gabaritoDiv.style.display = 'block';
 
-            notaFinal.textContent = `🎯 ${acertos} de ${total}`;
+            notaDiv.textContent = `🎯 ${acertos} de ${total}`;
 
             let mensagem = '';
             if (acertos === total) {
-                mensagem = '🌟 Uau! Você é um(a) filósofo(a) mirim! Acertou tudo! Parabéns! 🎉';
+                mensagem = '🌟 Excelente! Você domina o conteúdo sobre Habermas! Parabéns!';
             } else if (acertos >= 3) {
-                mensagem = '😊 Muito bem! Você entendeu bem as ideias do Habermas! Continue assim!';
+                mensagem = '😊 Muito bem! Você tem um bom entendimento. Continue estudando!';
             } else if (acertos >= 1) {
-                mensagem = '🤗 Boa tentativa! Que tal reler algumas partes e tentar de novo? Você consegue!';
+                mensagem = '🤗 Boa tentativa! Releia o conteúdo e tente novamente.';
             } else {
-                mensagem = '😅 Não desista! Releia o site com calma e depois tente novamente. Aprender é assim mesmo!';
+                mensagem = '😅 Não desista! Releia com calma e depois tente de novo.';
             }
-            mensagemFinal.textContent = mensagem;
+            mensagemDiv.textContent = mensagem;
 
-            // Rola a página até o resultado
             resultadoDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
+
+        // Inicializa com a aba infantil ativa
+        document.addEventListener('DOMContentLoaded', function() {
+            // Garante que a aba infantil esteja ativa
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('ativo'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('ativo'));
+            document.getElementById('conteudo-infantil').classList.add('ativo');
+            document.querySelector('.tab-btn.infantil').classList.add('ativo');
+        });
     </script>
 
 </body>
-  </html>
+    </html>
