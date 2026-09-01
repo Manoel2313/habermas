@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🐟 Aquário Limpo - Jogo 3D</title>
+    <title>🐟 Aquário Limpo - PC Edition</title>
     <style>
         * {
             margin: 0;
@@ -32,7 +32,7 @@
             align-items: flex-start;
             pointer-events: none;
             z-index: 10;
-            background: linear-gradient(180deg, rgba(0, 0, 0, 0.6) 0%, transparent 100%);
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0.7) 0%, transparent 100%);
         }
         #hud-left {
             display: flex;
@@ -45,8 +45,18 @@
             gap: 5px;
             align-items: flex-end;
         }
+        #hud-center {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            align-items: center;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            top: 15px;
+        }
         .hud-item {
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.75);
             padding: 6px 14px;
             border-radius: 20px;
             color: #fff;
@@ -54,11 +64,18 @@
             font-weight: bold;
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(4px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             pointer-events: auto;
+            font-family: 'Segoe UI', Arial, sans-serif;
         }
         .hud-item .icon {
-            margin-right: 8px;
+            margin-right: 6px;
+        }
+        .hud-item .valor {
+            color: #ffd700;
+        }
+        .hud-item .valor-limpeza {
+            color: #00d4ff;
         }
 
         #barra-poluicao-container {
@@ -66,15 +83,16 @@
             bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
-            width: 60%;
-            max-width: 500px;
-            height: 14px;
-            background: rgba(0, 0, 0, 0.7);
+            width: 50%;
+            max-width: 600px;
+            height: 16px;
+            background: rgba(0, 0, 0, 0.8);
             border-radius: 20px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.15);
             overflow: hidden;
             z-index: 10;
             backdrop-filter: blur(4px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
         }
         #barra-poluicao {
             height: 100%;
@@ -85,14 +103,16 @@
         }
         #barra-poluicao-label {
             position: fixed;
-            bottom: 50px;
+            bottom: 52px;
             left: 50%;
             transform: translateX(-50%);
-            color: rgba(255, 255, 255, 0.6);
+            color: rgba(255, 255, 255, 0.5);
             font-size: 12px;
             z-index: 10;
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
-            letter-spacing: 1px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 300;
         }
 
         /* LOJA */
@@ -102,8 +122,8 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(10px);
+            background: rgba(0, 0, 0, 0.88);
+            backdrop-filter: blur(12px);
             z-index: 100;
             display: none;
             justify-content: center;
@@ -124,61 +144,73 @@
                 transform: scale(1);
             }
         }
+        @keyframes pulse {
+            0%,
+            100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
 
         #loja-container {
             background: linear-gradient(145deg, #1a2a3a, #0d1a26);
             border-radius: 30px;
             padding: 40px;
-            max-width: 700px;
+            max-width: 750px;
             width: 90%;
             max-height: 90vh;
             overflow-y: auto;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.9);
         }
         #loja-container h2 {
             color: #fff;
-            font-size: 32px;
+            font-size: 34px;
             text-align: center;
             margin-bottom: 5px;
+            letter-spacing: 1px;
         }
         #loja-container .subtitle {
-            color: rgba(255, 255, 255, 0.5);
+            color: rgba(255, 255, 255, 0.4);
             text-align: center;
             margin-bottom: 25px;
             font-size: 14px;
+            letter-spacing: 2px;
         }
         #loja-moedas {
             color: #ffd700;
-            font-size: 22px;
+            font-size: 24px;
             text-align: center;
             margin-bottom: 25px;
-            background: rgba(255, 215, 0, 0.1);
-            padding: 10px;
+            background: rgba(255, 215, 0, 0.08);
+            padding: 12px;
             border-radius: 15px;
+            border: 1px solid rgba(255, 215, 0, 0.1);
         }
         .loja-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
             gap: 15px;
         }
         .loja-item {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.04);
             border-radius: 20px;
-            padding: 20px;
+            padding: 20px 15px;
             text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.04);
             transition: all 0.3s ease;
         }
         .loja-item:hover {
-            transform: translateY(-3px);
-            border-color: rgba(255, 255, 255, 0.15);
-            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-4px);
+            border-color: rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.07);
         }
         .loja-item .emoji {
-            font-size: 40px;
+            font-size: 44px;
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
         .loja-item .nome {
             color: #fff;
@@ -186,31 +218,32 @@
             font-size: 16px;
         }
         .loja-item .desc {
-            color: rgba(255, 255, 255, 0.5);
+            color: rgba(255, 255, 255, 0.4);
             font-size: 12px;
-            margin: 5px 0;
+            margin: 5px 0 8px;
         }
         .loja-item .preco {
             color: #ffd700;
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
-            margin: 10px 0;
+            margin: 8px 0 12px;
         }
         .loja-item .btn-comprar {
             background: linear-gradient(135deg, #00d4ff, #0088ff);
             border: none;
             color: #fff;
-            padding: 8px 20px;
+            padding: 10px 20px;
             border-radius: 30px;
             font-size: 14px;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s ease;
             width: 100%;
+            font-family: 'Segoe UI', Arial, sans-serif;
         }
         .loja-item .btn-comprar:hover {
             transform: scale(1.05);
-            box-shadow: 0 5px 20px rgba(0, 136, 255, 0.4);
+            box-shadow: 0 5px 25px rgba(0, 136, 255, 0.4);
         }
         .loja-item .btn-comprar:disabled {
             opacity: 0.3;
@@ -223,45 +256,72 @@
         .loja-fechar {
             display: block;
             margin: 25px auto 0;
-            padding: 12px 40px;
+            padding: 12px 50px;
             border-radius: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.15);
             background: transparent;
             color: #fff;
             font-size: 16px;
             cursor: pointer;
             transition: all 0.3s ease;
+            font-family: 'Segoe UI', Arial, sans-serif;
         }
         .loja-fechar:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.3);
         }
 
         /* DIÁLOGO */
         #dialogo-container {
             position: fixed;
-            bottom: 80px;
+            bottom: 90px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(0, 0, 0, 0.88);
             backdrop-filter: blur(8px);
-            padding: 15px 30px;
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 16px 35px;
+            border-radius: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
             z-index: 15;
             display: none;
             max-width: 80%;
             text-align: center;
             animation: fadeIn 0.3s ease;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
         }
         #dialogo-container .texto {
             color: #fff;
-            font-size: 20px;
+            font-size: 22px;
             font-weight: 500;
         }
         #dialogo-container .nome {
             color: #00d4ff;
             font-size: 14px;
             font-weight: bold;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        /* MENSAGEM SISTEMA */
+        #mensagem-sistema {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            padding: 10px 25px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            z-index: 12;
+            display: none;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 400;
+            animation: fadeIn 0.2s ease;
+            text-align: center;
+            max-width: 80%;
+            pointer-events: none;
         }
 
         /* TELA DE VITÓRIA */
@@ -271,44 +331,65 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(0, 0, 0, 0.92);
             backdrop-filter: blur(15px);
             z-index: 200;
             display: none;
             justify-content: center;
             align-items: center;
-            animation: fadeIn 0.5s ease;
+            animation: fadeIn 0.6s ease;
         }
         #vitoria-overlay.aberta {
             display: flex;
         }
         #vitoria-container {
             text-align: center;
-            padding: 40px;
-            max-width: 500px;
+            padding: 50px;
+            max-width: 550px;
+            background: linear-gradient(145deg, #1a2a3a, #0d1a26);
+            border-radius: 40px;
+            border: 1px solid rgba(255, 215, 0, 0.15);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.9);
         }
         #vitoria-container .titulo {
-            font-size: 48px;
-            color: #ffd700;
-            margin-bottom: 10px;
+            font-size: 56px;
+            margin-bottom: 5px;
         }
         #vitoria-container .subtitulo {
-            font-size: 24px;
-            color: #fff;
+            font-size: 28px;
+            color: #ffd700;
+            font-weight: bold;
             margin-bottom: 20px;
         }
         #vitoria-container .stats {
             color: rgba(255, 255, 255, 0.8);
             font-size: 18px;
-            line-height: 2;
+            line-height: 2.2;
+            text-align: left;
+            padding: 0 20px;
         }
-        #vitoria-container .stats span {
+        #vitoria-container .stats .stat-row {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 2px 0;
+        }
+        #vitoria-container .stats .stat-row .label {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        #vitoria-container .stats .stat-row .value {
             color: #ffd700;
             font-weight: bold;
         }
+        #vitoria-container .stats .stat-row .value.green {
+            color: #00ff88;
+        }
+        #vitoria-container .stats .stat-row .value.red {
+            color: #ff4444;
+        }
         .btn-reiniciar {
             margin-top: 30px;
-            padding: 15px 50px;
+            padding: 16px 60px;
             border-radius: 30px;
             border: none;
             background: linear-gradient(135deg, #00d4ff, #0088ff);
@@ -317,81 +398,67 @@
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s ease;
+            font-family: 'Segoe UI', Arial, sans-serif;
         }
         .btn-reiniciar:hover {
             transform: scale(1.05);
-            box-shadow: 0 5px 30px rgba(0, 136, 255, 0.5);
+            box-shadow: 0 5px 35px rgba(0, 136, 255, 0.5);
         }
 
-        /* CONTROLES (mobile) */
-        #controles-mobile {
+        /* CONTROLES - PC */
+        #controles-info {
             position: fixed;
             bottom: 80px;
-            left: 0;
-            right: 0;
-            display: none;
-            justify-content: space-between;
-            padding: 0 20px;
-            z-index: 5;
+            right: 30px;
+            z-index: 8;
+            color: rgba(255, 255, 255, 0.2);
+            font-size: 12px;
+            text-align: right;
+            line-height: 1.8;
             pointer-events: none;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            letter-spacing: 0.5px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px 16px;
+            border-radius: 12px;
+            backdrop-filter: blur(2px);
+            border: 1px solid rgba(255, 255, 255, 0.03);
         }
-        #joystick-area {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            pointer-events: auto;
-            touch-action: none;
-            position: relative;
-        }
-        #joystick-knob {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.3);
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            pointer-events: none;
-        }
-        #btn-coletar {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: rgba(0, 212, 255, 0.3);
-            border: 2px solid rgba(0, 212, 255, 0.5);
-            color: #fff;
-            font-size: 30px;
-            pointer-events: auto;
-            touch-action: manipulation;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(4px);
-        }
-        #btn-coletar:active {
-            transform: scale(0.9);
-            background: rgba(0, 212, 255, 0.5);
+        #controles-info .key {
+            color: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.06);
+            padding: 0 8px;
+            border-radius: 4px;
+            font-weight: bold;
         }
 
+        /* RESPONSIVO */
         @media (max-width: 768px) {
-            #controles-mobile {
-                display: flex;
+            #controles-info {
+                display: none;
             }
             .hud-item {
-                font-size: 14px;
+                font-size: 13px;
                 padding: 4px 10px;
             }
+            #hud-center {
+                display: none;
+            }
             #barra-poluicao-container {
-                width: 80%;
-                height: 10px;
+                width: 70%;
+                height: 12px;
                 bottom: 20px;
             }
+            #barra-poluicao-label {
+                bottom: 38px;
+                font-size: 10px;
+            }
             #dialogo-container .texto {
-                font-size: 16px;
+                font-size: 17px;
+            }
+            #dialogo-container {
+                padding: 12px 20px;
+                bottom: 60px;
             }
             #loja-container {
                 padding: 20px;
@@ -400,34 +467,58 @@
                 grid-template-columns: repeat(2, 1fr);
                 gap: 10px;
             }
+            #loja-container h2 {
+                font-size: 24px;
+            }
+            #vitoria-container {
+                padding: 30px 20px;
+                margin: 20px;
+            }
+            #vitoria-container .titulo {
+                font-size: 40px;
+            }
+            #vitoria-container .subtitulo {
+                font-size: 22px;
+            }
+            #vitoria-container .stats {
+                font-size: 15px;
+                padding: 0 10px;
+            }
         }
 
         @media (max-width: 480px) {
             #hud {
-                padding: 10px 15px;
+                padding: 8px 12px;
             }
             .hud-item {
-                font-size: 12px;
+                font-size: 11px;
                 padding: 3px 8px;
             }
-            #loja-container h2 {
-                font-size: 24px;
-            }
             .loja-item .emoji {
-                font-size: 30px;
+                font-size: 32px;
+            }
+            .loja-item .nome {
+                font-size: 13px;
+            }
+            #barra-poluicao-container {
+                width: 85%;
+                height: 10px;
+            }
+            #dialogo-container .texto {
+                font-size: 14px;
             }
         }
 
         /* Scroll da loja */
         #loja-container::-webkit-scrollbar {
-            width: 6px;
+            width: 4px;
         }
         #loja-container::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.02);
             border-radius: 10px;
         }
         #loja-container::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
             border-radius: 10px;
         }
     </style>
@@ -437,13 +528,17 @@
     <!-- HUD -->
     <div id="hud">
         <div id="hud-left">
-            <div class="hud-item"><span class="icon">🪙</span> <span id="moedas-display">0</span></div>
-            <div class="hud-item"><span class="icon">📦</span> <span id="lixo-display">0</span></div>
+            <div class="hud-item"><span class="icon">🪙</span> <span class="valor" id="moedas-display">0</span></div>
+            <div class="hud-item"><span class="icon">🗑️</span> <span id="lixo-display">0</span></div>
+        </div>
+        <div id="hud-center">
+            <div class="hud-item"><span class="icon">🔄</span> Limpeza <span class="valor-limpeza" id="limpezas-display">0</span>/15</div>
         </div>
         <div id="hud-right">
-            <div class="hud-item"><span class="icon">🔄</span> Limpezas: <span id="limpezas-display">0</span>/15</div>
             <div class="hud-item"><span class="icon">⏱️</span> <span id="tempo-display">00:00</span></div>
-            <div class="hud-item" style="cursor:pointer;pointer-events:auto;" id="btn-abrir-loja">🏪 Loja [TAB]</div>
+            <div class="hud-item" style="cursor:pointer;pointer-events:auto;background:rgba(0,212,255,0.15);border-color:rgba(0,212,255,0.2);" id="btn-abrir-loja">
+                <span class="icon">🏪</span> Loja [TAB]
+            </div>
         </div>
     </div>
 
@@ -451,7 +546,10 @@
     <div id="barra-poluicao-container">
         <div id="barra-poluicao"></div>
     </div>
-    <div id="barra-poluicao-label">🧹 Limpeza do Aquário</div>
+    <div id="barra-poluicao-label">🧹 Nível de Poluição</div>
+
+    <!-- Mensagem Sistema -->
+    <div id="mensagem-sistema"></div>
 
     <!-- Diálogo -->
     <div id="dialogo-container">
@@ -459,11 +557,19 @@
         <div class="texto" id="dialogo-texto">Olá!</div>
     </div>
 
+    <!-- Controles Info -->
+    <div id="controles-info">
+        <span class="key">W A S D</span> Mover<br>
+        <span class="key">Espaço / E</span> Coletar<br>
+        <span class="key">Q / Shift</span> Subir/Descer<br>
+        <span class="key">TAB</span> Loja
+    </div>
+
     <!-- Loja -->
     <div id="loja-overlay">
         <div id="loja-container">
             <h2>🏪 Loja do Aquário</h2>
-            <div class="subtitle">Compre upgrades para limpar mais rápido!</div>
+            <div class="subtitle">✦ Compre upgrades para limpar mais rápido ✦</div>
             <div id="loja-moedas">🪙 <span id="loja-moedas-valor">0</span> moedas</div>
             <div class="loja-grid" id="loja-grid">
                 <!-- Gerado via JS -->
@@ -477,50 +583,39 @@
         <div id="vitoria-container">
             <div class="titulo">🎉✨</div>
             <div class="subtitulo">Aquário Limpo!</div>
-            <div class="stats">
-                <div>🪙 Moedas: <span id="vitoria-moedas">0</span></div>
-                <div>🔄 Limpezas: <span id="vitoria-limpezas">0</span></div>
-                <div>⏱️ Tempo: <span id="vitoria-tempo">00:00</span></div>
-                <div>🏎️ Velocidade: <span id="vitoria-velocidade">❌</span></div>
-                <div>💰 Ímã: <span id="vitoria-ima">❌</span></div>
-                <div>🔍 Detector: <span id="vitoria-detector">❌</span></div>
-                <div>✨ Sorte: <span id="vitoria-sorte">❌</span></div>
+            <div class="stats" id="vitoria-stats">
+                <!-- Gerado via JS -->
             </div>
             <button class="btn-reiniciar" id="btn-reiniciar">🔄 Jogar Novamente</button>
         </div>
     </div>
 
-    <!-- Controles Mobile -->
-    <div id="controles-mobile">
-        <div id="joystick-area">
-            <div id="joystick-knob"></div>
-        </div>
-        <button id="btn-coletar">🗑️</button>
-    </div>
-
-    <!-- THREE.JS CDN -->
+    <!-- THREE.JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js">
     </script>
 
     <script>
         // =====================================================================
-        // 🐟 AQUÁRIO LIMPO - CÓDIGO COMPLETO
+        // 🐟 AQUÁRIO LIMPO - VERSÃO PC COMPLETA
         // =====================================================================
 
         // ---------- CONFIGURAÇÕES ----------
         const CONFIG = {
             LIMPECAS_PARA_VENCER: 15,
             LIXO_POR_LIMPECA: 20,
-            CAPACIDADE_MAX_LIXO: 50,
-            VELOCIDADE_BASE: 6,
-            RAIO_COLETA: 2.5,
-            INTERVALO_LIXO_INICIAL: 2.5,
-            INTERVALO_LIXO_MINIMO: 0.6,
-            TAMANHO_AQUARIO_X: 14,
-            TAMANHO_AQUARIO_Z: 10,
-            ALTURA_AGUA: 6,
+            CAPACIDADE_MAX_LIXO: 60,
+            VELOCIDADE_BASE: 7,
+            VELOCIDADE_VERTICAL: 4,
+            RAIO_COLETA: 3.0,
+            INTERVALO_LIXO_INICIAL: 2.0,
+            INTERVALO_LIXO_MINIMO: 0.4,
+            TAMANHO_AQUARIO_X: 28, // 4x maior
+            TAMANHO_AQUARIO_Z: 20, // 4x maior
+            ALTURA_AGUA: 10, // 4x maior
             PROFUNDIDADE_MIN: 1,
-            PROFUNDIDADE_MAX: 7,
+            PROFUNDIDADE_MAX: 9,
+            CAMERA_OFFSET: 14,
+            CAMERA_ALTURA: 10,
         };
 
         // ---------- ESTADO DO JOGO ----------
@@ -544,6 +639,8 @@
             coletando: false,
             dialogoAtivo: false,
             lojaAberta: false,
+            cameraSmoothness: 0.04,
+            targetCamPos: new THREE.Vector3(),
         };
 
         // ---------- REFERÊNCIAS DOM ----------
@@ -555,33 +652,25 @@
             barra: document.getElementById('barra-poluicao'),
             dialogo: document.getElementById('dialogo-container'),
             dialogoTexto: document.getElementById('dialogo-texto'),
+            mensagem: document.getElementById('mensagem-sistema'),
             lojaOverlay: document.getElementById('loja-overlay'),
             lojaMoedas: document.getElementById('loja-moedas-valor'),
             lojaGrid: document.getElementById('loja-grid'),
             vitoriaOverlay: document.getElementById('vitoria-overlay'),
+            vitoriaStats: document.getElementById('vitoria-stats'),
             btnAbrirLoja: document.getElementById('btn-abrir-loja'),
             btnFecharLoja: document.getElementById('btn-fechar-loja'),
             btnReiniciar: document.getElementById('btn-reiniciar'),
-            btnColetar: document.getElementById('btn-coletar'),
-            joystickArea: document.getElementById('joystick-area'),
-            joystickKnob: document.getElementById('joystick-knob'),
-            vitoriaMoedas: document.getElementById('vitoria-moedas'),
-            vitoriaLimpezas: document.getElementById('vitoria-limpezas'),
-            vitoriaTempo: document.getElementById('vitoria-tempo'),
-            vitoriaVelocidade: document.getElementById('vitoria-velocidade'),
-            vitoriaIma: document.getElementById('vitoria-ima'),
-            vitoriaDetector: document.getElementById('vitoria-detector'),
-            vitoriaSorte: document.getElementById('vitoria-sorte'),
         };
 
         // ---------- THREE.JS CENA ----------
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x0a3d5e);
-        scene.fog = new THREE.Fog(0x0a3d5e, 20, 35);
+        scene.background = new THREE.Color(0x0a2a4a);
+        scene.fog = new THREE.Fog(0x0a2a4a, 30, 60);
 
-        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 50);
-        camera.position.set(0, 8, 12);
-        camera.lookAt(0, 3, 0);
+        const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 80);
+        camera.position.set(0, CONFIG.CAMERA_ALTURA, CONFIG.CAMERA_OFFSET);
+        camera.lookAt(0, 0, 0);
 
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -590,42 +679,46 @@
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
         renderer.toneMappingExposure = 1.2;
+        renderer.outputEncoding = THREE.sRGBEncoding;
         document.body.prepend(renderer.domElement);
 
         // ---------- LUZES ----------
-        const ambientLight = new THREE.AmbientLight(0x446688, 0.4);
+        const ambientLight = new THREE.AmbientLight(0x4488aa, 0.5);
         scene.add(ambientLight);
 
-        const sunLight = new THREE.DirectionalLight(0xffeedd, 1.2);
-        sunLight.position.set(10, 15, 5);
+        const sunLight = new THREE.DirectionalLight(0xffeedd, 1.5);
+        sunLight.position.set(15, 20, 10);
         sunLight.castShadow = true;
-        sunLight.shadow.mapSize.width = 1024;
-        sunLight.shadow.mapSize.height = 1024;
+        sunLight.shadow.mapSize.width = 2048;
+        sunLight.shadow.mapSize.height = 2048;
         sunLight.shadow.camera.near = 0.1;
-        sunLight.shadow.camera.far = 30;
-        sunLight.shadow.camera.left = -15;
-        sunLight.shadow.camera.right = 15;
-        sunLight.shadow.camera.top = 15;
-        sunLight.shadow.camera.bottom = -15;
+        sunLight.shadow.camera.far = 50;
+        sunLight.shadow.camera.left = -25;
+        sunLight.shadow.camera.right = 25;
+        sunLight.shadow.camera.top = 25;
+        sunLight.shadow.camera.bottom = -25;
         scene.add(sunLight);
 
-        const fillLight = new THREE.DirectionalLight(0x4488ff, 0.3);
-        fillLight.position.set(-5, 5, -10);
-        scene.add(fillLight);
+        const rimLight = new THREE.DirectionalLight(0x4488ff, 0.4);
+        rimLight.position.set(-10, 5, -15);
+        scene.add(rimLight);
 
-        const pointLight = new THREE.PointLight(0x00ddff, 0.2, 20);
-        pointLight.position.set(0, 8, 0);
-        scene.add(pointLight);
+        const bottomLight = new THREE.PointLight(0x00aaff, 0.3, 30);
+        bottomLight.position.set(0, -2, 0);
+        scene.add(bottomLight);
 
-        // ---------- AQUÁRIO ----------
+        // ---------- AQUÁRIO (4x maior) ----------
         function criarAquario() {
             const grupo = new THREE.Group();
+            const W = CONFIG.TAMANHO_AQUARIO_X;
+            const D = CONFIG.TAMANHO_AQUARIO_Z;
+            const H = CONFIG.ALTURA_AGUA;
 
             // Chão (areia)
-            const geoChao = new THREE.PlaneGeometry(CONFIG.TAMANHO_AQUARIO_X + 4, CONFIG.TAMANHO_AQUARIO_Z + 4);
+            const geoChao = new THREE.PlaneGeometry(W + 6, D + 6);
             const matChao = new THREE.MeshStandardMaterial({
                 color: 0xc2a67a,
-                roughness: 0.9,
+                roughness: 0.95,
                 metalness: 0.0,
             });
             const chao = new THREE.Mesh(geoChao, matChao);
@@ -634,110 +727,155 @@
             chao.receiveShadow = true;
             grupo.add(chao);
 
-            // Fundo do aquário (vidro)
-            const geoFundo = new THREE.PlaneGeometry(CONFIG.TAMANHO_AQUARIO_X, CONFIG.TAMANHO_AQUARIO_Z);
+            // Fundo do aquário (texturizado)
             const matFundo = new THREE.MeshStandardMaterial({
                 color: 0x8B7355,
-                roughness: 0.7,
-                metalness: 0.1,
+                roughness: 0.8,
+                metalness: 0.0,
                 transparent: true,
-                opacity: 0.3,
+                opacity: 0.2,
             });
+            const geoFundo = new THREE.PlaneGeometry(W - 0.5, D - 0.5);
             const fundo = new THREE.Mesh(geoFundo, matFundo);
             fundo.rotation.x = -Math.PI / 2;
             fundo.position.y = 0.2;
             grupo.add(fundo);
 
-            // Paredes de vidro (invisíveis com bordas)
+            // Paredes de vidro
             const vidroMat = new THREE.MeshPhysicalMaterial({
                 color: 0x88ccff,
                 transparent: true,
-                opacity: 0.08,
+                opacity: 0.06,
                 roughness: 0.0,
                 metalness: 0.0,
                 side: THREE.DoubleSide,
                 envMapIntensity: 0.5,
             });
 
-            const altura = CONFIG.ALTURA_AGUA;
-            const largura = CONFIG.TAMANHO_AQUARIO_X;
-            const profundidade = CONFIG.TAMANHO_AQUARIO_Z;
+            const vidroBorda = new THREE.MeshPhysicalMaterial({
+                color: 0x88ccff,
+                transparent: true,
+                opacity: 0.15,
+                roughness: 0.1,
+                metalness: 0.1,
+                side: THREE.DoubleSide,
+            });
 
             // Paredes
             const paredes = [
-                { w: largura, h: altura, x: 0, z: -profundidade / 2, ry: 0 },
-                { w: largura, h: altura, x: 0, z: profundidade / 2, ry: 0 },
-                { w: profundidade, h: altura, x: -largura / 2, z: 0, ry: Math.PI / 2 },
-                { w: profundidade, h: altura, x: largura / 2, z: 0, ry: Math.PI / 2 },
+                { w: W, h: H, x: 0, z: -D / 2, ry: 0 },
+                { w: W, h: H, x: 0, z: D / 2, ry: 0 },
+                { w: D, h: H, x: -W / 2, z: 0, ry: Math.PI / 2 },
+                { w: D, h: H, x: W / 2, z: 0, ry: Math.PI / 2 },
             ];
 
             paredes.forEach(p => {
                 const geo = new THREE.PlaneGeometry(p.w, p.h);
                 const mesh = new THREE.Mesh(geo, vidroMat);
-                mesh.position.set(p.x, altura / 2 + 0.5, p.z);
+                mesh.position.set(p.x, H / 2 + 0.5, p.z);
                 mesh.rotation.y = p.ry;
                 mesh.receiveShadow = true;
                 grupo.add(mesh);
+
+                // Borda da parede
+                const borda = new THREE.Mesh(
+                    new THREE.BoxGeometry(p.w + 0.1, 0.15, 0.15),
+                    vidroBorda
+                );
+                borda.position.set(p.x, H + 0.5, p.z);
+                borda.rotation.y = p.ry;
+                grupo.add(borda);
+
+                const bordaBaixo = new THREE.Mesh(
+                    new THREE.BoxGeometry(p.w + 0.1, 0.15, 0.15),
+                    vidroBorda
+                );
+                bordaBaixo.position.set(p.x, 0.5, p.z);
+                bordaBaixo.rotation.y = p.ry;
+                grupo.add(bordaBaixo);
             });
 
-            // Bordas (molduras)
-            const bordaMat = new THREE.MeshStandardMaterial({
+            // Cantos (colunas)
+            const colunaMat = new THREE.MeshStandardMaterial({
                 color: 0x4a6a8a,
                 roughness: 0.3,
-                metalness: 0.5,
+                metalness: 0.6,
             });
-
-            // Cantos e bordas
-            const bordas = [
-                { x: -largura / 2, z: -profundidade / 2 },
-                { x: largura / 2, z: -profundidade / 2 },
-                { x: -largura / 2, z: profundidade / 2 },
-                { x: largura / 2, z: profundidade / 2 },
+            const cantos = [
+                [-W / 2, -D / 2],
+                [W / 2, -D / 2],
+                [-W / 2, D / 2],
+                [W / 2, D / 2]
             ];
-            bordas.forEach(b => {
-                const geo = new THREE.BoxGeometry(0.2, altura + 0.5, 0.2);
-                const mesh = new THREE.Mesh(geo, bordaMat);
-                mesh.position.set(b.x, altura / 2 + 0.5, b.z);
-                grupo.add(mesh);
+            cantos.forEach(c => {
+                const col = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.15, 0.2, H + 0.5, 8),
+                    colunaMat
+                );
+                col.position.set(c[0], H / 2 + 0.5, c[1]);
+                grupo.add(col);
             });
 
-            // Decoração: plantas
+            // Decoração: plantas (mais e maiores)
             const plantaMat = new THREE.MeshStandardMaterial({
                 color: 0x2d8a4e,
                 roughness: 0.8,
             });
-            for (let i = 0; i < 12; i++) {
-                const geo = new THREE.CylinderGeometry(0.1, 0.2, 0.5 + Math.random() * 0.5);
-                const planta = new THREE.Mesh(geo, plantaMat);
+            const plantaMat2 = new THREE.MeshStandardMaterial({
+                color: 0x3daa5e,
+                roughness: 0.7,
+            });
+            for (let i = 0; i < 30; i++) {
+                const altura = 0.5 + Math.random() * 1.5;
+                const geo = new THREE.CylinderGeometry(0.05, 0.25, altura, 6);
+                const planta = new THREE.Mesh(geo, Math.random() > 0.5 ? plantaMat : plantaMat2);
                 const angulo = Math.random() * Math.PI * 2;
-                const raio = 2 + Math.random() * (CONFIG.TAMANHO_AQUARIO_X / 2 - 2);
+                const raio = 2 + Math.random() * (W / 2 - 2.5);
                 planta.position.set(
                     Math.cos(angulo) * raio,
-                    0.3,
-                    Math.sin(angulo) * raio * 0.7
+                    0.2 + altura / 2,
+                    Math.sin(angulo) * raio * (D / W)
                 );
-                planta.rotation.x = (Math.random() - 0.5) * 0.3;
-                planta.rotation.z = (Math.random() - 0.5) * 0.3;
+                planta.rotation.x = (Math.random() - 0.5) * 0.4;
+                planta.rotation.z = (Math.random() - 0.5) * 0.4;
+                planta.receiveShadow = true;
                 grupo.add(planta);
+
+                // Folhas no topo
+                if (Math.random() > 0.5) {
+                    const folha = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.15 + Math.random() * 0.2, 5, 5),
+                        plantaMat2
+                    );
+                    folha.position.copy(planta.position);
+                    folha.position.y += altura / 2 + 0.1;
+                    folha.scale.set(1, 0.5 + Math.random() * 0.5, 1);
+                    grupo.add(folha);
+                }
             }
 
-            // Pedras
+            // Pedras (mais)
             const pedraMat = new THREE.MeshStandardMaterial({
                 color: 0x7a7a7a,
                 roughness: 0.9,
             });
-            for (let i = 0; i < 8; i++) {
-                const geo = new THREE.DodecahedronGeometry(0.3 + Math.random() * 0.4);
-                const pedra = new THREE.Mesh(geo, pedraMat);
+            const pedraMat2 = new THREE.MeshStandardMaterial({
+                color: 0x8a8a7a,
+                roughness: 0.85,
+            });
+            for (let i = 0; i < 20; i++) {
+                const geo = new THREE.DodecahedronGeometry(0.4 + Math.random() * 0.6);
+                const pedra = new THREE.Mesh(geo, Math.random() > 0.5 ? pedraMat : pedraMat2);
                 const angulo = Math.random() * Math.PI * 2;
-                const raio = 1.5 + Math.random() * (CONFIG.TAMANHO_AQUARIO_X / 2 - 2);
+                const raio = 1.5 + Math.random() * (W / 2 - 2);
                 pedra.position.set(
                     Math.cos(angulo) * raio,
-                    0.2 + Math.random() * 0.2,
-                    Math.sin(angulo) * raio * 0.7
+                    0.15 + Math.random() * 0.2,
+                    Math.sin(angulo) * raio * (D / W)
                 );
                 pedra.rotation.set(Math.random() * 6, Math.random() * 6, Math.random() * 6);
-                pedra.scale.set(1, 0.6 + Math.random() * 0.4, 0.8);
+                pedra.scale.set(1, 0.5 + Math.random() * 0.5, 0.7 + Math.random() * 0.3);
+                pedra.receiveShadow = true;
                 grupo.add(pedra);
             }
 
@@ -747,41 +885,42 @@
         const aquario = criarAquario();
         scene.add(aquario);
 
-        // ---------- ÁGUA (com cor dinâmica) ----------
+        // ---------- ÁGUA ----------
         const aguaMat = new THREE.MeshPhysicalMaterial({
             color: 0x0088cc,
             transparent: true,
-            opacity: 0.25,
+            opacity: 0.2,
             roughness: 0.0,
             metalness: 0.0,
             envMapIntensity: 0.3,
             clearcoat: 0.1,
         });
         const aguaGeo = new THREE.BoxGeometry(
-            CONFIG.TAMANHO_AQUARIO_X - 0.5,
-            CONFIG.ALTURA_AGUA - 0.5,
-            CONFIG.TAMANHO_AQUARIO_Z - 0.5
+            CONFIG.TAMANHO_AQUARIO_X - 1,
+            CONFIG.ALTURA_AGUA - 0.8,
+            CONFIG.TAMANHO_AQUARIO_Z - 1
         );
         const aguaMesh = new THREE.Mesh(aguaGeo, aguaMat);
         aguaMesh.position.set(0, CONFIG.ALTURA_AGUA / 2 + 0.5, 0);
         scene.add(aguaMesh);
 
-        // ---------- PEIXE (jogador) ----------
+        // ---------- PEIXE ----------
         function criarPeixe() {
             const grupo = new THREE.Group();
 
-            // Corpo (elipsoide)
+            // Corpo
             const corpoMat = new THREE.MeshStandardMaterial({
                 color: 0xff6633,
-                roughness: 0.3,
-                metalness: 0.1,
+                roughness: 0.25,
+                metalness: 0.05,
                 emissive: 0xff4400,
                 emissiveIntensity: 0.05,
             });
-            const corpoGeo = new THREE.SphereGeometry(0.7, 16, 16);
+            const corpoGeo = new THREE.SphereGeometry(0.8, 18, 18);
             const corpo = new THREE.Mesh(corpoGeo, corpoMat);
-            corpo.scale.set(1.4, 0.8, 0.9);
+            corpo.scale.set(1.5, 0.85, 0.95);
             corpo.position.z = -0.2;
+            corpo.castShadow = true;
             grupo.add(corpo);
 
             // Cauda
@@ -790,36 +929,14 @@
                 roughness: 0.4,
                 metalness: 0.05,
             });
-            const caudaGeo = new THREE.ConeGeometry(0.7, 0.8, 6);
+            const caudaGeo = new THREE.ConeGeometry(0.8, 0.9, 6);
             const cauda = new THREE.Mesh(caudaGeo, caudaMat);
-            cauda.position.set(0, 0, -0.9);
+            cauda.position.set(0, 0, -1.0);
             cauda.rotation.x = Math.PI / 2;
-            cauda.scale.set(1, 0.3, 0.4);
+            cauda.scale.set(1, 0.25, 0.4);
             grupo.add(cauda);
 
-            // Olhos
-            const olhoMat = new THREE.MeshStandardMaterial({
-                color: 0xffffff,
-                roughness: 0.1,
-                metalness: 0.0,
-            });
-            const pupilaMat = new THREE.MeshStandardMaterial({
-                color: 0x111111,
-                roughness: 0.0,
-                metalness: 0.0,
-            });
-
-            for (let lado = -1; lado <= 1; lado += 2) {
-                const olho = new THREE.Mesh(new THREE.SphereGeometry(0.15, 8, 8), olhoMat);
-                olho.position.set(lado * 0.45, 0.2, 0.35);
-                grupo.add(olho);
-
-                const pupila = new THREE.Mesh(new THREE.SphereGeometry(0.07, 8, 8), pupilaMat);
-                pupila.position.set(lado * 0.5, 0.2, 0.42);
-                grupo.add(pupila);
-            }
-
-            // Barbatanas
+            // Barbatana dorsal
             const barbatanaMat = new THREE.MeshStandardMaterial({
                 color: 0xff6633,
                 roughness: 0.5,
@@ -827,44 +944,77 @@
                 transparent: true,
                 opacity: 0.8,
             });
-
-            // Barbatana dorsal
-            const dorsalGeo = new THREE.ConeGeometry(0.3, 0.5, 4);
-            const dorsal = new THREE.Mesh(dorsalGeo, barbatanaMat);
-            dorsal.position.set(0, 0.55, -0.2);
+            const dorsal = new THREE.Mesh(
+                new THREE.ConeGeometry(0.35, 0.6, 4),
+                barbatanaMat
+            );
+            dorsal.position.set(0, 0.6, -0.2);
             dorsal.scale.set(1, 1, 0.3);
             dorsal.rotation.x = 0.2;
             grupo.add(dorsal);
 
             // Barbatanas peitorais
             for (let lado = -1; lado <= 1; lado += 2) {
-                const peitoral = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.3, 4), barbatanaMat);
-                peitoral.position.set(lado * 0.7, -0.1, -0.1);
-                peitoral.scale.set(1, 0.3, 0.5);
-                peitoral.rotation.z = lado * 0.4;
+                const peitoral = new THREE.Mesh(
+                    new THREE.ConeGeometry(0.2, 0.35, 4),
+                    barbatanaMat
+                );
+                peitoral.position.set(lado * 0.75, -0.1, -0.1);
+                peitoral.scale.set(1, 0.25, 0.5);
+                peitoral.rotation.z = lado * 0.5;
                 peitoral.rotation.x = 0.3;
                 grupo.add(peitoral);
+            }
+
+            // Olhos
+            const olhoMat = new THREE.MeshStandardMaterial({
+                color: 0xffffff,
+                roughness: 0.05,
+                metalness: 0.0,
+            });
+            const pupilaMat = new THREE.MeshStandardMaterial({
+                color: 0x111111,
+                roughness: 0.0,
+                metalness: 0.0,
+            });
+            for (let lado = -1; lado <= 1; lado += 2) {
+                const olho = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.16, 8, 8),
+                    olhoMat
+                );
+                olho.position.set(lado * 0.5, 0.2, 0.4);
+                grupo.add(olho);
+
+                const pupila = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.07, 8, 8),
+                    pupilaMat
+                );
+                pupila.position.set(lado * 0.55, 0.2, 0.48);
+                grupo.add(pupila);
             }
 
             // Brilho
             const brilhoMat = new THREE.MeshStandardMaterial({
                 color: 0x88ddff,
                 emissive: 0x88ddff,
-                emissiveIntensity: 0.1,
+                emissiveIntensity: 0.08,
                 transparent: true,
-                opacity: 0.2,
+                opacity: 0.15,
             });
-            const brilho = new THREE.Mesh(new THREE.SphereGeometry(0.9, 8, 8), brilhoMat);
-            brilho.scale.set(1.5, 1, 1);
+            const brilho = new THREE.Mesh(
+                new THREE.SphereGeometry(0.95, 8, 8),
+                brilhoMat
+            );
+            brilho.scale.set(1.6, 1.1, 1.1);
             brilho.position.z = -0.2;
             grupo.add(brilho);
 
-            grupo.scale.set(0.8, 0.8, 0.8);
+            grupo.scale.set(0.7, 0.7, 0.7);
             return grupo;
         }
 
         const peixe = criarPeixe();
-        peixe.position.set(0, 3, 0);
+        peixe.position.set(0, CONFIG.ALTURA_AGUA / 2, 0);
         scene.add(peixe);
 
         // ---------- LIXO ----------
@@ -877,63 +1027,66 @@
             switch (tipo || Math.floor(Math.random() * 4)) {
                 case 0: // Garrafa PET
                     mat = new THREE.MeshStandardMaterial({ color: 0x44aa88, roughness: 0.3, metalness: 0.1 });
-                    const corpo = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.25, 0.6, 8), mat);
-                    corpo.position.y = 0.3;
+                    const corpo = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.28, 0.7, 8), mat);
+                    corpo.position.y = 0.35;
                     grupo.add(corpo);
-                    const gargalo = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.12, 0.15, 8), mat);
-                    gargalo.position.y = 0.7;
+                    const gargalo = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.12, 0.18, 8), mat);
+                    gargalo.position.y = 0.8;
                     grupo.add(gargalo);
-                    const tampa = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.05, 8),
+                    const tampa = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.06, 8),
                         new THREE.MeshStandardMaterial({ color: 0x00aa88, roughness: 0.5 }));
-                    tampa.position.y = 0.8;
+                    tampa.position.y = 0.92;
                     grupo.add(tampa);
                     break;
                 case 1: // Lata
                     mat = new THREE.MeshStandardMaterial({ color: 0xcc8844, roughness: 0.6, metalness: 0.4 });
-                    const lata = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.28, 0.5, 12), mat);
-                    lata.position.y = 0.25;
+                    const lata = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.32, 0.6, 12), mat);
+                    lata.position.y = 0.3;
                     grupo.add(lata);
-                    const lataTopo = new THREE.Mesh(new THREE.CircleGeometry(0.25, 12), mat);
+                    const lataTopo = new THREE.Mesh(new THREE.CircleGeometry(0.28, 12), mat);
                     lataTopo.rotation.x = -Math.PI / 2;
-                    lataTopo.position.y = 0.5;
+                    lataTopo.position.y = 0.6;
                     grupo.add(lataTopo);
+                    const lataFundo = new THREE.Mesh(new THREE.CircleGeometry(0.32, 12), mat);
+                    lataFundo.rotation.x = Math.PI / 2;
+                    lataFundo.position.y = 0.0;
+                    grupo.add(lataFundo);
                     break;
-                case 2: // Sacola plástica
+                case 2: // Sacola
                     mat = new THREE.MeshStandardMaterial({
-                        color: 0x888888,
+                        color: 0x999999,
                         roughness: 0.8,
                         metalness: 0.0,
                         transparent: true,
-                        opacity: 0.7,
+                        opacity: 0.6,
                         side: THREE.DoubleSide,
                     });
-                    for (let i = 0; i < 3; i++) {
-                        const saco = new THREE.Mesh(new THREE.CircleGeometry(0.2 + Math.random() * 0.1, 5), mat);
-                        saco.position.set((Math.random() - 0.5) * 0.4, Math.random() * 0.2, (Math.random() - 0.5) * 0.4);
+                    for (let i = 0; i < 4; i++) {
+                        const saco = new THREE.Mesh(new THREE.CircleGeometry(0.2 + Math.random() * 0.15, 5), mat);
+                        saco.position.set((Math.random() - 0.5) * 0.5, Math.random() * 0.3, (Math.random() - 0.5) * 0.5);
                         saco.rotation.set(Math.random() * 6, Math.random() * 6, Math.random() * 6);
                         grupo.add(saco);
                     }
                     break;
                 case 3: // Papelão
                     mat = new THREE.MeshStandardMaterial({ color: 0xbb9966, roughness: 0.9, metalness: 0.0 });
-                    const caixa = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.3, 0.4), mat);
-                    caixa.position.y = 0.15;
+                    const caixa = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.35, 0.5), mat);
+                    caixa.position.y = 0.18;
                     grupo.add(caixa);
-                    // Detalhes
                     const detMat = new THREE.MeshStandardMaterial({ color: 0xaa8855, roughness: 0.8 });
                     for (let i = 0; i < 2; i++) {
-                        const det = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.02, 0.02), detMat);
-                        det.position.set(0, 0.2, (i - 0.5) * 0.15);
+                        const det = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.02, 0.02), detMat);
+                        det.position.set(0, 0.25, (i - 0.5) * 0.18);
                         grupo.add(det);
                     }
                     break;
             }
 
-            grupo.scale.set(0.6 + Math.random() * 0.4, 0.6 + Math.random() * 0.4, 0.6 + Math.random() * 0.4);
+            grupo.scale.set(0.6 + Math.random() * 0.5, 0.6 + Math.random() * 0.5, 0.6 + Math.random() * 0.5);
             return grupo;
         }
 
-        // ---------- SISTEMA DE POOL DE LIXO ----------
+        // ---------- POOL DE LIXO ----------
         const poolLixo = [];
 
         function pegarLixoDoPool() {
@@ -945,11 +1098,10 @@
                     return poolLixo[i];
                 }
             }
-            // Criar novo
             const mesh = criarLixo();
             scene.add(mesh);
             mesh.visible = false;
-            const obj = { mesh, ativo: false, especial: false, rb: null };
+            const obj = { mesh, ativo: false, especial: false, velocidadeQueda: 0.5, rotacaoVel: 0 };
             poolLixo.push(obj);
             return obj;
         }
@@ -957,8 +1109,13 @@
         function retornarLixoAoPool(obj) {
             obj.ativo = false;
             obj.mesh.visible = false;
-            obj.mesh.position.set(0, -10, 0);
+            obj.mesh.position.set(0, -20, 0);
             estado.lixoAtivo = estado.lixoAtivo.filter(l => l !== obj);
+            // Remover glow se existir
+            if (obj.mesh.children.length > 0) {
+                const glow = obj.mesh.children.find(c => c.material && c.material.type === 'MeshBasicMaterial');
+                if (glow) obj.mesh.remove(glow);
+            }
         }
 
         // ---------- GERADOR DE LIXO ----------
@@ -969,62 +1126,52 @@
             const obj = pegarLixoDoPool();
             if (!obj) return;
 
-            const posX = (Math.random() - 0.5) * (CONFIG.TAMANHO_AQUARIO_X - 2);
-            const posZ = (Math.random() - 0.5) * (CONFIG.TAMANHO_AQUARIO_Z - 2);
-            obj.mesh.position.set(posX, CONFIG.ALTURA_AGUA + 0.5 + Math.random() * 1, posZ);
+            const W = CONFIG.TAMANHO_AQUARIO_X;
+            const D = CONFIG.TAMANHO_AQUARIO_Z;
+            const posX = (Math.random() - 0.5) * (W - 3);
+            const posZ = (Math.random() - 0.5) * (D - 3);
+            obj.mesh.position.set(posX, CONFIG.ALTURA_AGUA + 1 + Math.random() * 1.5, posZ);
             obj.mesh.rotation.set(Math.random() * 6, Math.random() * 6, Math.random() * 6);
             obj.mesh.scale.set(
-                0.6 + Math.random() * 0.6,
-                0.6 + Math.random() * 0.6,
-                0.6 + Math.random() * 0.6
+                0.5 + Math.random() * 0.7,
+                0.5 + Math.random() * 0.7,
+                0.5 + Math.random() * 0.7
             );
             obj.mesh.visible = true;
             obj.especial = Math.random() < (estado.upgradeSorte ? 0.3 : 0.08);
 
             // Brilho especial
             if (obj.especial) {
-                const brilho = obj.mesh.children.find(c => c.material && c.material.emissive);
-                if (brilho) {
-                    brilho.material = new THREE.MeshStandardMaterial({
-                        color: 0xffd700,
-                        emissive: 0xffd700,
-                        emissiveIntensity: 0.5,
-                    });
-                }
-                // Adicionar glow
+                const glowMat = new THREE.MeshBasicMaterial({
+                    color: 0xffd700,
+                    transparent: true,
+                    opacity: 0.15,
+                });
                 const glow = new THREE.Mesh(
-                    new THREE.SphereGeometry(0.5, 6, 6),
-                    new THREE.MeshBasicMaterial({
-                        color: 0xffd700,
-                        transparent: true,
-                        opacity: 0.15,
-                    })
+                    new THREE.SphereGeometry(0.7, 6, 6),
+                    glowMat
                 );
                 obj.mesh.add(glow);
             }
 
-            obj.velocidadeQueda = 0.5 + Math.random() * 0.5;
-            obj.rotacaoVel = (Math.random() - 0.5) * 2;
+            obj.velocidadeQueda = 0.4 + Math.random() * 0.6;
+            obj.rotacaoVel = (Math.random() - 0.5) * 2.5;
 
             estado.lixoAtivo.push(obj);
             atualizarContadorLixo();
         }
 
-        // ---------- LOOP DE QUEDA DE LIXO ----------
+        // ---------- LOOP DE QUEDA ----------
         function atualizarLixo() {
             const delta = 1 / 60;
             for (let i = estado.lixoAtivo.length - 1; i >= 0; i--) {
                 const obj = estado.lixoAtivo[i];
                 if (!obj || !obj.ativo) continue;
 
-                // Cair
-                obj.mesh.position.y -= obj.velocidadeQueda * delta * 2;
-
-                // Rotacionar
+                obj.mesh.position.y -= obj.velocidadeQueda * delta * 2.5;
                 obj.mesh.rotation.x += obj.rotacaoVel * delta;
-                obj.mesh.rotation.z += obj.rotacaoVel * 0.5 * delta;
+                obj.mesh.rotation.z += obj.rotacaoVel * 0.6 * delta;
 
-                // Se chegou no chão
                 if (obj.mesh.position.y < 0.3) {
                     obj.mesh.position.y = 0.3;
                     obj.mesh.rotation.x = 0;
@@ -1034,7 +1181,7 @@
             }
         }
 
-        // ---------- COLETA DE LIXO ----------
+        // ---------- COLETA ----------
         function coletarLixo() {
             if (!estado.jogoAtivo || estado.jogoVencido) return;
             if (estado.coletando) return;
@@ -1054,7 +1201,6 @@
             }
 
             if (maisProximo) {
-                // Coletar!
                 const valor = maisProximo.especial ? 5 : 1;
                 let moedasGanhas = valor;
                 if (estado.upgradeIma) moedasGanhas = Math.floor(moedasGanhas * 1.5);
@@ -1062,27 +1208,19 @@
                 estado.moedas += moedasGanhas;
                 estado.lixoColetadoAtual++;
 
-                // Efeito visual
                 const pos = maisProximo.mesh.position.clone();
                 criarEfeitoColeta(pos, moedasGanhas, maisProximo.especial);
 
-                // Remover lixo
                 retornarLixoAoPool(maisProximo);
                 atualizarContadorLixo();
                 atualizarHUD();
 
-                // Verificar limpeza
                 if (estado.lixoColetadoAtual >= CONFIG.LIXO_POR_LIMPECA) {
                     completarLimpeza();
                 }
 
-                // Atualizar poluição
                 atualizarPoluicao();
 
-                // Som (simulado com vibração)
-                if (navigator.vibrate) navigator.vibrate(30);
-
-                // Mensagem
                 if (maisProximo.especial) {
                     mostrarDialogo('🐟', '✨ Lixo raro! +' + moedasGanhas + ' moedas!', 0.8);
                 }
@@ -1090,43 +1228,39 @@
                 mostrarMensagemSistema('Nenhum lixo por perto!', 0.5);
             }
 
-            setTimeout(() => { estado.coletando = false; }, 200);
+            setTimeout(() => { estado.coletando = false; }, 150);
         }
 
-        // ---------- EFEITO DE COLETA ----------
+        // ---------- EFEITO COLETA ----------
         function criarEfeitoColeta(pos, moedas, especial) {
-            // Partículas com sprites
             const cores = especial ? [0xffd700, 0xffaa00] : [0x00ff88, 0x44ddff];
-            for (let i = 0; i < 12; i++) {
-                const size = 0.05 + Math.random() * 0.1;
+            for (let i = 0; i < 15; i++) {
+                const size = 0.04 + Math.random() * 0.08;
                 const geo = new THREE.SphereGeometry(size, 4, 4);
                 const mat = new THREE.MeshBasicMaterial({
                     color: cores[Math.floor(Math.random() * cores.length)],
                     transparent: true,
-                    opacity: 0.8,
+                    opacity: 0.9,
                 });
                 const particula = new THREE.Mesh(geo, mat);
                 particula.position.copy(pos);
-                particula.position.x += (Math.random() - 0.5) * 0.5;
-                particula.position.z += (Math.random() - 0.5) * 0.5;
+                particula.position.x += (Math.random() - 0.5) * 0.6;
+                particula.position.z += (Math.random() - 0.5) * 0.6;
                 particula.position.y += 0.3;
                 scene.add(particula);
 
                 const vel = new THREE.Vector3(
-                    (Math.random() - 0.5) * 3,
-                    Math.random() * 4 + 1,
-                    (Math.random() - 0.5) * 3
+                    (Math.random() - 0.5) * 4,
+                    Math.random() * 5 + 1,
+                    (Math.random() - 0.5) * 4
                 );
-                let vida = 0.5 + Math.random() * 0.5;
+                let vida = 0.6 + Math.random() * 0.6;
 
                 function animarParticula() {
-                    if (vida <= 0) {
-                        scene.remove(particula);
-                        return;
-                    }
-                    vida -= 0.02;
+                    if (vida <= 0) { scene.remove(particula); return; }
+                    vida -= 0.015;
                     particula.position.add(vel.clone().multiplyScalar(0.02));
-                    vel.y -= 0.05;
+                    vel.y -= 0.06;
                     particula.material.opacity = vida;
                     particula.scale.multiplyScalar(0.99);
                     requestAnimationFrame(animarParticula);
@@ -1140,11 +1274,11 @@
             canvas.height = 64;
             const ctx = canvas.getContext('2d');
             ctx.fillStyle = especial ? '#ffd700' : '#00ff88';
-            ctx.font = 'bold 36px Arial';
+            ctx.font = 'bold 40px Arial';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.shadowColor = 'rgba(0,0,0,0.8)';
-            ctx.shadowBlur = 10;
+            ctx.shadowColor = 'rgba(0,0,0,0.9)';
+            ctx.shadowBlur = 12;
             ctx.fillText('+' + moedas, 64, 32);
 
             const texture = new THREE.CanvasTexture(canvas);
@@ -1155,20 +1289,18 @@
             });
             const sprite = new THREE.Sprite(spriteMat);
             sprite.position.copy(pos);
-            sprite.position.y += 0.5;
-            sprite.scale.set(1, 0.5, 1);
+            sprite.position.y += 0.6;
+            sprite.scale.set(1.2, 0.6, 1);
             scene.add(sprite);
 
             let vida = 1;
+
             function animarTexto() {
-                if (vida <= 0) {
-                    scene.remove(sprite);
-                    return;
-                }
-                vida -= 0.015;
-                sprite.position.y += 0.02;
+                if (vida <= 0) { scene.remove(sprite); return; }
+                vida -= 0.012;
+                sprite.position.y += 0.025;
                 sprite.material.opacity = vida;
-                sprite.scale.multiplyScalar(1.005);
+                sprite.scale.multiplyScalar(1.006);
                 requestAnimationFrame(animarTexto);
             }
             animarTexto();
@@ -1181,25 +1313,21 @@
 
             mostrarDialogo('🐟', '🧹 Limpeza #' + estado.limpezasCompletas + ' concluída!', 2);
 
-            // Aumentar dificuldade
             estado.nivelDificuldade++;
             estado.intervaloAtual = Math.max(
                 CONFIG.INTERVALO_LIXO_MINIMO,
-                CONFIG.INTERVALO_LIXO_INICIAL - estado.nivelDificuldade * 0.12
+                CONFIG.INTERVALO_LIXO_INICIAL - estado.nivelDificuldade * 0.1
             );
 
-            // Verificar vitória
             if (estado.limpezasCompletas >= CONFIG.LIMPECAS_PARA_VENCER) {
                 vitoria();
                 return;
             }
 
-            // Mensagem especial
             if (estado.limpezasCompletas === 10) {
                 mostrarDialogo('🐟', 'Já estou quase lá! Mais um pouco e o aquário fica limpo!', 2.5);
             }
 
-            // Atualizar HUD
             atualizarHUD();
             atualizarPoluicao();
         }
@@ -1210,29 +1338,28 @@
             const ativo = estado.lixoAtivo.length;
             estado.poluicao = Math.min(100, (ativo / total) * 100);
 
-            // Atualizar barra
             const barra = dom.barra;
             barra.style.width = estado.poluicao + '%';
 
-            if (estado.poluicao < 30) {
+            if (estado.poluicao < 25) {
                 barra.style.background = 'linear-gradient(90deg, #00d4ff, #00ff88)';
-            } else if (estado.poluicao < 60) {
-                barra.style.background = 'linear-gradient(90deg, #ffaa00, #ff6600)';
+            } else if (estado.poluicao < 50) {
+                barra.style.background = 'linear-gradient(90deg, #ffaa00, #ff8800)';
+            } else if (estado.poluicao < 75) {
+                barra.style.background = 'linear-gradient(90deg, #ff6600, #ff4400)';
             } else {
                 barra.style.background = 'linear-gradient(90deg, #ff4400, #cc0033)';
             }
 
             // Cor da água
-            const verde = Math.min(1, estado.poluicao / 50);
-            aguaMat.color.setHSL(0.55 - verde * 0.2, 0.6 + verde * 0.3, 0.4 - verde * 0.15);
-            aguaMat.opacity = 0.2 + verde * 0.25;
+            const verde = Math.min(1, estado.poluicao / 45);
+            aguaMat.color.setHSL(0.55 - verde * 0.2, 0.5 + verde * 0.4, 0.4 - verde * 0.15);
+            aguaMat.opacity = 0.15 + verde * 0.3;
 
-            // Se poluição > 90%, alerta
             if (estado.poluicao > 90 && estado.jogoAtivo) {
                 mostrarMensagemSistema('⚠️ O aquário está muito sujo! Limpe logo!', 1);
             }
 
-            // Se poluição > 99%, game over suave
             if (estado.poluicao > 99 && estado.jogoAtivo) {
                 mostrarDialogo('🐟', 'Aff... transbordou de lixo! Vamos tentar de novo?', 2);
                 estado.jogoAtivo = false;
@@ -1246,108 +1373,131 @@
         }
 
         // ---------- MOVIMENTO DO PEIXE ----------
-        const teclas = { w: false, a: false, s: false, d: false };
-        let inputX = 0,
-            inputZ = 0;
+        const teclas = { w: false, a: false, s: false, d: false, q: false, shift: false };
 
         function atualizarMovimentoPeixe() {
             if (!estado.jogoAtivo || estado.jogoVencido) return;
 
-            let dx = inputX;
-            let dz = inputZ;
+            let dx = 0,
+                dz = 0,
+                dy = 0;
 
-            // Teclado
+            // Movimento horizontal
             if (teclas.w) dz += 1;
             if (teclas.s) dz -= 1;
             if (teclas.a) dx -= 1;
             if (teclas.d) dx += 1;
 
-            // Normalizar
-            const mag = Math.sqrt(dx * dx + dz * dz);
-            if (mag > 0) {
-                dx /= mag;
-                dz /= mag;
-            }
+            // Movimento vertical (CIMA/BAIXO)
+            if (teclas.q) dy += 1;
+            if (teclas.shift) dy -= 1;
 
-            const velocidade = estado.upgradeVelocidade ? CONFIG.VELOCIDADE_BASE * 1.4 : CONFIG.VELOCIDADE_BASE;
+            // Normalizar horizontal
+            const magH = Math.sqrt(dx * dx + dz * dz);
+            if (magH > 0) { dx /= magH;
+                dz /= magH; }
 
-            // Movimento suave
-            const alvoX = peixe.position.x + dx * velocidade * 0.04;
-            const alvoZ = peixe.position.z + dz * velocidade * 0.04;
+            const velocidade = estado.upgradeVelocidade ? CONFIG.VELOCIDADE_BASE * 1.5 : CONFIG.VELOCIDADE_BASE;
+            const velVertical = estado.upgradeVelocidade ? CONFIG.VELOCIDADE_VERTICAL * 1.5 : CONFIG.VELOCIDADE_VERTICAL;
 
             // Limites
-            const limiteX = CONFIG.TAMANHO_AQUARIO_X / 2 - 0.8;
-            const limiteZ = CONFIG.TAMANHO_AQUARIO_Z / 2 - 0.8;
+            const limiteX = CONFIG.TAMANHO_AQUARIO_X / 2 - 1.2;
+            const limiteZ = CONFIG.TAMANHO_AQUARIO_Z / 2 - 1.2;
+            const limiteYMin = CONFIG.PROFUNDIDADE_MIN + 0.5;
+            const limiteYMax = CONFIG.PROFUNDIDADE_MAX + 0.5;
 
-            peixe.position.x = Math.max(-limiteX, Math.min(limiteX, alvoX));
-            peixe.position.z = Math.max(-limiteZ, Math.min(limiteZ, alvoZ));
+            // Aplicar movimento
+            const delta = 0.035;
+            peixe.position.x += dx * velocidade * delta;
+            peixe.position.z += dz * velocidade * delta;
+            peixe.position.y += dy * velVertical * delta;
 
-            // Profundidade (flutuação)
-            peixe.position.y += Math.sin(Date.now() * 0.001 + peixe.position.x) * 0.003;
+            // Limitar posição
+            peixe.position.x = Math.max(-limiteX, Math.min(limiteX, peixe.position.x));
+            peixe.position.z = Math.max(-limiteZ, Math.min(limiteZ, peixe.position.z));
+            peixe.position.y = Math.max(limiteYMin, Math.min(limiteYMax, peixe.position.y));
 
             // Rotação para direção
             if (dx !== 0 || dz !== 0) {
                 const angulo = Math.atan2(dx, dz);
-                peixe.rotation.y = angulo;
-                // Inclinação
-                peixe.rotation.z = -dx * 0.15;
-                peixe.rotation.x = dz * 0.1;
+                const rotAtual = peixe.rotation.y;
+                let diff = angulo - rotAtual;
+                while (diff > Math.PI) diff -= Math.PI * 2;
+                while (diff < -Math.PI) diff += Math.PI * 2;
+                peixe.rotation.y += diff * 0.12;
+
+                peixe.rotation.z = -dx * 0.2;
+                peixe.rotation.x = dz * 0.12 + dy * 0.15;
             } else {
-                // Voltar à posição neutra
                 peixe.rotation.z *= 0.9;
                 peixe.rotation.x *= 0.9;
             }
 
-            // Balanço da cauda (animação)
+            // Balanço da cauda
             const cauda = peixe.children.find(c => c.geometry && c.geometry.type === 'ConeGeometry');
             if (cauda) {
-                const velocidadeNado = Math.sqrt(dx * dx + dz * dz);
-                cauda.rotation.z = Math.sin(Date.now() * 0.01 + (dx + dz) * 2) * 0.15 * (velocidadeNado + 0.5);
+                const velocidadeNado = Math.sqrt(dx * dx + dz * dz + dy * dy);
+                const offset = (dx + dz) * 2 + dy * 1.5;
+                cauda.rotation.z = Math.sin(Date.now() * 0.012 + offset) * 0.2 * (velocidadeNado + 0.5);
             }
 
             // Bolhas
-            if (Math.random() < 0.01) {
+            if (Math.random() < 0.015) {
                 criarBolha(peixe.position.clone());
             }
 
-            // Camera segue
-            const camPos = camera.position;
-            const alvoCam = new THREE.Vector3(
-                peixe.position.x * 0.6,
-                6 + Math.sin(Date.now() * 0.0005) * 0.3,
-                peixe.position.z * 0.6 + 10
+            // Atualizar câmera
+            atualizarCamera();
+        }
+
+        // ---------- CÂMERA DINÂMICA ----------
+        function atualizarCamera() {
+            const pos = peixe.position;
+            const offset = CONFIG.CAMERA_OFFSET;
+            const altura = CONFIG.CAMERA_ALTURA;
+
+            // Posição alvo da câmera (atrás e acima do peixe)
+            const alvo = new THREE.Vector3(
+                pos.x * 0.5,
+                pos.y + altura * 0.7,
+                pos.z * 0.5 + offset
             );
-            camPos.lerp(alvoCam, 0.03);
-            camera.lookAt(peixe.position);
+
+            // Suavizar movimento
+            camera.position.lerp(alvo, estado.cameraSmoothness);
+
+            // Olhar para o peixe
+            const lookTarget = new THREE.Vector3(pos.x, pos.y, pos.z);
+            camera.lookAt(lookTarget);
+
+            // Guardar posição alvo para referência
+            estado.targetCamPos.copy(alvo);
         }
 
         // ---------- BOLHAS ----------
         function criarBolha(pos) {
-            const geo = new THREE.SphereGeometry(0.03 + Math.random() * 0.04, 4, 4);
+            const geo = new THREE.SphereGeometry(0.03 + Math.random() * 0.05, 4, 4);
             const mat = new THREE.MeshBasicMaterial({
                 color: 0x88ddff,
                 transparent: true,
-                opacity: 0.3 + Math.random() * 0.3,
+                opacity: 0.2 + Math.random() * 0.3,
             });
             const bolha = new THREE.Mesh(geo, mat);
             bolha.position.copy(pos);
-            bolha.position.x += (Math.random() - 0.5) * 0.3;
-            bolha.position.z += (Math.random() - 0.5) * 0.3;
-            bolha.position.y += 0.2;
+            bolha.position.x += (Math.random() - 0.5) * 0.4;
+            bolha.position.z += (Math.random() - 0.5) * 0.4;
+            bolha.position.y += 0.3;
             scene.add(bolha);
 
-            let vida = 0.8 + Math.random() * 0.6;
+            let vida = 0.8 + Math.random() * 0.8;
 
             function animarBolha() {
-                if (vida <= 0) {
-                    scene.remove(bolha);
-                    return;
-                }
-                vida -= 0.01;
-                bolha.position.y += 0.02;
-                bolha.position.x += (Math.random() - 0.5) * 0.01;
-                bolha.scale.multiplyScalar(1.002);
-                bolha.material.opacity = vida;
+                if (vida <= 0) { scene.remove(bolha); return; }
+                vida -= 0.008;
+                bolha.position.y += 0.025;
+                bolha.position.x += (Math.random() - 0.5) * 0.015;
+                bolha.scale.multiplyScalar(1.003);
+                bolha.material.opacity = vida * 0.5;
                 requestAnimationFrame(animarBolha);
             }
             animarBolha();
@@ -1371,6 +1521,7 @@
 
         // ---------- DIÁLOGO ----------
         let dialogoTimeout = null;
+        let mensagemTimeout = null;
 
         function mostrarDialogo(nome, texto, duracao = 2) {
             if (dialogoTimeout) {
@@ -1391,7 +1542,15 @@
         }
 
         function mostrarMensagemSistema(texto, duracao = 1) {
-            mostrarDialogo('📢', texto, duracao);
+            if (mensagemTimeout) {
+                clearTimeout(mensagemTimeout);
+                dom.mensagem.style.display = 'none';
+            }
+            dom.mensagem.textContent = texto;
+            dom.mensagem.style.display = 'block';
+            mensagemTimeout = setTimeout(() => {
+                dom.mensagem.style.display = 'none';
+            }, duracao * 1000);
         }
 
         // ---------- LOJA ----------
@@ -1399,42 +1558,37 @@
             id: 'velocidade',
             emoji: '🏎️',
             nome: 'Nadadeira Rápida',
-            desc: 'Aumenta velocidade em 40%',
+            desc: 'Aumenta velocidade em 50%',
             preco: 50,
-            comprado: false,
         }, {
             id: 'ima',
             emoji: '💰',
             nome: 'Ímã de Moedas',
             desc: '+50% de moedas por lixo',
             preco: 75,
-            comprado: false,
         }, {
             id: 'detector',
             emoji: '🔍',
             nome: 'Detector de Lixo',
             desc: 'Mostra setas para o lixo',
             preco: 100,
-            comprado: false,
         }, {
             id: 'sorte',
             emoji: '✨',
             nome: 'Sorte de Peixe',
             desc: '30% chance de lixo raro',
             preco: 120,
-            comprado: false,
         }, ];
 
         function renderizarLoja() {
             const grid = dom.lojaGrid;
             grid.innerHTML = '';
 
-            upgrades.forEach((up, index) => {
-                const div = document.createElement('div');
-                div.className = 'loja-item';
-
+            upgrades.forEach((up) => {
                 const comprado = estado['upgrade' + up.id.charAt(0).toUpperCase() + up.id.slice(1)];
 
+                const div = document.createElement('div');
+                div.className = 'loja-item';
                 div.innerHTML = `
                     <span class="emoji">${up.emoji}</span>
                     <div class="nome">${up.nome}</div>
@@ -1442,34 +1596,32 @@
                     <div class="preco">🪙 ${up.preco}</div>
                     <button class="btn-comprar ${comprado ? 'comprado' : ''}" 
                             ${comprado ? 'disabled' : ''}
-                            data-index="${index}">
+                            data-id="${up.id}">
                         ${comprado ? '✅ Comprado' : 'Comprar'}
                     </button>
                 `;
-
                 grid.appendChild(div);
 
                 const btn = div.querySelector('.btn-comprar');
                 btn.addEventListener('click', () => {
                     if (comprado) return;
-                    comprarUpgrade(index);
+                    comprarUpgrade(up.id);
                 });
             });
 
             dom.lojaMoedas.textContent = estado.moedas;
         }
 
-        function comprarUpgrade(index) {
-            const up = upgrades[index];
-            const id = up.id;
-            const preco = up.preco;
+        function comprarUpgrade(id) {
+            const up = upgrades.find(u => u.id === id);
+            if (!up) return;
 
-            if (estado.moedas < preco) {
+            if (estado.moedas < up.preco) {
                 mostrarMensagemSistema('Moedas insuficientes!', 1);
                 return;
             }
 
-            estado.moedas -= preco;
+            estado.moedas -= up.preco;
             const key = 'upgrade' + id.charAt(0).toUpperCase() + id.slice(1);
             estado[key] = true;
 
@@ -1477,7 +1629,6 @@
             atualizarHUD();
             renderizarLoja();
 
-            // Efeito especial
             if (id === 'sorte') {
                 mostrarMensagemSistema('🍀 Agora 30% de chance de lixo raro!', 1.5);
             }
@@ -1488,28 +1639,30 @@
             estado.jogoVencido = true;
             estado.jogoAtivo = false;
 
-            dom.vitoriaMoedas.textContent = estado.moedas;
-            dom.vitoriaLimpezas.textContent = estado.limpezasCompletas;
-            dom.vitoriaTempo.textContent = dom.tempo.textContent;
-            dom.vitoriaVelocidade.textContent = estado.upgradeVelocidade ? '✅' : '❌';
-            dom.vitoriaIma.textContent = estado.upgradeIma ? '✅' : '❌';
-            dom.vitoriaDetector.textContent = estado.upgradeDetector ? '✅' : '❌';
-            dom.vitoriaSorte.textContent = estado.upgradeSorte ? '✅' : '❌';
-
+            const stats = `
+                <div class="stat-row"><span class="label">🪙 Moedas</span><span class="value">${estado.moedas}</span></div>
+                <div class="stat-row"><span class="label">🔄 Limpezas</span><span class="value">${estado.limpezasCompletas}</span></div>
+                <div class="stat-row"><span class="label">⏱️ Tempo</span><span class="value">${dom.tempo.textContent}</span></div>
+                <div class="stat-row"><span class="label">🏎️ Velocidade</span><span class="value ${estado.upgradeVelocidade ? 'green' : 'red'}">${estado.upgradeVelocidade ? '✅' : '❌'}</span></div>
+                <div class="stat-row"><span class="label">💰 Ímã</span><span class="value ${estado.upgradeIma ? 'green' : 'red'}">${estado.upgradeIma ? '✅' : '❌'}</span></div>
+                <div class="stat-row"><span class="label">🔍 Detector</span><span class="value ${estado.upgradeDetector ? 'green' : 'red'}">${estado.upgradeDetector ? '✅' : '❌'}</span></div>
+                <div class="stat-row"><span class="label">✨ Sorte</span><span class="value ${estado.upgradeSorte ? 'green' : 'red'}">${estado.upgradeSorte ? '✅' : '❌'}</span></div>
+            `;
+            dom.vitoriaStats.innerHTML = stats;
             dom.vitoriaOverlay.classList.add('aberta');
 
             mostrarDialogo('🐟', '🎉 Finalmente! Meu aquário está limpo de novo!', 3);
 
-            // Efeito de confete
-            for (let i = 0; i < 50; i++) {
+            // Confetes
+            for (let i = 0; i < 80; i++) {
                 setTimeout(() => {
                     const pos = new THREE.Vector3(
-                        (Math.random() - 0.5) * 10,
-                        Math.random() * 6 + 2,
-                        (Math.random() - 0.5) * 10
+                        (Math.random() - 0.5) * CONFIG.TAMANHO_AQUARIO_X,
+                        Math.random() * CONFIG.ALTURA_AGUA + 2,
+                        (Math.random() - 0.5) * CONFIG.TAMANHO_AQUARIO_Z
                     );
-                    const cores = [0xffd700, 0xff4444, 0x44ff44, 0x4444ff, 0xff44ff];
-                    const geo = new THREE.BoxGeometry(0.05, 0.05, 0.1);
+                    const cores = [0xffd700, 0xff4444, 0x44ff44, 0x4444ff, 0xff44ff, 0x44ffff];
+                    const geo = new THREE.BoxGeometry(0.06, 0.06, 0.12);
                     const mat = new THREE.MeshBasicMaterial({
                         color: cores[Math.floor(Math.random() * cores.length)],
                     });
@@ -1518,27 +1671,24 @@
                     confete.rotation.set(Math.random() * 6, Math.random() * 6, Math.random() * 6);
                     scene.add(confete);
 
-                    let vida = 3;
-                    const velY = 1 + Math.random() * 2;
-                    const velX = (Math.random() - 0.5) * 2;
-                    const velZ = (Math.random() - 0.5) * 2;
+                    let vida = 4;
+                    const velY = 0.8 + Math.random() * 2;
+                    const velX = (Math.random() - 0.5) * 3;
+                    const velZ = (Math.random() - 0.5) * 3;
 
                     function animarConfete() {
-                        if (vida <= 0) {
-                            scene.remove(confete);
-                            return;
-                        }
-                        vida -= 0.02;
-                        confete.position.y += velY * 0.02;
-                        confete.position.x += velX * 0.02;
-                        confete.position.z += velZ * 0.02;
-                        confete.rotation.x += 0.1;
-                        confete.rotation.z += 0.1;
-                        confete.scale.multiplyScalar(0.995);
+                        if (vida <= 0) { scene.remove(confete); return; }
+                        vida -= 0.015;
+                        confete.position.y += velY * 0.025;
+                        confete.position.x += velX * 0.025;
+                        confete.position.z += velZ * 0.025;
+                        confete.rotation.x += 0.15;
+                        confete.rotation.z += 0.12;
+                        confete.scale.multiplyScalar(0.997);
                         requestAnimationFrame(animarConfete);
                     }
                     animarConfete();
-                }, i * 50);
+                }, i * 40);
             }
         }
 
@@ -1548,10 +1698,9 @@
         function gameLoop(time) {
             requestAnimationFrame(gameLoop);
 
-            const delta = 0.016; // ~60fps
+            const delta = 0.016;
 
             if (estado.jogoAtivo && !estado.jogoVencido) {
-                // Tempo
                 estado.tempoJogado += delta;
                 atualizarHUD();
 
@@ -1559,59 +1708,51 @@
                 ultimoTempoLixo += delta;
                 if (ultimoTempoLixo > estado.intervaloAtual) {
                     ultimoTempoLixo = 0;
-                    // Gerar múltiplos baseado na dificuldade
-                    const qtd = Math.min(4, 1 + Math.floor(estado.nivelDificuldade / 3));
+                    const qtd = Math.min(5, 1 + Math.floor(estado.nivelDificuldade / 3));
                     for (let i = 0; i < qtd; i++) {
-                        setTimeout(gerarLixo, i * 100);
+                        setTimeout(gerarLixo, i * 80);
                     }
-                    // Quando perto de limpar (poluição < 20%), cair mais
-                    if (estado.poluicao < 20 && estado.lixoAtivo.length < 20) {
-                        setTimeout(gerarLixo, 200);
+                    if (estado.poluicao < 20 && estado.lixoAtivo.length < 25) {
+                        setTimeout(gerarLixo, 150);
+                        setTimeout(gerarLixo, 300);
                     }
                 }
 
-                // Atualizar lixo
                 atualizarLixo();
-
-                // Atualizar poluição
                 atualizarPoluicao();
-
-                // Atualizar peixe
                 atualizarMovimentoPeixe();
 
-                // Detector (seta para lixo mais próximo)
+                // Detector
                 if (estado.upgradeDetector && estado.lixoAtivo.length > 0) {
                     let maisProx = null;
                     let distMin = Infinity;
                     for (const obj of estado.lixoAtivo) {
                         if (!obj || !obj.ativo) continue;
                         const dist = peixe.position.distanceTo(obj.mesh.position);
-                        if (dist < distMin) {
-                            distMin = dist;
-                            maisProx = obj;
-                        }
+                        if (dist < distMin) { distMin = dist;
+                            maisProx = obj; }
                     }
-                    if (maisProx) {
-                        // Mostrar indicador visual (sprite)
-                        // Simplificado: mostrar mensagem se muito próximo
-                        if (distMin < 3) {
-                            // Já aparece no HUD
-                        }
+                    if (maisProx && distMin < 4) {
+                        // Indicador visual: o lixo mais próximo brilha
+                        // (já implementado via glow)
                     }
                 }
             }
 
-            // Renderizar
             renderer.render(scene, camera);
         }
 
         // ---------- CONTROLES DE TECLADO ----------
         document.addEventListener('keydown', (e) => {
             const key = e.key.toLowerCase();
+
             if (key === 'w') teclas.w = true;
             if (key === 'a') teclas.a = true;
             if (key === 's') teclas.s = true;
             if (key === 'd') teclas.d = true;
+            if (key === 'q') teclas.q = true;
+            if (key === 'shift') { teclas.shift = true;
+                e.preventDefault(); }
 
             if (key === 'e' || key === ' ') {
                 e.preventDefault();
@@ -1636,61 +1777,9 @@
             if (key === 'a') teclas.a = false;
             if (key === 's') teclas.s = false;
             if (key === 'd') teclas.d = false;
-        });
-
-        // ---------- CONTROLES MOBILE ----------
-        let joystickAtivo = false;
-        let joystickCentro = { x: 0, y: 0 };
-
-        dom.joystickArea.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            const touch = e.touches[0];
-            const rect = dom.joystickArea.getBoundingClientRect();
-            joystickCentro.x = rect.left + rect.width / 2;
-            joystickCentro.y = rect.top + rect.height / 2;
-            joystickAtivo = true;
-            atualizarJoystick(touch.clientX, touch.clientY);
-        });
-
-        dom.joystickArea.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-            if (!joystickAtivo) return;
-            const touch = e.touches[0];
-            atualizarJoystick(touch.clientX, touch.clientY);
-        });
-
-        dom.joystickArea.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            joystickAtivo = false;
-            inputX = 0;
-            inputZ = 0;
-            dom.joystickKnob.style.transform = 'translate(-50%, -50%)';
-        });
-
-        function atualizarJoystick(touchX, touchY) {
-            const dx = touchX - joystickCentro.x;
-            const dy = touchY - joystickCentro.y;
-            const maxDist = 40;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            const limitado = Math.min(dist, maxDist);
-
-            const angulo = Math.atan2(dy, dx);
-            const normX = Math.cos(angulo) * limitado / maxDist;
-            const normZ = Math.sin(angulo) * limitado / maxDist;
-
-            dom.joystickKnob.style.transform = `translate(calc(-50% + ${normX * maxDist}px), calc(-50% + ${normZ * maxDist}px))`;
-
-            inputX = normX;
-            inputZ = -normZ;
-        }
-
-        dom.btnColetar.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            coletarLixo();
-        });
-
-        dom.btnColetar.addEventListener('mousedown', () => {
-            coletarLixo();
+            if (key === 'q') teclas.q = false;
+            if (key === 'shift') { teclas.shift = false;
+                e.preventDefault(); }
         });
 
         // ---------- LOJA UI ----------
@@ -1709,7 +1798,6 @@
         dom.btnAbrirLoja.addEventListener('click', toggleLoja);
         dom.btnFecharLoja.addEventListener('click', toggleLoja);
 
-        // Fechar loja clicando fora
         dom.lojaOverlay.addEventListener('click', (e) => {
             if (e.target === dom.lojaOverlay) toggleLoja();
         });
@@ -1730,42 +1818,38 @@
 
         // ---------- INICIALIZAR ----------
         function iniciarJogo() {
-            // Mostrar tutorial
+            setTimeout(() => { mostrarDialogo('🐟', 'Que dia tranquilo...', 2); }, 500);
+            setTimeout(() => { mostrarDialogo('🐟', 'O que é isso? Está caindo lixo!', 2.5); }, 3000);
+            setTimeout(() => { mostrarDialogo('🐟', 'Aff... que aquário sujo! Preciso limpar isso!', 3); }, 6000);
             setTimeout(() => {
-                mostrarDialogo('🐟', 'Que dia tranquilo...', 2);
-            }, 500);
-
-            setTimeout(() => {
-                mostrarDialogo('🐟', 'O que é isso? Está caindo lixo!', 2.5);
-            }, 3000);
-
-            setTimeout(() => {
-                mostrarDialogo('🐟', 'Aff... que aquário sujo! Preciso limpar isso!', 3);
-            }, 6000);
-
-            setTimeout(() => {
-                mostrarMensagemSistema('Use WASD para nadar e E para coletar lixo!', 2);
+                mostrarMensagemSistema('🎮 WASD = Mover | Q/Shift = Subir/Descer | E = Coletar | TAB = Loja', 3);
             }, 9500);
 
-            // Iniciar geração de lixo
             estado.intervaloAtual = CONFIG.INTERVALO_LIXO_INICIAL;
             ultimoTempoLixo = 0;
 
-            // Atualizar HUD
+            // Posicionar peixe no centro
+            peixe.position.set(0, CONFIG.ALTURA_AGUA / 2, 0);
+
             atualizarHUD();
             atualizarContadorLixo();
             atualizarPoluicao();
-
-            // Renderizar loja
             renderizarLoja();
 
-            // Iniciar loop
+            // Iniciar camera
+            estado.targetCamPos.set(0, CONFIG.CAMERA_ALTURA, CONFIG.CAMERA_OFFSET);
+            camera.position.copy(estado.targetCamPos);
+
             gameLoop(0);
+
+            console.log('🐟 Aquário Limpo - PC Edition Iniciado!');
+            console.log('🎮 Controles: WASD = Mover | Q/Shift = Subir/Descer | E = Coletar | TAB = Loja');
+            console.log('🪙 F1 = +100 moedas (debug) | F2 = Completar limpeza (debug)');
         }
 
         iniciarJogo();
 
-        // ---------- DEBUG (F1 = moedas, F2 = limpeza) ----------
+        // ---------- DEBUG ----------
         document.addEventListener('keydown', (e) => {
             if (e.key === 'F1') {
                 estado.moedas += 100;
@@ -1774,11 +1858,9 @@
                 mostrarMensagemSistema('🪙 +100 moedas (debug)', 1);
             }
             if (e.key === 'F2') {
-                for (let i = 0; i < 20; i++) {
-                    const obj = estado.lixoAtivo[0];
-                    if (obj) {
-                        retornarLixoAoPool(obj);
-                    }
+                for (let i = estado.lixoAtivo.length - 1; i >= 0; i--) {
+                    const obj = estado.lixoAtivo[i];
+                    if (obj) retornarLixoAoPool(obj);
                 }
                 estado.lixoColetadoAtual = CONFIG.LIXO_POR_LIMPECA;
                 completarLimpeza();
@@ -1788,15 +1870,10 @@
 
         // ---------- ANIMAÇÃO DA ÁGUA ----------
         let tempoAgua = 0;
-
         setInterval(() => {
             tempoAgua += 0.01;
-            aguaMesh.position.y = CONFIG.ALTURA_AGUA / 2 + 0.5 + Math.sin(tempoAgua) * 0.03;
+            aguaMesh.position.y = CONFIG.ALTURA_AGUA / 2 + 0.5 + Math.sin(tempoAgua) * 0.04;
         }, 50);
-
-        console.log('🐟 Aquário Limpo - Jogo Iniciado!');
-        console.log('🎮 Controles: WASD = Mover | E = Coletar | TAB = Loja');
-        console.log('🪙 F1 = +100 moedas (debug) | F2 = Completar limpeza (debug)');
     </script>
 
 </body>
