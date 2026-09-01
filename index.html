@@ -1,2050 +1,1439 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🐟 Aquário Limpo - Premium Edition</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            overflow: hidden;
-            background: #0a0a1a;
-            font-family: 'Segoe UI', Arial, sans-serif;
-            user-select: none;
-        }
-        canvas {
-            display: block;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐟 Aquário Limpo - Premium Edition</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    overflow: hidden;
+    background: #030814;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    user-select: none;
+}
+canvas { display: block; cursor: grab; }
+canvas:active { cursor: grabbing; }
 
-        /* HUD */
-        #hud {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            padding: 15px 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            pointer-events: none;
-            z-index: 10;
-            background: linear-gradient(180deg, rgba(0, 0, 0, 0.7) 0%, transparent 100%);
-        }
-        #hud-left {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-        #hud-right {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            align-items: flex-end;
-        }
-        #hud-center {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            align-items: center;
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            top: 15px;
-        }
-        .hud-item {
-            background: rgba(0, 0, 0, 0.75);
-            padding: 6px 14px;
-            border-radius: 20px;
-            color: #fff;
-            font-size: 18px;
-            font-weight: bold;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(4px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            pointer-events: auto;
-            font-family: 'Segoe UI', Arial, sans-serif;
-        }
-        .hud-item .icon {
-            margin-right: 6px;
-        }
-        .hud-item .valor {
-            color: #ffd700;
-        }
-        .hud-item .valor-limpeza {
-            color: #00d4ff;
-        }
+#hud {
+    position: fixed; top: 0; left: 0; right: 0;
+    padding: 15px 25px;
+    display: flex; justify-content: space-between; align-items: flex-start;
+    pointer-events: none; z-index: 10;
+    background: linear-gradient(180deg, rgba(0,0,0,0.75) 0%, transparent 100%);
+}
+#hud-left, #hud-right { display: flex; flex-direction: column; gap: 5px; }
+#hud-right { align-items: flex-end; }
+#hud-center {
+    display: flex; flex-direction: column; gap: 5px; align-items: center;
+    position: absolute; left: 50%; transform: translateX(-50%); top: 15px;
+}
+.hud-item {
+    background: rgba(0,0,0,0.75);
+    padding: 6px 14px; border-radius: 20px; color: #fff;
+    font-size: 18px; font-weight: bold;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255,255,255,0.08);
+    pointer-events: auto;
+}
+.hud-item .icon { margin-right: 6px; }
+.hud-item .valor { color: #ffd700; }
+.hud-item .valor-limpeza { color: #00d4ff; }
 
-        #barra-poluicao-container {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 50%;
-            max-width: 600px;
-            height: 16px;
-            background: rgba(0, 0, 0, 0.8);
-            border-radius: 20px;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            overflow: hidden;
-            z-index: 10;
-            backdrop-filter: blur(4px);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
-        }
-        #barra-poluicao {
-            height: 100%;
-            width: 0%;
-            border-radius: 20px;
-            transition: width 0.5s ease, background 0.5s ease;
-            background: linear-gradient(90deg, #00d4ff, #00ff88);
-        }
-        #barra-poluicao-label {
-            position: fixed;
-            bottom: 52px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: rgba(255, 255, 255, 0.4);
-            font-size: 12px;
-            z-index: 10;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            font-weight: 300;
-        }
+#barra-poluicao-container {
+    position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+    width: 50%; max-width: 600px; height: 16px;
+    background: rgba(0,0,0,0.8); border-radius: 20px;
+    border: 2px solid rgba(255,255,255,0.1); overflow: hidden; z-index: 10;
+    backdrop-filter: blur(4px); box-shadow: 0 4px 30px rgba(0,0,0,0.5);
+}
+#barra-poluicao { height: 100%; width: 0%; border-radius: 20px; transition: width .5s ease, background .5s ease; background: linear-gradient(90deg,#00d4ff,#00ff88); }
+#barra-poluicao-label {
+    position: fixed; bottom: 52px; left: 50%; transform: translateX(-50%);
+    color: rgba(255,255,255,0.45); font-size: 12px; z-index: 10;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8); letter-spacing: 2px; text-transform: uppercase; font-weight: 300;
+}
 
-        /* LOJA */
-        #loja-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.88);
-            backdrop-filter: blur(12px);
-            z-index: 100;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            animation: fadeIn 0.3s ease;
-        }
-        #loja-overlay.aberta {
-            display: flex;
-        }
+#coleta-container {
+    position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
+    width: 260px; z-index: 15; display: none; text-align: center;
+}
+#coleta-label { color: #fff; font-size: 14px; margin-bottom: 6px; text-shadow: 0 2px 6px rgba(0,0,0,0.8); font-weight: bold; letter-spacing: 1px; }
+#coleta-barra-bg { width: 100%; height: 12px; background: rgba(0,0,0,0.7); border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); overflow: hidden; }
+#coleta-barra { height: 100%; width: 0%; background: linear-gradient(90deg,#ffd700,#ff8800); border-radius: 10px; transition: width 0.05s linear; }
 
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
+#prompt-coleta {
+    position: fixed; z-index: 14; display: none;
+    background: rgba(0,0,0,0.75); color: #fff; font-size: 13px; font-weight: bold;
+    padding: 6px 12px; border-radius: 14px; border: 1px solid rgba(255,215,0,0.4);
+    transform: translate(-50%, -50%); pointer-events: none; text-shadow: 0 1px 3px #000;
+}
+#prompt-coleta .key { color: #ffd700; }
 
-        #loja-container {
-            background: linear-gradient(145deg, #1a2a3a, #0d1a26);
-            border-radius: 30px;
-            padding: 40px;
-            max-width: 750px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.9);
-        }
-        #loja-container h2 {
-            color: #fff;
-            font-size: 34px;
-            text-align: center;
-            margin-bottom: 5px;
-            letter-spacing: 1px;
-        }
-        #loja-container .subtitle {
-            color: rgba(255, 255, 255, 0.4);
-            text-align: center;
-            margin-bottom: 25px;
-            font-size: 14px;
-            letter-spacing: 2px;
-        }
-        #loja-moedas {
-            color: #ffd700;
-            font-size: 24px;
-            text-align: center;
-            margin-bottom: 25px;
-            background: rgba(255, 215, 0, 0.08);
-            padding: 12px;
-            border-radius: 15px;
-            border: 1px solid rgba(255, 215, 0, 0.1);
-        }
-        .loja-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 15px;
-        }
-        .loja-item {
-            background: rgba(255, 255, 255, 0.04);
-            border-radius: 20px;
-            padding: 20px 15px;
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            transition: all 0.3s ease;
-        }
-        .loja-item:hover {
-            transform: translateY(-4px);
-            border-color: rgba(255, 255, 255, 0.12);
-            background: rgba(255, 255, 255, 0.07);
-        }
-        .loja-item .emoji {
-            font-size: 44px;
-            display: block;
-            margin-bottom: 6px;
-        }
-        .loja-item .nome {
-            color: #fff;
-            font-weight: bold;
-            font-size: 16px;
-        }
-        .loja-item .desc {
-            color: rgba(255, 255, 255, 0.4);
-            font-size: 12px;
-            margin: 5px 0 8px;
-        }
-        .loja-item .preco {
-            color: #ffd700;
-            font-size: 20px;
-            font-weight: bold;
-            margin: 8px 0 12px;
-        }
-        .loja-item .btn-comprar {
-            background: linear-gradient(135deg, #00d4ff, #0088ff);
-            border: none;
-            color: #fff;
-            padding: 10px 20px;
-            border-radius: 30px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
-            font-family: 'Segoe UI', Arial, sans-serif;
-        }
-        .loja-item .btn-comprar:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 25px rgba(0, 136, 255, 0.4);
-        }
-        .loja-item .btn-comprar:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-            transform: none !important;
-        }
-        .loja-item .btn-comprar.comprado {
-            background: linear-gradient(135deg, #00ff88, #00cc66);
-        }
-        .loja-fechar {
-            display: block;
-            margin: 25px auto 0;
-            padding: 12px 50px;
-            border-radius: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            background: transparent;
-            color: #fff;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: 'Segoe UI', Arial, sans-serif;
-        }
-        .loja-fechar:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(255, 255, 255, 0.3);
-        }
+#loja-overlay {
+    position: fixed; top:0; left:0; right:0; bottom:0;
+    background: rgba(0,0,0,0.88); backdrop-filter: blur(12px); z-index: 100;
+    display: none; justify-content: center; align-items: center; animation: fadeIn .3s ease;
+}
+#loja-overlay.aberta { display: flex; }
+@keyframes fadeIn { from { opacity:0; transform:scale(.95);} to { opacity:1; transform:scale(1);} }
 
-        /* DIÁLOGO */
-        #dialogo-container {
-            position: fixed;
-            bottom: 90px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.88);
-            backdrop-filter: blur(8px);
-            padding: 16px 35px;
-            border-radius: 25px;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            z-index: 15;
-            display: none;
-            max-width: 80%;
-            text-align: center;
-            animation: fadeIn 0.3s ease;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
-        }
-        #dialogo-container .texto {
-            color: #fff;
-            font-size: 22px;
-            font-weight: 500;
-        }
-        #dialogo-container .nome {
-            color: #00d4ff;
-            font-size: 14px;
-            font-weight: bold;
-            letter-spacing: 1px;
-            margin-bottom: 4px;
-        }
+#loja-container {
+    background: linear-gradient(145deg,#1a2a3a,#0d1a26);
+    border-radius: 30px; padding: 35px; max-width: 900px; width: 92%;
+    max-height: 90vh; overflow-y: auto; border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: 0 30px 80px rgba(0,0,0,0.9);
+}
+#loja-container h2 { color:#fff; font-size:32px; text-align:center; margin-bottom:5px; letter-spacing:1px; }
+#loja-container .subtitle { color: rgba(255,255,255,0.4); text-align:center; margin-bottom:20px; font-size:13px; letter-spacing:2px; }
+#loja-moedas { color:#ffd700; font-size:22px; text-align:center; margin-bottom:20px; background: rgba(255,215,0,0.08); padding:10px; border-radius:15px; border: 1px solid rgba(255,215,0,0.1); }
+.loja-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap:14px; }
+.loja-item {
+    background: rgba(255,255,255,0.04); border-radius: 18px; padding: 16px 12px; text-align: center;
+    border: 1px solid rgba(255,255,255,0.04); transition: all .3s ease;
+}
+.loja-item:hover { transform: translateY(-4px); border-color: rgba(255,255,255,0.12); background: rgba(255,255,255,0.07); }
+.loja-item .emoji { font-size: 38px; display:block; margin-bottom:4px; }
+.loja-item .nome { color:#fff; font-weight:bold; font-size:14px; }
+.loja-item .desc { color: rgba(255,255,255,0.4); font-size: 11px; margin: 4px 0 6px; min-height: 30px; }
+.loja-item .preco { color:#ffd700; font-size:17px; font-weight:bold; margin: 6px 0 10px; }
+.loja-item .btn-comprar {
+    background: linear-gradient(135deg,#00d4ff,#0088ff); border:none; color:#fff;
+    padding: 9px 16px; border-radius: 30px; font-size:13px; font-weight:bold; cursor:pointer;
+    transition: all .3s ease; width:100%; font-family: inherit;
+}
+.loja-item .btn-comprar:hover { transform: scale(1.05); box-shadow: 0 5px 25px rgba(0,136,255,0.4); }
+.loja-item .btn-comprar:disabled { opacity:.3; cursor:not-allowed; transform:none!important; }
+.loja-item .btn-comprar.comprado { background: linear-gradient(135deg,#00ff88,#00cc66); }
+.loja-fechar {
+    display:block; margin: 22px auto 0; padding: 12px 50px; border-radius: 30px;
+    border: 1px solid rgba(255,255,255,0.15); background: transparent; color:#fff; font-size:16px;
+    cursor:pointer; transition: all .3s ease; font-family: inherit;
+}
+.loja-fechar:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.3); }
 
-        /* MENSAGEM SISTEMA */
-        #mensagem-sistema {
-            position: fixed;
-            top: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(8px);
-            padding: 10px 25px;
-            border-radius: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            z-index: 12;
-            display: none;
-            color: #fff;
-            font-size: 16px;
-            font-weight: 400;
-            animation: fadeIn 0.2s ease;
-            text-align: center;
-            max-width: 80%;
-            pointer-events: none;
-        }
+#dialogo-container {
+    position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
+    background: rgba(0,0,0,0.88); backdrop-filter: blur(8px); padding: 16px 35px;
+    border-radius: 25px; border: 1px solid rgba(255,255,255,0.06); z-index: 15;
+    display: none; max-width: 80%; text-align: center; animation: fadeIn .3s ease;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+}
+#dialogo-container .texto { color:#fff; font-size: 20px; font-weight: 500; }
+#dialogo-container .nome { color:#00d4ff; font-size: 13px; font-weight:bold; letter-spacing:1px; margin-bottom:4px; }
 
-        /* TELA DE VITÓRIA */
-        #vitoria-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.92);
-            backdrop-filter: blur(15px);
-            z-index: 200;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            animation: fadeIn 0.6s ease;
-        }
-        #vitoria-overlay.aberta {
-            display: flex;
-        }
-        #vitoria-container {
-            text-align: center;
-            padding: 50px;
-            max-width: 550px;
-            background: linear-gradient(145deg, #1a2a3a, #0d1a26);
-            border-radius: 40px;
-            border: 1px solid rgba(255, 215, 0, 0.15);
-            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.9);
-        }
-        #vitoria-container .titulo {
-            font-size: 56px;
-            margin-bottom: 5px;
-        }
-        #vitoria-container .subtitulo {
-            font-size: 28px;
-            color: #ffd700;
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
-        #vitoria-container .stats {
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 18px;
-            line-height: 2.2;
-            text-align: left;
-            padding: 0 20px;
-        }
-        #vitoria-container .stats .stat-row {
-            display: flex;
-            justify-content: space-between;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 2px 0;
-        }
-        #vitoria-container .stats .stat-row .label {
-            color: rgba(255, 255, 255, 0.5);
-        }
-        #vitoria-container .stats .stat-row .value {
-            color: #ffd700;
-            font-weight: bold;
-        }
-        #vitoria-container .stats .stat-row .value.green {
-            color: #00ff88;
-        }
-        #vitoria-container .stats .stat-row .value.red {
-            color: #ff4444;
-        }
-        .btn-reiniciar {
-            margin-top: 30px;
-            padding: 16px 60px;
-            border-radius: 30px;
-            border: none;
-            background: linear-gradient(135deg, #00d4ff, #0088ff);
-            color: #fff;
-            font-size: 20px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: 'Segoe UI', Arial, sans-serif;
-        }
-        .btn-reiniciar:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 35px rgba(0, 136, 255, 0.5);
-        }
+#mensagem-sistema {
+    position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
+    background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); padding: 10px 25px;
+    border-radius: 15px; border: 1px solid rgba(255,255,255,0.06); z-index: 12;
+    display: none; color:#fff; font-size:15px; font-weight:400; animation: fadeIn .2s ease;
+    text-align:center; max-width: 80%; pointer-events: none;
+}
 
-        /* CONTROLES INFO */
-        #controles-info {
-            position: fixed;
-            bottom: 80px;
-            right: 30px;
-            z-index: 8;
-            color: rgba(255, 255, 255, 0.2);
-            font-size: 12px;
-            text-align: right;
-            line-height: 1.8;
-            pointer-events: none;
-            font-family: 'Segoe UI', Arial, sans-serif;
-            letter-spacing: 0.5px;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 10px 16px;
-            border-radius: 12px;
-            backdrop-filter: blur(2px);
-            border: 1px solid rgba(255, 255, 255, 0.03);
-        }
-        #controles-info .key {
-            color: rgba(255, 255, 255, 0.4);
-            background: rgba(255, 255, 255, 0.06);
-            padding: 0 8px;
-            border-radius: 4px;
-            font-weight: bold;
-        }
+#vitoria-overlay {
+    position: fixed; top:0; left:0; right:0; bottom:0;
+    background: rgba(0,0,0,0.92); backdrop-filter: blur(15px); z-index: 200;
+    display:none; justify-content:center; align-items:center; animation: fadeIn .6s ease;
+}
+#vitoria-overlay.aberta { display: flex; }
+#vitoria-container {
+    text-align:center; padding: 45px; max-width: 520px;
+    background: linear-gradient(145deg,#1a2a3a,#0d1a26); border-radius: 40px;
+    border: 1px solid rgba(255,215,0,0.15); box-shadow: 0 30px 80px rgba(0,0,0,0.9);
+}
+#vitoria-container .titulo { font-size: 52px; margin-bottom: 5px; }
+#vitoria-container .subtitulo { font-size: 26px; color:#ffd700; font-weight:bold; margin-bottom: 18px; }
+#vitoria-container .stats { color: rgba(255,255,255,0.8); font-size: 16px; line-height: 2.1; text-align:left; padding: 0 15px; }
+.stats .stat-row { display:flex; justify-content:space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 2px 0; }
+.stats .stat-row .label { color: rgba(255,255,255,0.5); }
+.stats .stat-row .value { color:#ffd700; font-weight:bold; }
+.stats .stat-row .value.green { color:#00ff88; }
+.stats .stat-row .value.red { color:#ff4444; }
+.btn-reiniciar {
+    margin-top: 26px; padding: 15px 55px; border-radius: 30px; border: none;
+    background: linear-gradient(135deg,#00d4ff,#0088ff); color:#fff; font-size:18px; font-weight:bold;
+    cursor:pointer; transition: all .3s ease; font-family: inherit;
+}
+.btn-reiniciar:hover { transform: scale(1.05); box-shadow: 0 5px 35px rgba(0,136,255,0.5); }
 
-        @media (max-width: 768px) {
-            #controles-info {
-                display: none;
-            }
-            .hud-item {
-                font-size: 13px;
-                padding: 4px 10px;
-            }
-            #hud-center {
-                display: none;
-            }
-            #barra-poluicao-container {
-                width: 70%;
-                height: 12px;
-                bottom: 20px;
-            }
-            #barra-poluicao-label {
-                bottom: 38px;
-                font-size: 10px;
-            }
-            #dialogo-container .texto {
-                font-size: 17px;
-            }
-            #dialogo-container {
-                padding: 12px 20px;
-                bottom: 60px;
-            }
-            #loja-container {
-                padding: 20px;
-            }
-            .loja-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 10px;
-            }
-            #loja-container h2 {
-                font-size: 24px;
-            }
-            #vitoria-container {
-                padding: 30px 20px;
-                margin: 20px;
-            }
-            #vitoria-container .titulo {
-                font-size: 40px;
-            }
-            #vitoria-container .subtitulo {
-                font-size: 22px;
-            }
-            #vitoria-container .stats {
-                font-size: 15px;
-                padding: 0 10px;
-            }
-        }
+#controles-info {
+    position: fixed; bottom: 80px; right: 30px; z-index: 8;
+    color: rgba(255,255,255,0.2); font-size: 12px; text-align:right; line-height:1.8;
+    pointer-events: none; letter-spacing: 0.5px; background: rgba(0,0,0,0.3);
+    padding: 10px 16px; border-radius: 12px; backdrop-filter: blur(2px); border: 1px solid rgba(255,255,255,0.03);
+}
+#controles-info .key { color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.06); padding: 0 8px; border-radius:4px; font-weight:bold; }
 
-        @media (max-width: 480px) {
-            #hud {
-                padding: 8px 12px;
-            }
-            .hud-item {
-                font-size: 11px;
-                padding: 3px 8px;
-            }
-            .loja-item .emoji {
-                font-size: 32px;
-            }
-            .loja-item .nome {
-                font-size: 13px;
-            }
-            #barra-poluicao-container {
-                width: 85%;
-                height: 10px;
-            }
-            #dialogo-container .texto {
-                font-size: 14px;
-            }
-        }
-
-        #loja-container::-webkit-scrollbar {
-            width: 4px;
-        }
-        #loja-container::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 10px;
-        }
-        #loja-container::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-        }
-    </style>
+@media (max-width: 768px) {
+    #controles-info { display:none; }
+    .hud-item { font-size: 13px; padding: 4px 10px; }
+    #hud-center { display:none; }
+    #barra-poluicao-container { width:70%; height:12px; bottom:20px; }
+    #barra-poluicao-label { bottom:38px; font-size:10px; }
+    #dialogo-container .texto { font-size:16px; }
+    #dialogo-container { padding: 12px 20px; bottom: 60px; }
+    #loja-container { padding: 20px; }
+    .loja-grid { grid-template-columns: repeat(2,1fr); gap: 10px; }
+    #loja-container h2 { font-size:22px; }
+    #vitoria-container { padding: 30px 20px; margin: 20px; }
+    #vitoria-container .titulo { font-size: 38px; }
+    #vitoria-container .subtitulo { font-size: 20px; }
+    #vitoria-container .stats { font-size: 14px; padding: 0 10px; }
+    #coleta-container { bottom: 60px; width: 200px; }
+}
+@media (max-width: 480px) {
+    #hud { padding: 8px 12px; }
+    .hud-item { font-size: 11px; padding: 3px 8px; }
+    .loja-item .emoji { font-size: 30px; }
+    .loja-item .nome { font-size: 12px; }
+    #barra-poluicao-container { width: 85%; height: 10px; }
+    #dialogo-container .texto { font-size: 13px; }
+}
+#loja-container::-webkit-scrollbar { width: 4px; }
+#loja-container::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); border-radius: 10px; }
+#loja-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+</style>
 </head>
 <body>
 
-    <!-- HUD -->
-    <div id="hud">
-        <div id="hud-left">
-            <div class="hud-item"><span class="icon">🪙</span> <span class="valor" id="moedas-display">0</span></div>
-            <div class="hud-item"><span class="icon">🗑️</span> <span id="lixo-display">0</span></div>
-        </div>
-        <div id="hud-center">
-            <div class="hud-item"><span class="icon">🔄</span> Limpeza <span class="valor-limpeza" id="limpezas-display">0</span>/15</div>
-        </div>
-        <div id="hud-right">
-            <div class="hud-item"><span class="icon">⏱️</span> <span id="tempo-display">00:00</span></div>
-            <div class="hud-item" style="cursor:pointer;pointer-events:auto;background:rgba(0,212,255,0.15);border-color:rgba(0,212,255,0.2);" id="btn-abrir-loja">
-                <span class="icon">🏪</span> Loja [TAB]
-            </div>
+<div id="hud">
+    <div id="hud-left">
+        <div class="hud-item"><span class="icon">🪙</span> <span class="valor" id="moedas-display">0</span></div>
+        <div class="hud-item"><span class="icon">🗑️</span> <span id="lixo-display">0</span></div>
+    </div>
+    <div id="hud-center">
+        <div class="hud-item"><span class="icon">🔄</span> Limpeza <span class="valor-limpeza" id="limpezas-display">0</span>/15</div>
+    </div>
+    <div id="hud-right">
+        <div class="hud-item"><span class="icon">⏱️</span> <span id="tempo-display">00:00</span></div>
+        <div class="hud-item" style="cursor:pointer;pointer-events:auto;background:rgba(0,212,255,0.15);border-color:rgba(0,212,255,0.2);" id="btn-abrir-loja">
+            <span class="icon">🏪</span> Loja [TAB]
         </div>
     </div>
+</div>
 
-    <!-- Barra de Poluição -->
-    <div id="barra-poluicao-container">
-        <div id="barra-poluicao"></div>
+<div id="barra-poluicao-container"><div id="barra-poluicao"></div></div>
+<div id="barra-poluicao-label">🧹 Nível de Poluição</div>
+
+<div id="coleta-container">
+    <div id="coleta-label">Coletando...</div>
+    <div id="coleta-barra-bg"><div id="coleta-barra"></div></div>
+</div>
+<div id="prompt-coleta"><span class="key">E</span> Coletar</div>
+
+<div id="mensagem-sistema"></div>
+
+<div id="dialogo-container">
+    <div class="nome">🐟 Peixinho</div>
+    <div class="texto" id="dialogo-texto">Olá!</div>
+</div>
+
+<div id="controles-info">
+    <span class="key">W A S D</span> Nadar<br>
+    <span class="key">Arraste o mouse</span> Câmera<br>
+    <span class="key">Segure E</span> Coletar<br>
+    <span class="key">TAB</span> Loja
+</div>
+
+<div id="loja-overlay">
+    <div id="loja-container">
+        <h2>🏪 Loja do Aquário</h2>
+        <div class="subtitle">✦ Compre upgrades para limpar mais rápido ✦</div>
+        <div id="loja-moedas">🪙 <span id="loja-moedas-valor">0</span> moedas</div>
+        <div class="loja-grid" id="loja-grid"></div>
+        <button class="loja-fechar" id="btn-fechar-loja">✕ Fechar Loja</button>
     </div>
-    <div id="barra-poluicao-label">🧹 Nível de Poluição</div>
+</div>
 
-    <!-- Mensagem Sistema -->
-    <div id="mensagem-sistema"></div>
-
-    <!-- Diálogo -->
-    <div id="dialogo-container">
-        <div class="nome">🐟 Peixinho</div>
-        <div class="texto" id="dialogo-texto">Olá!</div>
+<div id="vitoria-overlay">
+    <div id="vitoria-container">
+        <div class="titulo">🎉✨</div>
+        <div class="subtitulo">Aquário Limpo!</div>
+        <div class="stats" id="vitoria-stats"></div>
+        <button class="btn-reiniciar" id="btn-reiniciar">🔄 Jogar Novamente</button>
     </div>
+</div>
 
-    <!-- Controles Info -->
-    <div id="controles-info">
-        <span class="key">W A S D</span> Mover<br>
-        <span class="key">Espaço / E</span> Coletar<br>
-        <span class="key">Q / Shift</span> Subir/Descer<br>
-        <span class="key">TAB</span> Loja
-    </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// =====================================================================
+// 🐟 AQUÁRIO LIMPO - PREMIUM EDITION v2
+// =====================================================================
 
-    <!-- Loja -->
-    <div id="loja-overlay">
-        <div id="loja-container">
-            <h2>🏪 Loja do Aquário</h2>
-            <div class="subtitle">✦ Compre upgrades para limpar mais rápido ✦</div>
-            <div id="loja-moedas">🪙 <span id="loja-moedas-valor">0</span> moedas</div>
-            <div class="loja-grid" id="loja-grid"></div>
-            <button class="loja-fechar" id="btn-fechar-loja">✕ Fechar Loja</button>
-        </div>
-    </div>
+const CONFIG = {
+    LIMPECAS_PARA_VENCER: 15,
+    LIXO_POR_LIMPECA: 20,
+    CAPACIDADE_MAX_LIXO: 60,
+    VELOCIDADE_BASE: 8,
+    RAIO_COLETA: 3.2,
+    INTERVALO_LIXO_INICIAL: 2.8,
+    INTERVALO_LIXO_MINIMO: 0.7,
+    VELOCIDADE_QUEDA_LIXO: 0.55,
+    TAMANHO_AQUARIO_X: 30,
+    TAMANHO_AQUARIO_Z: 22,
+    ALTURA_AGUA: 11,
+    PROFUNDIDADE_MIN: 1.4,
+    PROFUNDIDADE_MAX: 9.5,
+    CAM_DIST: 8.5,
+    CAM_ALTURA: 2.6,
+    CAM_LADO: 2.0,
+};
 
-    <!-- Vitória -->
-    <div id="vitoria-overlay">
-        <div id="vitoria-container">
-            <div class="titulo">🎉✨</div>
-            <div class="subtitulo">Aquário Limpo!</div>
-            <div class="stats" id="vitoria-stats"></div>
-            <button class="btn-reiniciar" id="btn-reiniciar">🔄 Jogar Novamente</button>
-        </div>
-    </div>
+const TIPOS_LIXO = [
+    { id: 0, nome: 'Garrafa PET', valorMin: 1, valorMax: 2, tempoColeta: 4.0 },
+    { id: 1, nome: 'Lata',        valorMin: 1, valorMax: 2, tempoColeta: 3.0 },
+    { id: 2, nome: 'Sacola',      valorMin: 1, valorMax: 3, tempoColeta: 3.5 },
+    { id: 3, nome: 'Papelão',     valorMin: 2, valorMax: 3, tempoColeta: 6.0 },
+];
 
-    <!-- THREE.JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js">
-    </script>
+const estado = {
+    moedas: 0,
+    limpezasCompletas: 0,
+    lixoColetadoAtual: 0,
+    poluicao: 0,
+    tempoJogado: 0,
+    jogoAtivo: true,
+    jogoVencido: false,
+    lixoAtivo: [],
+    up_velocidade: false,
+    up_velocidade2: false,
+    up_ima: false,
+    up_magnetismo: false,
+    up_detector: false,
+    up_sorte: false,
+    up_coletaRapida: false,
+    up_folego: false,
+    up_luz: false,
+    up_filtro: false,
+    nivelDificuldade: 1,
+    intervaloAtual: CONFIG.INTERVALO_LIXO_INICIAL,
+    dialogoAtivo: false,
+    lojaAberta: false,
+    // câmera
+    camAzimuth: Math.PI + 0.35,
+    camPitch: 0.28,
+    camPosAtual: new THREE.Vector3(),
+    // coleta
+    coletaAlvo: null,
+    coletaProgresso: 0,
+    coletaSegurando: false,
+};
 
-    <script>
-        // =====================================================================
-        // 🐟 AQUÁRIO LIMPO - PREMIUM EDITION
-        // =====================================================================
+const dom = {
+    moedas: document.getElementById('moedas-display'),
+    lixo: document.getElementById('lixo-display'),
+    limpezas: document.getElementById('limpezas-display'),
+    tempo: document.getElementById('tempo-display'),
+    barra: document.getElementById('barra-poluicao'),
+    dialogo: document.getElementById('dialogo-container'),
+    dialogoTexto: document.getElementById('dialogo-texto'),
+    mensagem: document.getElementById('mensagem-sistema'),
+    lojaOverlay: document.getElementById('loja-overlay'),
+    lojaMoedas: document.getElementById('loja-moedas-valor'),
+    lojaGrid: document.getElementById('loja-grid'),
+    vitoriaOverlay: document.getElementById('vitoria-overlay'),
+    vitoriaStats: document.getElementById('vitoria-stats'),
+    btnAbrirLoja: document.getElementById('btn-abrir-loja'),
+    btnFecharLoja: document.getElementById('btn-fechar-loja'),
+    btnReiniciar: document.getElementById('btn-reiniciar'),
+    coletaContainer: document.getElementById('coleta-container'),
+    coletaLabel: document.getElementById('coleta-label'),
+    coletaBarra: document.getElementById('coleta-barra'),
+    promptColeta: document.getElementById('prompt-coleta'),
+};
 
-        // ---------- CONFIGURAÇÕES ----------
-        const CONFIG = {
-            LIMPECAS_PARA_VENCER: 15,
-            LIXO_POR_LIMPECA: 20,
-            CAPACIDADE_MAX_LIXO: 60,
-            VELOCIDADE_BASE: 7,
-            VELOCIDADE_VERTICAL: 4,
-            RAIO_COLETA: 3.0,
-            INTERVALO_LIXO_INICIAL: 2.8,
-            INTERVALO_LIXO_MINIMO: 0.6,
-            VELOCIDADE_QUEDA_LIXO: 0.6,
-            TAMANHO_AQUARIO_X: 28,
-            TAMANHO_AQUARIO_Z: 20,
-            ALTURA_AGUA: 10,
-            PROFUNDIDADE_MIN: 1.5,
-            PROFUNDIDADE_MAX: 8.5,
-            CAMERA_OFFSET: 14,
-            CAMERA_ALTURA: 10,
-        };
+// ---------- THREE.JS ----------
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x04182c);
+scene.fog = new THREE.Fog(0x04182c, 28, 60);
 
-        // ---------- ESTADO ----------
-        const estado = {
-            moedas: 0,
-            limpezasCompletas: 0,
-            lixoColetadoAtual: 0,
-            poluicao: 0,
-            tempoJogado: 0,
-            jogoAtivo: true,
-            jogoVencido: false,
-            tutorialAtivo: true,
-            lixoAtivo: [],
-            upgradeVelocidade: false,
-            upgradeIma: false,
-            upgradeDetector: false,
-            upgradeSorte: false,
-            nivelDificuldade: 1,
-            intervaloAtual: CONFIG.INTERVALO_LIXO_INICIAL,
-            ultimoLixoTime: 0,
-            coletando: false,
-            dialogoAtivo: false,
-            lojaAberta: false,
-            cameraSmoothness: 0.035,
-            targetCamPos: new THREE.Vector3(),
-            tempoAgua: 0,
-        };
+const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 100);
 
-        // ---------- DOM ----------
-        const dom = {
-            moedas: document.getElementById('moedas-display'),
-            lixo: document.getElementById('lixo-display'),
-            limpezas: document.getElementById('limpezas-display'),
-            tempo: document.getElementById('tempo-display'),
-            barra: document.getElementById('barra-poluicao'),
-            dialogo: document.getElementById('dialogo-container'),
-            dialogoTexto: document.getElementById('dialogo-texto'),
-            mensagem: document.getElementById('mensagem-sistema'),
-            lojaOverlay: document.getElementById('loja-overlay'),
-            lojaMoedas: document.getElementById('loja-moedas-valor'),
-            lojaGrid: document.getElementById('loja-grid'),
-            vitoriaOverlay: document.getElementById('vitoria-overlay'),
-            vitoriaStats: document.getElementById('vitoria-stats'),
-            btnAbrirLoja: document.getElementById('btn-abrir-loja'),
-            btnFecharLoja: document.getElementById('btn-fechar-loja'),
-            btnReiniciar: document.getElementById('btn-reiniciar'),
-        };
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.15;
+renderer.outputEncoding = THREE.sRGBEncoding;
+document.body.prepend(renderer.domElement);
 
-        // ---------- THREE.JS ----------
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x0a2a4a);
-        scene.fog = new THREE.Fog(0x0a2a4a, 35, 65);
+// ---------- LUZES ----------
+const ambientLight = new THREE.AmbientLight(0x4488bb, 0.55);
+scene.add(ambientLight);
 
-        const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 80);
-        camera.position.set(0, CONFIG.CAMERA_ALTURA, CONFIG.CAMERA_OFFSET);
-        camera.lookAt(0, 0, 0);
+const sunLight = new THREE.DirectionalLight(0xffeedd, 1.5);
+sunLight.position.set(16, 24, 10);
+sunLight.castShadow = true;
+sunLight.shadow.mapSize.width = 2048;
+sunLight.shadow.mapSize.height = 2048;
+sunLight.shadow.camera.near = 0.1;
+sunLight.shadow.camera.far = 55;
+sunLight.shadow.camera.left = -26;
+sunLight.shadow.camera.right = 26;
+sunLight.shadow.camera.top = 26;
+sunLight.shadow.camera.bottom = -26;
+scene.add(sunLight);
 
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.2;
-        renderer.outputEncoding = THREE.sRGBEncoding;
-        document.body.prepend(renderer.domElement);
+const rimLight = new THREE.DirectionalLight(0x4488ff, 0.5);
+rimLight.position.set(-12, 6, -18);
+scene.add(rimLight);
 
-        // ---------- LUZES ----------
-        const ambientLight = new THREE.AmbientLight(0x4488bb, 0.5);
-        scene.add(ambientLight);
+const bottomLight = new THREE.PointLight(0x00aaff, 0.4, 38);
+bottomLight.position.set(0, -2, 0);
+scene.add(bottomLight);
 
-        const sunLight = new THREE.DirectionalLight(0xffeedd, 1.6);
-        sunLight.position.set(15, 22, 12);
-        sunLight.castShadow = true;
-        sunLight.shadow.mapSize.width = 2048;
-        sunLight.shadow.mapSize.height = 2048;
-        sunLight.shadow.camera.near = 0.1;
-        sunLight.shadow.camera.far = 50;
-        sunLight.shadow.camera.left = -25;
-        sunLight.shadow.camera.right = 25;
-        sunLight.shadow.camera.top = 25;
-        sunLight.shadow.camera.bottom = -25;
-        scene.add(sunLight);
+const luzPeixe = new THREE.PointLight(0xfff2cc, 0, 10);
+scene.add(luzPeixe);
 
-        const rimLight = new THREE.DirectionalLight(0x4488ff, 0.5);
-        rimLight.position.set(-12, 6, -18);
-        scene.add(rimLight);
+// ---------- AQUÁRIO ----------
+const W = CONFIG.TAMANHO_AQUARIO_X, D = CONFIG.TAMANHO_AQUARIO_Z, H = CONFIG.ALTURA_AGUA;
 
-        const bottomLight = new THREE.PointLight(0x00aaff, 0.4, 35);
-        bottomLight.position.set(0, -2, 0);
-        scene.add(bottomLight);
+function criarAquarioPremium() {
+    const grupo = new THREE.Group();
 
-        // Luzes de destaque
-        const accentLight1 = new THREE.PointLight(0xff6633, 0.15, 15);
-        accentLight1.position.set(8, 5, 6);
-        scene.add(accentLight1);
+    const matAreia = new THREE.MeshStandardMaterial({ color: 0xd4b896, roughness: 0.95 });
+    const chao = new THREE.Mesh(new THREE.PlaneGeometry(W + 8, D + 8), matAreia);
+    chao.rotation.x = -Math.PI / 2;
+    chao.position.y = 0.05;
+    chao.receiveShadow = true;
+    grupo.add(chao);
 
-        const accentLight2 = new THREE.PointLight(0x33aaff, 0.15, 15);
-        accentLight2.position.set(-8, 5, -6);
-        scene.add(accentLight2);
+    const matAreiaFina = new THREE.MeshStandardMaterial({ color: 0xc4a886, roughness: 1.0 });
+    for (let i = 0; i < 220; i++) {
+        const particula = new THREE.Mesh(new THREE.CircleGeometry(0.03 + Math.random() * 0.06, 4), matAreiaFina);
+        particula.rotation.x = -Math.PI / 2;
+        particula.position.set((Math.random() - 0.5) * (W - 2), 0.08, (Math.random() - 0.5) * (D - 2));
+        particula.material.transparent = true;
+        particula.material.opacity = 0.3 + Math.random() * 0.3;
+        grupo.add(particula);
+    }
 
-        // ---------- AQUÁRIO PREMIUM ----------
-        function criarAquarioPremium() {
-            const grupo = new THREE.Group();
-            const W = CONFIG.TAMANHO_AQUARIO_X;
-            const D = CONFIG.TAMANHO_AQUARIO_Z;
-            const H = CONFIG.ALTURA_AGUA;
+    // ondulações de areia
+    for (let i = 0; i < 8; i++) {
+        const duna = new THREE.Mesh(
+            new THREE.CylinderGeometry(2 + Math.random() * 2, 2.4 + Math.random() * 2, 0.15, 12, 1, true),
+            matAreiaFina
+        );
+        duna.position.set((Math.random() - 0.5) * (W - 4), 0.05, (Math.random() - 0.5) * (D - 4));
+        duna.scale.y = 0.4;
+        grupo.add(duna);
+    }
 
-            // ===== CHÃO =====
-            // Areia com textura granulada (usando múltiplos círculos)
-            const matAreia = new THREE.MeshStandardMaterial({
-                color: 0xd4b896,
-                roughness: 0.95,
-                metalness: 0.0,
-            });
-            const geoChao = new THREE.PlaneGeometry(W + 8, D + 8);
-            const chao = new THREE.Mesh(geoChao, matAreia);
-            chao.rotation.x = -Math.PI / 2;
-            chao.position.y = 0.05;
-            chao.receiveShadow = true;
-            grupo.add(chao);
+    const vidroMat = new THREE.MeshPhysicalMaterial({
+        color: 0x88ccff, transparent: true, opacity: 0.06, roughness: 0.0, metalness: 0.0,
+        side: THREE.DoubleSide, clearcoat: 0.15,
+    });
+    const vidroBordaMat = new THREE.MeshPhysicalMaterial({
+        color: 0x6a8aaa, transparent: true, opacity: 0.3, roughness: 0.2, metalness: 0.4, side: THREE.DoubleSide,
+    });
 
-            // Textura de areia com pequenas partículas
-            const matAreiaFina = new THREE.MeshStandardMaterial({
-                color: 0xc4a886,
-                roughness: 1.0,
-                metalness: 0.0,
-            });
-            for (let i = 0; i < 200; i++) {
-                const particula = new THREE.Mesh(
-                    new THREE.CircleGeometry(0.03 + Math.random() * 0.06, 4),
-                    matAreiaFina
-                );
-                particula.rotation.x = -Math.PI / 2;
-                particula.position.set(
-                    (Math.random() - 0.5) * (W - 2),
-                    0.08,
-                    (Math.random() - 0.5) * (D - 2)
-                );
-                particula.material.opacity = 0.3 + Math.random() * 0.3;
-                particula.material.transparent = true;
-                grupo.add(particula);
-            }
+    const paredes = [
+        { w: W, h: H, x: 0, z: -D / 2, ry: 0 },
+        { w: W, h: H, x: 0, z: D / 2, ry: 0 },
+        { w: D, h: H, x: -W / 2, z: 0, ry: Math.PI / 2 },
+        { w: D, h: H, x: W / 2, z: 0, ry: Math.PI / 2 },
+    ];
+    const paredesMeshes = [];
+    paredes.forEach(p => {
+        const mesh = new THREE.Mesh(new THREE.PlaneGeometry(p.w, p.h), vidroMat.clone());
+        mesh.position.set(p.x, H / 2 + 0.5, p.z);
+        mesh.rotation.y = p.ry;
+        mesh.receiveShadow = true;
+        grupo.add(mesh);
+        paredesMeshes.push(mesh);
 
-            // ===== FUNDO DO AQUÁRIO =====
-            const matFundo = new THREE.MeshPhysicalMaterial({
-                color: 0x8B7355,
-                roughness: 0.7,
-                metalness: 0.0,
-                transparent: true,
-                opacity: 0.15,
-            });
-            const geoFundo = new THREE.PlaneGeometry(W - 0.8, D - 0.8);
-            const fundo = new THREE.Mesh(geoFundo, matFundo);
-            fundo.rotation.x = -Math.PI / 2;
-            fundo.position.y = 0.1;
-            grupo.add(fundo);
+        const molduraTop = new THREE.Mesh(new THREE.BoxGeometry(p.w + 0.2, 0.2, 0.2), vidroBordaMat);
+        molduraTop.position.set(p.x, H + 0.6, p.z);
+        molduraTop.rotation.y = p.ry;
+        grupo.add(molduraTop);
 
-            // ===== PAREDES DE VIDRO =====
-            const vidroMat = new THREE.MeshPhysicalMaterial({
-                color: 0x88ccff,
-                transparent: true,
-                opacity: 0.05,
-                roughness: 0.0,
-                metalness: 0.0,
-                side: THREE.DoubleSide,
-                envMapIntensity: 0.8,
-                clearcoat: 0.1,
-            });
+        const molduraBot = new THREE.Mesh(new THREE.BoxGeometry(p.w + 0.2, 0.2, 0.2), vidroBordaMat);
+        molduraBot.position.set(p.x, 0.4, p.z);
+        molduraBot.rotation.y = p.ry;
+        grupo.add(molduraBot);
+    });
+    grupo.userData.paredes = paredesMeshes;
 
-            const vidroBordaMat = new THREE.MeshPhysicalMaterial({
-                color: 0x6a8aaa,
-                transparent: true,
-                opacity: 0.25,
-                roughness: 0.2,
-                metalness: 0.3,
-                side: THREE.DoubleSide,
-                envMapIntensity: 0.3,
-            });
+    const colunaMat = new THREE.MeshPhysicalMaterial({ color: 0x5a7a9a, roughness: 0.3, metalness: 0.5 });
+    const cantos = [[-W / 2, -D / 2], [W / 2, -D / 2], [-W / 2, D / 2], [W / 2, D / 2]];
+    cantos.forEach(c => {
+        const col = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.25, H + 0.8, 8), colunaMat);
+        col.position.set(c[0], H / 2 + 0.5, c[1]);
+        col.castShadow = true;
+        grupo.add(col);
+        const base = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.4, 0.2, 8), colunaMat);
+        base.position.set(c[0], 0.2, c[1]);
+        grupo.add(base);
+        const topo = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.3, 0.2, 8), colunaMat);
+        topo.position.set(c[0], H + 0.8, c[1]);
+        grupo.add(topo);
+    });
 
-            // Paredes com moldura
-            const paredes = [
-                { w: W, h: H, x: 0, z: -D / 2, ry: 0 },
-                { w: W, h: H, x: 0, z: D / 2, ry: 0 },
-                { w: D, h: H, x: -W / 2, z: 0, ry: Math.PI / 2 },
-                { w: D, h: H, x: W / 2, z: 0, ry: Math.PI / 2 },
-            ];
+    // ===== PLANTAS AQUÁTICAS (com referência p/ animação) =====
+    const coresPlantas = [0x2d8a4e, 0x3daa5e, 0x4caf7a, 0x1a6a3a, 0x267a48];
+    const plantas = [];
+    for (let i = 0; i < 55; i++) {
+        const altura = 0.7 + Math.random() * 2.2;
+        const matPlanta = new THREE.MeshStandardMaterial({
+            color: coresPlantas[Math.floor(Math.random() * coresPlantas.length)], roughness: 0.8,
+        });
+        const segX = 4;
+        const geo = new THREE.CylinderGeometry(0.04, 0.18, altura, 5, 4);
+        const planta = new THREE.Mesh(geo, matPlanta);
+        const angulo = Math.random() * Math.PI * 2;
+        const raio = 1.8 + Math.random() * (Math.min(W, D) / 2 - 2.8);
+        planta.position.set(Math.cos(angulo) * raio, 0.15 + altura / 2, Math.sin(angulo) * raio * (D / W));
+        planta.rotation.x = (Math.random() - 0.5) * 0.3;
+        planta.rotation.z = (Math.random() - 0.5) * 0.3;
+        planta.castShadow = true;
+        planta.userData.faseAnim = Math.random() * 10;
+        planta.userData.baseRotZ = planta.rotation.z;
+        planta.userData.baseRotX = planta.rotation.x;
+        grupo.add(planta);
+        plantas.push(planta);
 
-            paredes.forEach(p => {
-                const geo = new THREE.PlaneGeometry(p.w, p.h);
-                const mesh = new THREE.Mesh(geo, vidroMat);
-                mesh.position.set(p.x, H / 2 + 0.5, p.z);
-                mesh.rotation.y = p.ry;
-                mesh.receiveShadow = true;
-                grupo.add(mesh);
-
-                // Moldura superior
-                const molduraTop = new THREE.Mesh(
-                    new THREE.BoxGeometry(p.w + 0.2, 0.2, 0.2),
-                    vidroBordaMat
-                );
-                molduraTop.position.set(p.x, H + 0.6, p.z);
-                molduraTop.rotation.y = p.ry;
-                grupo.add(molduraTop);
-
-                // Moldura inferior
-                const molduraBot = new THREE.Mesh(
-                    new THREE.BoxGeometry(p.w + 0.2, 0.2, 0.2),
-                    vidroBordaMat
-                );
-                molduraBot.position.set(p.x, 0.4, p.z);
-                molduraBot.rotation.y = p.ry;
-                grupo.add(molduraBot);
-            });
-
-            // ===== COLUNAS DE CANTO =====
-            const colunaMat = new THREE.MeshPhysicalMaterial({
-                color: 0x5a7a9a,
-                roughness: 0.3,
-                metalness: 0.5,
-                envMapIntensity: 0.5,
-            });
-            const cantos = [
-                [-W / 2, -D / 2],
-                [W / 2, -D / 2],
-                [-W / 2, D / 2],
-                [W / 2, D / 2]
-            ];
-            cantos.forEach(c => {
-                // Coluna principal
-                const col = new THREE.Mesh(
-                    new THREE.CylinderGeometry(0.2, 0.25, H + 0.8, 8),
-                    colunaMat
-                );
-                col.position.set(c[0], H / 2 + 0.5, c[1]);
-                col.castShadow = true;
-                grupo.add(col);
-
-                // Base da coluna
-                const base = new THREE.Mesh(
-                    new THREE.CylinderGeometry(0.35, 0.4, 0.2, 8),
-                    colunaMat
-                );
-                base.position.set(c[0], 0.2, c[1]);
-                grupo.add(base);
-
-                // Topo da coluna
-                const topo = new THREE.Mesh(
-                    new THREE.CylinderGeometry(0.35, 0.3, 0.2, 8),
-                    colunaMat
-                );
-                topo.position.set(c[0], H + 0.8, c[1]);
-                grupo.add(topo);
-            });
-
-            // ===== PLANTAS AQUÁTICAS =====
-            const coresPlantas = [0x2d8a4e, 0x3daa5e, 0x4caf7a, 0x1a6a3a];
-            for (let i = 0; i < 40; i++) {
-                const altura = 0.6 + Math.random() * 1.8;
-                const matPlanta = new THREE.MeshStandardMaterial({
-                    color: coresPlantas[Math.floor(Math.random() * coresPlantas.length)],
-                    roughness: 0.8,
-                    metalness: 0.0,
-                });
-                const geo = new THREE.CylinderGeometry(0.04, 0.2, altura, 5);
-                const planta = new THREE.Mesh(geo, matPlanta);
-                const angulo = Math.random() * Math.PI * 2;
-                const raio = 1.5 + Math.random() * (W / 2 - 2.5);
-                planta.position.set(
-                    Math.cos(angulo) * raio,
-                    0.15 + altura / 2,
-                    Math.sin(angulo) * raio * (D / W)
-                );
-                planta.rotation.x = (Math.random() - 0.5) * 0.5;
-                planta.rotation.z = (Math.random() - 0.5) * 0.5;
-                planta.castShadow = true;
-                grupo.add(planta);
-
-                // Folhas
-                const numFolhas = 2 + Math.floor(Math.random() * 3);
-                for (let j = 0; j < numFolhas; j++) {
-                    const folha = new THREE.Mesh(
-                        new THREE.SphereGeometry(0.1 + Math.random() * 0.15, 5, 5),
-                        new THREE.MeshStandardMaterial({
-                            color: coresPlantas[Math.floor(Math.random() * coresPlantas.length)],
-                            roughness: 0.7,
-                        })
-                    );
-                    folha.position.set(
-                        planta.position.x + (Math.random() - 0.5) * 0.3,
-                        planta.position.y + (Math.random() - 0.5) * (altura / 2),
-                        planta.position.z + (Math.random() - 0.5) * 0.3
-                    );
-                    folha.scale.set(1, 0.4 + Math.random() * 0.4, 1);
-                    folha.rotation.set(Math.random() * 6, Math.random() * 6, Math.random() * 6);
-                    grupo.add(folha);
-                }
-            }
-
-            // ===== PEDRAS =====
-            const coresPedras = [0x7a7a7a, 0x8a8a7a, 0x6a6a6a, 0x9a8a7a];
-            for (let i = 0; i < 25; i++) {
-                const tamanho = 0.3 + Math.random() * 0.7;
-                const geo = new THREE.DodecahedronGeometry(tamanho, 0);
-                const pedra = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({
-                    color: coresPedras[Math.floor(Math.random() * coresPedras.length)],
-                    roughness: 0.9,
-                    metalness: 0.0,
-                }));
-                const angulo = Math.random() * Math.PI * 2;
-                const raio = 1.5 + Math.random() * (W / 2 - 2);
-                pedra.position.set(
-                    Math.cos(angulo) * raio,
-                    0.1 + Math.random() * 0.2,
-                    Math.sin(angulo) * raio * (D / W)
-                );
-                pedra.rotation.set(Math.random() * 6, Math.random() * 6, Math.random() * 6);
-                pedra.scale.set(1, 0.4 + Math.random() * 0.5, 0.6 + Math.random() * 0.4);
-                pedra.castShadow = true;
-                pedra.receiveShadow = true;
-                grupo.add(pedra);
-
-                // Pedras menores ao redor
-                if (Math.random() > 0.6) {
-                    const pedraPequena = new THREE.Mesh(
-                        new THREE.DodecahedronGeometry(tamanho * 0.4, 0),
-                        new THREE.MeshStandardMaterial({
-                            color: coresPedras[Math.floor(Math.random() * coresPedras.length)],
-                            roughness: 0.9,
-                        })
-                    );
-                    pedraPequena.position.set(
-                        pedra.position.x + (Math.random() - 0.5) * 0.6,
-                        0.05 + Math.random() * 0.1,
-                        pedra.position.z + (Math.random() - 0.5) * 0.6
-                    );
-                    pedraPequena.scale.set(1, 0.5 + Math.random() * 0.3, 0.7);
-                    pedraPequena.rotation.set(Math.random() * 6, Math.random() * 6, Math.random() * 6);
-                    grupo.add(pedraPequena);
-                }
-            }
-
-            // ===== CONCHAS DECORATIVAS =====
-            const conchaMat = new THREE.MeshPhysicalMaterial({
-                color: 0xf5e6d0,
-                roughness: 0.3,
-                metalness: 0.0,
-                clearcoat: 0.2,
-            });
-            for (let i = 0; i < 6; i++) {
-                const concha = new THREE.Mesh(
-                    new THREE.SphereGeometry(0.15 + Math.random() * 0.2, 6, 6),
-                    conchaMat
-                );
-                const angulo = Math.random() * Math.PI * 2;
-                const raio = 2 + Math.random() * (W / 2 - 3);
-                concha.position.set(
-                    Math.cos(angulo) * raio,
-                    0.08,
-                    Math.sin(angulo) * raio * (D / W)
-                );
-                concha.scale.set(1, 0.3 + Math.random() * 0.3, 0.8 + Math.random() * 0.4);
-                concha.rotation.set(Math.random() * 6, Math.random() * 6, Math.random() * 6);
-                grupo.add(concha);
-            }
-
-            return grupo;
+        const numFolhas = 2 + Math.floor(Math.random() * 3);
+        for (let j = 0; j < numFolhas; j++) {
+            const folha = new THREE.Mesh(
+                new THREE.SphereGeometry(0.1 + Math.random() * 0.18, 5, 5),
+                new THREE.MeshStandardMaterial({ color: coresPlantas[Math.floor(Math.random() * coresPlantas.length)], roughness: 0.7 })
+            );
+            folha.position.set(
+                planta.position.x + (Math.random() - 0.5) * 0.35,
+                planta.position.y + (Math.random() - 0.5) * (altura / 2),
+                planta.position.z + (Math.random() - 0.5) * 0.35
+            );
+            folha.scale.set(1, 0.4 + Math.random() * 0.4, 1);
+            folha.rotation.set(Math.random() * 6, Math.random() * 6, Math.random() * 6);
+            grupo.add(folha);
         }
+    }
+    grupo.userData.plantas = plantas;
 
-        const aquario = criarAquarioPremium();
-        scene.add(aquario);
+    const coresPedras = [0x7a7a7a, 0x8a8a7a, 0x6a6a6a, 0x9a8a7a];
+    for (let i = 0; i < 30; i++) {
+        const tamanho = 0.3 + Math.random() * 0.8;
+        const pedra = new THREE.Mesh(new THREE.DodecahedronGeometry(tamanho, 0), new THREE.MeshStandardMaterial({
+            color: coresPedras[Math.floor(Math.random() * coresPedras.length)], roughness: 0.9,
+        }));
+        const angulo = Math.random() * Math.PI * 2;
+        const raio = 1.5 + Math.random() * (Math.min(W, D) / 2 - 2);
+        pedra.position.set(Math.cos(angulo) * raio, 0.1 + Math.random() * 0.2, Math.sin(angulo) * raio * (D / W));
+        pedra.rotation.set(Math.random() * 6, Math.random() * 6, Math.random() * 6);
+        pedra.scale.set(1, 0.4 + Math.random() * 0.5, 0.6 + Math.random() * 0.4);
+        pedra.castShadow = true;
+        pedra.receiveShadow = true;
+        grupo.add(pedra);
+    }
 
-        // ---------- ÁGUA ----------
-        const aguaMat = new THREE.MeshPhysicalMaterial({
-            color: 0x0066aa,
-            transparent: true,
-            opacity: 0.18,
-            roughness: 0.0,
-            metalness: 0.0,
-            envMapIntensity: 0.5,
-            clearcoat: 0.15,
-            clearcoatRoughness: 0.2,
-        });
-        const aguaGeo = new THREE.BoxGeometry(
-            CONFIG.TAMANHO_AQUARIO_X - 1.2,
-            CONFIG.ALTURA_AGUA - 0.8,
-            CONFIG.TAMANHO_AQUARIO_Z - 1.2
-        );
-        const aguaMesh = new THREE.Mesh(aguaGeo, aguaMat);
-        aguaMesh.position.set(0, CONFIG.ALTURA_AGUA / 2 + 0.5, 0);
-        scene.add(aguaMesh);
+    const conchaMat = new THREE.MeshPhysicalMaterial({ color: 0xf5e6d0, roughness: 0.3, clearcoat: 0.2 });
+    for (let i = 0; i < 7; i++) {
+        const concha = new THREE.Mesh(new THREE.SphereGeometry(0.15 + Math.random() * 0.2, 6, 6), conchaMat);
+        const angulo = Math.random() * Math.PI * 2;
+        const raio = 2 + Math.random() * (Math.min(W, D) / 2 - 3);
+        concha.position.set(Math.cos(angulo) * raio, 0.08, Math.sin(angulo) * raio * (D / W));
+        concha.scale.set(1, 0.3 + Math.random() * 0.3, 0.8 + Math.random() * 0.4);
+        concha.rotation.set(Math.random() * 6, Math.random() * 6, Math.random() * 6);
+        grupo.add(concha);
+    }
 
-        // ---------- SUPERFÍCIE DA ÁGUA ----------
-        const superficieMat = new THREE.MeshPhysicalMaterial({
-            color: 0x88ccff,
-            transparent: true,
-            opacity: 0.12,
-            roughness: 0.0,
-            metalness: 0.0,
-            envMapIntensity: 0.8,
-            clearcoat: 0.3,
-            clearcoatRoughness: 0.1,
-            side: THREE.DoubleSide,
-        });
-        const superficieGeo = new THREE.PlaneGeometry(
-            CONFIG.TAMANHO_AQUARIO_X - 0.8,
-            CONFIG.TAMANHO_AQUARIO_Z - 0.8,
-            40,
-            40
-        );
-        const superficie = new THREE.Mesh(superficieGeo, superficieMat);
-        superficie.rotation.x = -Math.PI / 2;
-        superficie.position.set(0, CONFIG.ALTURA_AGUA + 0.5, 0);
-        scene.add(superficie);
+    return grupo;
+}
+const aquario = criarAquarioPremium();
+scene.add(aquario);
 
-        // ---------- PEIXE ----------
-        function criarPeixe() {
-            const grupo = new THREE.Group();
+// ---------- MUSGO / POLUIÇÃO VISUAL ----------
+const musgoGrupo = new THREE.Group();
+scene.add(musgoGrupo);
+const manchasMusgo = [];
+function criarMusgo() {
+    const matMusgo = new THREE.MeshStandardMaterial({
+        color: 0x3a6a2a, roughness: 1.0, transparent: true, opacity: 0,
+    });
+    // manchas nas paredes de vidro
+    aquario.userData.paredes.forEach(parede => {
+        for (let i = 0; i < 5; i++) {
+            const mancha = new THREE.Mesh(new THREE.CircleGeometry(0.6 + Math.random() * 1.4, 8), matMusgo.clone());
+            const pw = parede.geometry.parameters.width;
+            const ph = parede.geometry.parameters.height;
+            mancha.position.set((Math.random() - 0.5) * pw * 0.8, (Math.random() - 0.5) * ph * 0.7, 0.05);
+            mancha.rotation.set(0, 0, Math.random() * 6);
+            parede.add(mancha);
+            manchasMusgo.push(mancha);
+        }
+    });
+    // manchas no chão/pedras
+    for (let i = 0; i < 25; i++) {
+        const mancha = new THREE.Mesh(new THREE.CircleGeometry(0.5 + Math.random() * 1.2, 8), matMusgo.clone());
+        mancha.rotation.x = -Math.PI / 2;
+        mancha.position.set((Math.random() - 0.5) * (W - 3), 0.1, (Math.random() - 0.5) * (D - 3));
+        musgoGrupo.add(mancha);
+        manchasMusgo.push(mancha);
+    }
+}
+criarMusgo();
 
-            // Corpo
-            const corpoMat = new THREE.MeshPhysicalMaterial({
-                color: 0xff6633,
-                roughness: 0.2,
-                metalness: 0.05,
-                emissive: 0xff4400,
-                emissiveIntensity: 0.06,
-                clearcoat: 0.3,
-                clearcoatRoughness: 0.2,
-            });
-            const corpoGeo = new THREE.SphereGeometry(0.8, 20, 20);
-            const corpo = new THREE.Mesh(corpoGeo, corpoMat);
-            corpo.scale.set(1.5, 0.85, 0.95);
-            corpo.position.z = -0.2;
-            corpo.castShadow = true;
+// ---------- PARTÍCULAS DE SUJEIRA (aumentam com poluição) ----------
+const NUM_PARTICULAS_SUJEIRA = 500;
+const particulasGeo = new THREE.BufferGeometry();
+const particulasPos = new Float32Array(NUM_PARTICULAS_SUJEIRA * 3);
+for (let i = 0; i < NUM_PARTICULAS_SUJEIRA; i++) {
+    particulasPos[i * 3] = (Math.random() - 0.5) * (W - 1);
+    particulasPos[i * 3 + 1] = 0.5 + Math.random() * (H - 1);
+    particulasPos[i * 3 + 2] = (Math.random() - 0.5) * (D - 1);
+}
+particulasGeo.setAttribute('position', new THREE.BufferAttribute(particulasPos, 3));
+const particulasMat = new THREE.PointsMaterial({
+    color: 0x6a9a4a, size: 0.06, transparent: true, opacity: 0, depthWrite: false,
+});
+const particulasSujeira = new THREE.Points(particulasGeo, particulasMat);
+scene.add(particulasSujeira);
+
+// ---------- ÁGUA ----------
+const aguaMat = new THREE.MeshPhysicalMaterial({
+    color: 0x0066aa, transparent: true, opacity: 0.18, roughness: 0.0, metalness: 0.0,
+    clearcoat: 0.15, clearcoatRoughness: 0.2,
+});
+const aguaMesh = new THREE.Mesh(
+    new THREE.BoxGeometry(W - 1.2, H - 0.8, D - 1.2),
+    aguaMat
+);
+aguaMesh.position.set(0, H / 2 + 0.5, 0);
+scene.add(aguaMesh);
+
+const superficieMat = new THREE.MeshPhysicalMaterial({
+    color: 0x88ccff, transparent: true, opacity: 0.12, roughness: 0.0, metalness: 0.0,
+    clearcoat: 0.3, clearcoatRoughness: 0.1, side: THREE.DoubleSide,
+});
+const superficieGeo = new THREE.PlaneGeometry(W - 0.8, D - 0.8, 40, 40);
+const superficie = new THREE.Mesh(superficieGeo, superficieMat);
+superficie.rotation.x = -Math.PI / 2;
+superficie.position.set(0, H + 0.5, 0);
+scene.add(superficie);
+
+// ---------- PEIXE ----------
+function criarPeixe() {
+    const grupo = new THREE.Group();
+    const corpoMat = new THREE.MeshPhysicalMaterial({
+        color: 0xff6633, roughness: 0.2, metalness: 0.05, emissive: 0xff4400,
+        emissiveIntensity: 0.06, clearcoat: 0.35, clearcoatRoughness: 0.2,
+    });
+    const corpo = new THREE.Mesh(new THREE.SphereGeometry(0.8, 22, 22), corpoMat);
+    corpo.scale.set(1.5, 0.85, 0.95);
+    corpo.position.z = -0.2;
+    corpo.castShadow = true;
+    grupo.add(corpo);
+
+    // faixas
+    const faixaMat = new THREE.MeshPhysicalMaterial({ color: 0xffaa33, roughness: 0.3, clearcoat: 0.2 });
+    for (let i = 0; i < 3; i++) {
+        const faixa = new THREE.Mesh(new THREE.TorusGeometry(0.55, 0.05, 6, 16), faixaMat);
+        faixa.rotation.y = Math.PI / 2;
+        faixa.position.set(0.1 - i * 0.35, 0, -0.2);
+        faixa.scale.set(1, 0.7, 0.6);
+        grupo.add(faixa);
+    }
+
+    const caudaMat = new THREE.MeshPhysicalMaterial({ color: 0xff5533, roughness: 0.3, metalness: 0.05, clearcoat: 0.2 });
+    const cauda = new THREE.Mesh(new THREE.ConeGeometry(0.8, 0.9, 6), caudaMat);
+    cauda.position.set(0, 0, -1.0);
+    cauda.rotation.x = Math.PI / 2;
+    cauda.scale.set(1, 0.25, 0.4);
+    grupo.add(cauda);
+
+    const barbatanaMat = new THREE.MeshPhysicalMaterial({
+        color: 0xff6633, roughness: 0.4, transparent: true, opacity: 0.75, clearcoat: 0.1,
+    });
+    const dorsal = new THREE.Mesh(new THREE.ConeGeometry(0.35, 0.6, 4), barbatanaMat);
+    dorsal.position.set(0, 0.6, -0.2);
+    dorsal.scale.set(1, 1, 0.3);
+    dorsal.rotation.x = 0.2;
+    grupo.add(dorsal);
+
+    for (let lado = -1; lado <= 1; lado += 2) {
+        const peitoral = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.35, 4), barbatanaMat);
+        peitoral.position.set(lado * 0.75, -0.1, -0.1);
+        peitoral.scale.set(1, 0.25, 0.5);
+        peitoral.rotation.z = lado * 0.5;
+        peitoral.rotation.x = 0.3;
+        grupo.add(peitoral);
+    }
+
+    const anal = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.25, 4), barbatanaMat);
+    anal.position.set(0, -0.5, -0.4);
+    anal.scale.set(1, 0.3, 0.5);
+    anal.rotation.x = -0.2;
+    grupo.add(anal);
+
+    const olhoMat = new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.05, clearcoat: 0.5 });
+    const pupilaMat = new THREE.MeshPhysicalMaterial({ color: 0x111111, roughness: 0.0, clearcoat: 0.8 });
+    for (let lado = -1; lado <= 1; lado += 2) {
+        const olho = new THREE.Mesh(new THREE.SphereGeometry(0.16, 10, 10), olhoMat);
+        olho.position.set(lado * 0.5, 0.2, 0.4);
+        grupo.add(olho);
+        const pupila = new THREE.Mesh(new THREE.SphereGeometry(0.07, 10, 10), pupilaMat);
+        pupila.position.set(lado * 0.55, 0.2, 0.48);
+        grupo.add(pupila);
+        const brilho = new THREE.Mesh(new THREE.SphereGeometry(0.03, 6, 6), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.6 }));
+        brilho.position.set(lado * 0.52, 0.24, 0.5);
+        grupo.add(brilho);
+    }
+
+    const brilhoCorpo = new THREE.Mesh(new THREE.SphereGeometry(0.95, 10, 10), new THREE.MeshPhysicalMaterial({
+        color: 0x88ddff, emissive: 0x88ddff, emissiveIntensity: 0.06, transparent: true, opacity: 0.12, clearcoat: 0.5,
+    }));
+    brilhoCorpo.scale.set(1.6, 1.1, 1.1);
+    brilhoCorpo.position.z = -0.2;
+    grupo.add(brilhoCorpo);
+
+    grupo.scale.set(0.7, 0.7, 0.7);
+    grupo.userData.cauda = cauda;
+    return grupo;
+}
+const peixe = criarPeixe();
+peixe.position.set(0, H / 2, 0);
+scene.add(peixe);
+
+// ---------- LIXO ----------
+function criarLixo(tipoId) {
+    const grupo = new THREE.Group();
+    let mat;
+    switch (tipoId) {
+        case 0: // Garrafa PET
+            mat = new THREE.MeshPhysicalMaterial({ color: 0x44aa88, roughness: 0.3, metalness: 0.1, clearcoat: 0.2 });
+            const corpo = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.28, 0.7, 8), mat);
+            corpo.position.y = 0.35;
             grupo.add(corpo);
-
-            // Cauda
-            const caudaMat = new THREE.MeshPhysicalMaterial({
-                color: 0xff5533,
-                roughness: 0.3,
-                metalness: 0.05,
-                clearcoat: 0.2,
+            const gargalo = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.12, 0.18, 8), mat);
+            gargalo.position.y = 0.8;
+            grupo.add(gargalo);
+            const tampa = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.06, 8), new THREE.MeshPhysicalMaterial({ color: 0x00aa88, roughness: 0.5, clearcoat: 0.3 }));
+            tampa.position.y = 0.92;
+            grupo.add(tampa);
+            const rotulo = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.24, 0.2, 8), new THREE.MeshPhysicalMaterial({ color: 0x44dd88, roughness: 0.6 }));
+            rotulo.position.y = 0.45;
+            grupo.add(rotulo);
+            break;
+        case 1: // Lata
+            mat = new THREE.MeshPhysicalMaterial({ color: 0xcc8844, roughness: 0.5, metalness: 0.5, clearcoat: 0.1 });
+            const lata = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.32, 0.6, 12), mat);
+            lata.position.y = 0.3;
+            grupo.add(lata);
+            const lataTopo = new THREE.Mesh(new THREE.CircleGeometry(0.28, 12), mat);
+            lataTopo.rotation.x = -Math.PI / 2;
+            lataTopo.position.y = 0.6;
+            grupo.add(lataTopo);
+            const lataFundo = new THREE.Mesh(new THREE.CircleGeometry(0.32, 12), mat);
+            lataFundo.rotation.x = Math.PI / 2;
+            grupo.add(lataFundo);
+            const anel = new THREE.Mesh(new THREE.TorusGeometry(0.15, 0.02, 6, 12), new THREE.MeshPhysicalMaterial({ color: 0xccaa88, metalness: 0.6, roughness: 0.3 }));
+            anel.position.set(0, 0.62, 0);
+            anel.rotation.x = Math.PI / 2;
+            grupo.add(anel);
+            break;
+        case 2: // Sacola
+            mat = new THREE.MeshPhysicalMaterial({
+                color: 0x999999, roughness: 0.7, transparent: true, opacity: 0.5, side: THREE.DoubleSide, clearcoat: 0.1,
             });
-            const caudaGeo = new THREE.ConeGeometry(0.8, 0.9, 6);
-            const cauda = new THREE.Mesh(caudaGeo, caudaMat);
-            cauda.position.set(0, 0, -1.0);
-            cauda.rotation.x = Math.PI / 2;
-            cauda.scale.set(1, 0.25, 0.4);
-            grupo.add(cauda);
-
-            // Barbatana dorsal
-            const barbatanaMat = new THREE.MeshPhysicalMaterial({
-                color: 0xff6633,
-                roughness: 0.4,
-                metalness: 0.0,
-                transparent: true,
-                opacity: 0.75,
-                clearcoat: 0.1,
-            });
-            const dorsal = new THREE.Mesh(
-                new THREE.ConeGeometry(0.35, 0.6, 4),
-                barbatanaMat
-            );
-            dorsal.position.set(0, 0.6, -0.2);
-            dorsal.scale.set(1, 1, 0.3);
-            dorsal.rotation.x = 0.2;
-            grupo.add(dorsal);
-
-            // Barbatanas peitorais
-            for (let lado = -1; lado <= 1; lado += 2) {
-                const peitoral = new THREE.Mesh(
-                    new THREE.ConeGeometry(0.2, 0.35, 4),
-                    barbatanaMat
-                );
-                peitoral.position.set(lado * 0.75, -0.1, -0.1);
-                peitoral.scale.set(1, 0.25, 0.5);
-                peitoral.rotation.z = lado * 0.5;
-                peitoral.rotation.x = 0.3;
-                grupo.add(peitoral);
+            for (let i = 0; i < 5; i++) {
+                const saco = new THREE.Mesh(new THREE.CircleGeometry(0.18 + Math.random() * 0.15, 5), mat);
+                saco.position.set((Math.random() - 0.5) * 0.5, Math.random() * 0.3, (Math.random() - 0.5) * 0.5);
+                saco.rotation.set(Math.random() * 6, Math.random() * 6, Math.random() * 6);
+                grupo.add(saco);
             }
-
-            // Barbatana anal
-            const anal = new THREE.Mesh(
-                new THREE.ConeGeometry(0.2, 0.25, 4),
-                barbatanaMat
-            );
-            anal.position.set(0, -0.5, -0.4);
-            anal.scale.set(1, 0.3, 0.5);
-            anal.rotation.x = -0.2;
-            grupo.add(anal);
-
-            // Olhos
-            const olhoMat = new THREE.MeshPhysicalMaterial({
-                color: 0xffffff,
-                roughness: 0.05,
-                metalness: 0.0,
-                clearcoat: 0.5,
-            });
-            const pupilaMat = new THREE.MeshPhysicalMaterial({
-                color: 0x111111,
-                roughness: 0.0,
-                metalness: 0.0,
-                clearcoat: 0.8,
-            });
-            for (let lado = -1; lado <= 1; lado += 2) {
-                const olho = new THREE.Mesh(
-                    new THREE.SphereGeometry(0.16, 10, 10),
-                    olhoMat
-                );
-                olho.position.set(lado * 0.5, 0.2, 0.4);
-                grupo.add(olho);
-
-                const pupila = new THREE.Mesh(
-                    new THREE.SphereGeometry(0.07, 10, 10),
-                    pupilaMat
-                );
-                pupila.position.set(lado * 0.55, 0.2, 0.48);
-                grupo.add(pupila);
-
-                // Brilho no olho
-                const brilhoOlho = new THREE.Mesh(
-                    new THREE.SphereGeometry(0.03, 6, 6),
-                    new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.6 })
-                );
-                brilhoOlho.position.set(lado * 0.52, 0.24, 0.5);
-                grupo.add(brilhoOlho);
+            const alcaMat = new THREE.MeshPhysicalMaterial({ color: 0x888888, roughness: 0.8, transparent: true, opacity: 0.4 });
+            for (let i = -1; i <= 1; i += 2) {
+                const alca = new THREE.Mesh(new THREE.TorusGeometry(0.15, 0.015, 4, 8), alcaMat);
+                alca.position.set(i * 0.15, 0.35, 0);
+                alca.rotation.x = 0.3;
+                alca.rotation.z = i * 0.2;
+                grupo.add(alca);
             }
+            break;
+        case 3: // Papelão
+            mat = new THREE.MeshPhysicalMaterial({ color: 0xbb9966, roughness: 0.95 });
+            const caixa = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.35, 0.5), mat);
+            caixa.position.y = 0.18;
+            grupo.add(caixa);
+            const detMat = new THREE.MeshPhysicalMaterial({ color: 0xaa8855, roughness: 0.9 });
+            for (let i = 0; i < 2; i++) {
+                const det = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.02, 0.02), detMat);
+                det.position.set(0, 0.25, (i - 0.5) * 0.18);
+                grupo.add(det);
+            }
+            const fita = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.02, 0.3), new THREE.MeshPhysicalMaterial({ color: 0xddccaa, roughness: 0.7, transparent: true, opacity: 0.6 }));
+            fita.position.set(0, 0.32, 0);
+            grupo.add(fita);
+            break;
+    }
+    grupo.userData.tipoId = tipoId;
+    return grupo;
+}
 
-            // Brilho corporal
-            const brilhoMat = new THREE.MeshPhysicalMaterial({
-                color: 0x88ddff,
-                emissive: 0x88ddff,
-                emissiveIntensity: 0.06,
-                transparent: true,
-                opacity: 0.12,
-                clearcoat: 0.5,
-            });
-            const brilho = new THREE.Mesh(
-                new THREE.SphereGeometry(0.95, 10, 10),
-                brilhoMat
-            );
-            brilho.scale.set(1.6, 1.1, 1.1);
-            brilho.position.z = -0.2;
-            grupo.add(brilho);
-
-            grupo.scale.set(0.7, 0.7, 0.7);
-            return grupo;
+const poolLixo = [];
+function pegarLixoDoPool(tipoId) {
+    for (let i = 0; i < poolLixo.length; i++) {
+        if (!poolLixo[i].ativo && poolLixo[i].tipoId === tipoId) {
+            poolLixo[i].ativo = true;
+            poolLixo[i].mesh.visible = true;
+            return poolLixo[i];
         }
+    }
+    const mesh = criarLixo(tipoId);
+    scene.add(mesh);
+    mesh.visible = false;
+    const obj = { mesh, ativo: false, especial: false, velocidadeQueda: 0.4, rotacaoVel: 0, tipoId, assentado: false, valor: 1 };
+    poolLixo.push(obj);
+    return obj;
+}
+function retornarLixoAoPool(obj) {
+    obj.ativo = false;
+    obj.assentado = false;
+    obj.mesh.visible = false;
+    obj.mesh.position.set(0, -20, 0);
+    estado.lixoAtivo = estado.lixoAtivo.filter(l => l !== obj);
+    const filhosExtra = obj.mesh.children.filter(c => c.userData && c.userData.efeitoExtra);
+    filhosExtra.forEach(f => obj.mesh.remove(f));
+}
 
-        const peixe = criarPeixe();
-        peixe.position.set(0, CONFIG.ALTURA_AGUA / 2, 0);
-        scene.add(peixe);
+function gerarLixo() {
+    if (!estado.jogoAtivo || estado.jogoVencido) return;
+    if (estado.lixoAtivo.length >= CONFIG.CAPACIDADE_MAX_LIXO) return;
 
-        // ---------- LIXO ----------
-        function criarLixo(tipo) {
-            const grupo = new THREE.Group();
-            let mat;
+    const tipo = TIPOS_LIXO[Math.floor(Math.random() * TIPOS_LIXO.length)];
+    const obj = pegarLixoDoPool(tipo.id);
+    if (!obj) return;
 
-            switch (tipo || Math.floor(Math.random() * 4)) {
-                case 0: // Garrafa PET
-                    mat = new THREE.MeshPhysicalMaterial({ color: 0x44aa88, roughness: 0.3, metalness: 0.1, clearcoat: 0.2 });
-                    const corpo = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.28, 0.7, 8), mat);
-                    corpo.position.y = 0.35;
-                    grupo.add(corpo);
-                    const gargalo = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.12, 0.18, 8), mat);
-                    gargalo.position.y = 0.8;
-                    grupo.add(gargalo);
-                    const tampa = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.06, 8),
-                        new THREE.MeshPhysicalMaterial({ color: 0x00aa88, roughness: 0.5, clearcoat: 0.3 }));
-                    tampa.position.y = 0.92;
-                    grupo.add(tampa);
-                    // Rótulo
-                    const rotulo = new THREE.Mesh(
-                        new THREE.CylinderGeometry(0.22, 0.24, 0.2, 8),
-                        new THREE.MeshPhysicalMaterial({ color: 0x44dd88, roughness: 0.6, metalness: 0.0 })
-                    );
-                    rotulo.position.y = 0.45;
-                    grupo.add(rotulo);
-                    break;
-                case 1: // Lata
-                    mat = new THREE.MeshPhysicalMaterial({ color: 0xcc8844, roughness: 0.5, metalness: 0.5, clearcoat: 0.1 });
-                    const lata = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.32, 0.6, 12), mat);
-                    lata.position.y = 0.3;
-                    grupo.add(lata);
-                    const lataTopo = new THREE.Mesh(new THREE.CircleGeometry(0.28, 12), mat);
-                    lataTopo.rotation.x = -Math.PI / 2;
-                    lataTopo.position.y = 0.6;
-                    grupo.add(lataTopo);
-                    const lataFundo = new THREE.Mesh(new THREE.CircleGeometry(0.32, 12), mat);
-                    lataFundo.rotation.x = Math.PI / 2;
-                    lataFundo.position.y = 0.0;
-                    grupo.add(lataFundo);
-                    // Anel
-                    const anel = new THREE.Mesh(
-                        new THREE.TorusGeometry(0.15, 0.02, 6, 12),
-                        new THREE.MeshPhysicalMaterial({ color: 0xccaa88, metalness: 0.6, roughness: 0.3 })
-                    );
-                    anel.position.set(0, 0.62, 0);
-                    anel.rotation.x = Math.PI / 2;
-                    grupo.add(anel);
-                    break;
-                case 2: // Sacola plástica
-                    mat = new THREE.MeshPhysicalMaterial({
-                        color: 0x999999,
-                        roughness: 0.7,
-                        metalness: 0.0,
-                        transparent: true,
-                        opacity: 0.5,
-                        side: THREE.DoubleSide,
-                        clearcoat: 0.1,
-                    });
-                    for (let i = 0; i < 5; i++) {
-                        const saco = new THREE.Mesh(new THREE.CircleGeometry(0.18 + Math.random() * 0.15, 5), mat);
-                        saco.position.set((Math.random() - 0.5) * 0.5, Math.random() * 0.3, (Math.random() - 0.5) * 0.5);
-                        saco.rotation.set(Math.random() * 6, Math.random() * 6, Math.random() * 6);
-                        grupo.add(saco);
-                    }
-                    // Alças
-                    const alcaMat = new THREE.MeshPhysicalMaterial({
-                        color: 0x888888,
-                        roughness: 0.8,
-                        metalness: 0.0,
-                        transparent: true,
-                        opacity: 0.4,
-                    });
-                    for (let i = -1; i <= 1; i += 2) {
-                        const alca = new THREE.Mesh(
-                            new THREE.TorusGeometry(0.15, 0.015, 4, 8),
-                            alcaMat
-                        );
-                        alca.position.set(i * 0.15, 0.35, 0);
-                        alca.rotation.x = 0.3;
-                        alca.rotation.z = i * 0.2;
-                        grupo.add(alca);
-                    }
-                    break;
-                case 3: // Papelão
-                    mat = new THREE.MeshPhysicalMaterial({ color: 0xbb9966, roughness: 0.95, metalness: 0.0 });
-                    const caixa = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.35, 0.5), mat);
-                    caixa.position.y = 0.18;
-                    grupo.add(caixa);
-                    const detMat = new THREE.MeshPhysicalMaterial({ color: 0xaa8855, roughness: 0.9 });
-                    for (let i = 0; i < 2; i++) {
-                        const det = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.02, 0.02), detMat);
-                        det.position.set(0, 0.25, (i - 0.5) * 0.18);
-                        grupo.add(det);
-                    }
-                    // Fita adesiva
-                    const fita = new THREE.Mesh(
-                        new THREE.BoxGeometry(0.1, 0.02, 0.3),
-                        new THREE.MeshPhysicalMaterial({ color: 0xddccaa, roughness: 0.7, transparent: true,
-                            opacity: 0.6 })
-                    );
-                    fita.position.set(0, 0.32, 0);
-                    grupo.add(fita);
-                    break;
-            }
+    const posX = (Math.random() - 0.5) * (W - 3);
+    const posZ = (Math.random() - 0.5) * (D - 3);
+    obj.mesh.position.set(posX, H + 0.5 + Math.random() * 1, posZ);
+    obj.mesh.rotation.set(Math.random() * 6, Math.random() * 6, Math.random() * 6);
+    const escala = 0.5 + Math.random() * 0.6;
+    obj.mesh.scale.set(escala, escala, escala);
+    obj.mesh.visible = true;
+    obj.assentado = false;
+    obj.especial = Math.random() < (estado.up_sorte ? 0.3 : 0.08);
+    obj.valor = tipo.valorMin + Math.floor(Math.random() * (tipo.valorMax - tipo.valorMin + 1));
+    if (obj.especial) obj.valor += 2;
+    obj.tempoColeta = tipo.tempoColeta * (estado.up_coletaRapida ? 0.7 : 1);
+    obj.nome = tipo.nome;
 
-            grupo.scale.set(0.5 + Math.random() * 0.6, 0.5 + Math.random() * 0.6, 0.5 + Math.random() * 0.6);
-            return grupo;
+    if (obj.especial) {
+        const glow = new THREE.Mesh(new THREE.SphereGeometry(0.8, 8, 8), new THREE.MeshBasicMaterial({ color: 0xffd700, transparent: true, opacity: 0.2 }));
+        glow.userData.efeitoExtra = true;
+        obj.mesh.add(glow);
+        const anel = new THREE.Mesh(new THREE.TorusGeometry(0.6, 0.05, 8, 12), new THREE.MeshBasicMaterial({ color: 0xffd700, transparent: true, opacity: 0.3, wireframe: true }));
+        anel.rotation.x = Math.PI / 2;
+        anel.userData.efeitoExtra = true;
+        obj.mesh.add(anel);
+    }
+
+    obj.velocidadeQueda = CONFIG.VELOCIDADE_QUEDA_LIXO * (0.6 + Math.random() * 0.5);
+    obj.rotacaoVel = (Math.random() - 0.5) * 1.5;
+
+    estado.lixoAtivo.push(obj);
+    atualizarContadorLixo();
+}
+
+function atualizarLixo() {
+    const delta = 1 / 60;
+    for (let i = 0; i < estado.lixoAtivo.length; i++) {
+        const obj = estado.lixoAtivo[i];
+        if (!obj || !obj.ativo || obj.assentado) continue;
+        obj.mesh.position.y -= obj.velocidadeQueda * delta * 2;
+        obj.mesh.rotation.x += obj.rotacaoVel * delta;
+        obj.mesh.rotation.z += obj.rotacaoVel * 0.5 * delta;
+        if (obj.mesh.position.y < 0.3) {
+            obj.mesh.position.y = 0.3;
+            obj.mesh.rotation.x = 0;
+            obj.mesh.rotation.z = 0;
+            obj.velocidadeQueda = 0;
+            obj.assentado = true; // fica IMÓVEL ao tocar o chão
         }
+    }
+}
 
-        // ---------- POOL DE LIXO ----------
-        const poolLixo = [];
+// ---------- ANEL DE DESTAQUE (detector) ----------
+const anelDetector = new THREE.Mesh(
+    new THREE.TorusGeometry(0.7, 0.04, 8, 16),
+    new THREE.MeshBasicMaterial({ color: 0x00e5ff, transparent: true, opacity: 0.6 })
+);
+anelDetector.rotation.x = Math.PI / 2;
+anelDetector.visible = false;
+scene.add(anelDetector);
 
-        function pegarLixoDoPool() {
-            for (let i = 0; i < poolLixo.length; i++) {
-                if (!poolLixo[i].ativo) {
-                    poolLixo[i].ativo = true;
-                    poolLixo[i].mesh.visible = true;
-                    poolLixo[i].mesh.position.set(0, 0, 0);
-                    return poolLixo[i];
-                }
-            }
-            const mesh = criarLixo();
-            scene.add(mesh);
-            mesh.visible = false;
-            const obj = { mesh, ativo: false, especial: false, velocidadeQueda: 0.4, rotacaoVel: 0 };
-            poolLixo.push(obj);
-            return obj;
+// ---------- COLETA (segurar E) ----------
+function acharLixoMaisProximo() {
+    let maisProximo = null, distMin = CONFIG.RAIO_COLETA + (estado.up_magnetismo ? 1.5 : 0);
+    for (const obj of estado.lixoAtivo) {
+        if (!obj || !obj.ativo || !obj.assentado) continue;
+        const dist = peixe.position.distanceTo(obj.mesh.position);
+        if (dist < distMin) { distMin = dist; maisProximo = obj; }
+    }
+    return maisProximo;
+}
+
+function atualizarColeta(delta) {
+    const alvo = acharLixoMaisProximo();
+
+    // prompt visual "[E] Coletar" acima do lixo mais próximo
+    if (alvo && !estado.jogoVencido) {
+        const posTela = alvo.mesh.position.clone();
+        posTela.y += 0.9;
+        posTela.project(camera);
+        const x = (posTela.x * 0.5 + 0.5) * window.innerWidth;
+        const y = (-posTela.y * 0.5 + 0.5) * window.innerHeight;
+        if (posTela.z < 1) {
+            dom.promptColeta.style.display = 'block';
+            dom.promptColeta.style.left = x + 'px';
+            dom.promptColeta.style.top = y + 'px';
+        } else {
+            dom.promptColeta.style.display = 'none';
         }
+    } else {
+        dom.promptColeta.style.display = 'none';
+    }
 
-        function retornarLixoAoPool(obj) {
-            obj.ativo = false;
-            obj.mesh.visible = false;
-            obj.mesh.position.set(0, -20, 0);
-            estado.lixoAtivo = estado.lixoAtivo.filter(l => l !== obj);
-            // Remover glow
-            const glows = obj.mesh.children.filter(c => c.material && c.material.type === 'MeshBasicMaterial');
-            glows.forEach(g => obj.mesh.remove(g));
+    if (estado.coletaSegurando && alvo) {
+        if (estado.coletaAlvo !== alvo) {
+            estado.coletaAlvo = alvo;
+            estado.coletaProgresso = 0;
         }
+        estado.coletaProgresso += delta;
+        dom.coletaContainer.style.display = 'block';
+        dom.coletaLabel.textContent = 'Coletando ' + alvo.nome + '...';
+        const frac = Math.min(1, estado.coletaProgresso / alvo.tempoColeta);
+        dom.coletaBarra.style.width = (frac * 100) + '%';
 
-        // ---------- GERADOR DE LIXO ----------
-        function gerarLixo() {
-            if (!estado.jogoAtivo || estado.jogoVencido) return;
-            if (estado.lixoAtivo.length >= CONFIG.CAPACIDADE_MAX_LIXO) return;
-
-            const obj = pegarLixoDoPool();
-            if (!obj) return;
-
-            const W = CONFIG.TAMANHO_AQUARIO_X;
-            const D = CONFIG.TAMANHO_AQUARIO_Z;
-            const posX = (Math.random() - 0.5) * (W - 3);
-            const posZ = (Math.random() - 0.5) * (D - 3);
-            obj.mesh.position.set(posX, CONFIG.ALTURA_AGUA + 0.5 + Math.random() * 1, posZ);
-            obj.mesh.rotation.set(Math.random() * 6, Math.random() * 6, Math.random() * 6);
-            obj.mesh.scale.set(
-                0.5 + Math.random() * 0.6,
-                0.5 + Math.random() * 0.6,
-                0.5 + Math.random() * 0.6
-            );
-            obj.mesh.visible = true;
-            obj.especial = Math.random() < (estado.upgradeSorte ? 0.3 : 0.08);
-
-            // Brilho especial
-            if (obj.especial) {
-                const glowMat = new THREE.MeshBasicMaterial({
-                    color: 0xffd700,
-                    transparent: true,
-                    opacity: 0.2,
-                });
-                const glow = new THREE.Mesh(
-                    new THREE.SphereGeometry(0.8, 8, 8),
-                    glowMat
-                );
-                obj.mesh.add(glow);
-
-                // Anel dourado
-                const anelMat = new THREE.MeshBasicMaterial({
-                    color: 0xffd700,
-                    transparent: true,
-                    opacity: 0.3,
-                    wireframe: true,
-                });
-                const anel = new THREE.Mesh(
-                    new THREE.TorusGeometry(0.6, 0.05, 8, 12),
-                    anelMat
-                );
-                anel.rotation.x = Math.PI / 2;
-                obj.mesh.add(anel);
-            }
-
-            // Velocidade de queda mais lenta (CONFIG)
-            obj.velocidadeQueda = CONFIG.VELOCIDADE_QUEDA_LIXO * (0.6 + Math.random() * 0.5);
-            obj.rotacaoVel = (Math.random() - 0.5) * 1.5;
-
-            estado.lixoAtivo.push(obj);
-            atualizarContadorLixo();
+        if (estado.coletaProgresso >= alvo.tempoColeta) {
+            finalizarColeta(alvo);
         }
+    } else {
+        estado.coletaAlvo = null;
+        estado.coletaProgresso = 0;
+        dom.coletaContainer.style.display = 'none';
+    }
+}
 
-        // ---------- LOOP DE QUEDA ----------
-        function atualizarLixo() {
-            const delta = 1 / 60;
-            for (let i = estado.lixoAtivo.length - 1; i >= 0; i--) {
-                const obj = estado.lixoAtivo[i];
-                if (!obj || !obj.ativo) continue;
+function finalizarColeta(obj) {
+    let moedasGanhas = obj.valor;
+    if (estado.up_ima) moedasGanhas = Math.round(moedasGanhas * 1.5);
 
-                obj.mesh.position.y -= obj.velocidadeQueda * delta * 2;
-                obj.mesh.rotation.x += obj.rotacaoVel * delta;
-                obj.mesh.rotation.z += obj.rotacaoVel * 0.5 * delta;
+    estado.moedas += moedasGanhas;
+    estado.lixoColetadoAtual++;
 
-                if (obj.mesh.position.y < 0.3) {
-                    obj.mesh.position.y = 0.3;
-                    obj.mesh.rotation.x = 0;
-                    obj.mesh.rotation.z = 0;
-                    obj.velocidadeQueda = 0;
-                }
-            }
-        }
+    const pos = obj.mesh.position.clone();
+    criarEfeitoColeta(pos, moedasGanhas, obj.especial);
 
-        // ---------- COLETA ----------
-        function coletarLixo() {
-            if (!estado.jogoAtivo || estado.jogoVencido) return;
-            if (estado.coletando) return;
-            estado.coletando = true;
+    retornarLixoAoPool(obj);
+    estado.coletaAlvo = null;
+    estado.coletaProgresso = 0;
+    atualizarContadorLixo();
+    atualizarHUD();
 
-            const posPeixe = peixe.position;
-            let maisProximo = null;
-            let distMin = CONFIG.RAIO_COLETA;
+    if (estado.lixoColetadoAtual >= CONFIG.LIXO_POR_LIMPECA) completarLimpeza();
+    atualizarPoluicao();
 
-            for (const obj of estado.lixoAtivo) {
-                if (!obj || !obj.ativo) continue;
-                const dist = posPeixe.distanceTo(obj.mesh.position);
-                if (dist < distMin) {
-                    distMin = dist;
-                    maisProximo = obj;
-                }
-            }
+    if (obj.especial) mostrarDialogo('🐟', '✨ Lixo raro! +' + moedasGanhas + ' moedas!', 1.2);
+}
 
-            if (maisProximo) {
-                const valor = maisProximo.especial ? 5 : 1;
-                let moedasGanhas = valor;
-                if (estado.upgradeIma) moedasGanhas = Math.floor(moedasGanhas * 1.5);
+// ---------- EFEITO COLETA ----------
+function criarEfeitoColeta(pos, moedas, especial) {
+    const cores = especial ? [0xffd700, 0xffaa00] : [0x00ff88, 0x44ddff];
+    for (let i = 0; i < 20; i++) {
+        const size = 0.04 + Math.random() * 0.1;
+        const mat = new THREE.MeshBasicMaterial({ color: cores[Math.floor(Math.random() * cores.length)], transparent: true, opacity: 0.9 });
+        const particula = new THREE.Mesh(new THREE.SphereGeometry(size, 4, 4), mat);
+        particula.position.copy(pos);
+        particula.position.x += (Math.random() - 0.5) * 0.7;
+        particula.position.z += (Math.random() - 0.5) * 0.7;
+        particula.position.y += 0.3;
+        scene.add(particula);
+        const vel = new THREE.Vector3((Math.random() - 0.5) * 5, Math.random() * 6 + 1, (Math.random() - 0.5) * 5);
+        let vida = 0.7 + Math.random() * 0.7;
+        (function animar() {
+            if (vida <= 0) { scene.remove(particula); return; }
+            vida -= 0.012;
+            particula.position.add(vel.clone().multiplyScalar(0.02));
+            vel.y -= 0.05;
+            particula.material.opacity = vida;
+            particula.scale.multiplyScalar(0.99);
+            requestAnimationFrame(animar);
+        })();
+    }
+    const canvas = document.createElement('canvas');
+    canvas.width = 128; canvas.height = 64;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = especial ? '#ffd700' : '#00ff88';
+    ctx.font = 'bold 42px Arial';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.shadowColor = 'rgba(0,0,0,0.9)'; ctx.shadowBlur = 15;
+    ctx.fillText('+' + moedas, 64, 32);
+    const texture = new THREE.CanvasTexture(canvas);
+    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false }));
+    sprite.position.copy(pos);
+    sprite.position.y += 0.7;
+    sprite.scale.set(1.4, 0.7, 1);
+    scene.add(sprite);
+    let vida = 1;
+    (function animarTexto() {
+        if (vida <= 0) { scene.remove(sprite); return; }
+        vida -= 0.01;
+        sprite.position.y += 0.03;
+        sprite.material.opacity = vida;
+        sprite.scale.multiplyScalar(1.005);
+        requestAnimationFrame(animarTexto);
+    })();
+}
 
-                estado.moedas += moedasGanhas;
-                estado.lixoColetadoAtual++;
+// ---------- COMPLETAR LIMPEZA ----------
+function completarLimpeza() {
+    estado.limpezasCompletas++;
+    estado.lixoColetadoAtual = 0;
+    mostrarDialogo('🐟', '🧹 Limpeza #' + estado.limpezasCompletas + ' concluída!', 2);
+    estado.nivelDificuldade++;
+    estado.intervaloAtual = Math.max(CONFIG.INTERVALO_LIXO_MINIMO, CONFIG.INTERVALO_LIXO_INICIAL - estado.nivelDificuldade * 0.08);
+    if (estado.limpezasCompletas >= CONFIG.LIMPECAS_PARA_VENCER) { vitoria(); return; }
+    if (estado.limpezasCompletas === 10) mostrarDialogo('🐟', 'Já estou quase lá! Mais um pouco!', 2.5);
+    atualizarHUD();
+    atualizarPoluicao();
+}
 
-                const pos = maisProximo.mesh.position.clone();
-                criarEfeitoColeta(pos, moedasGanhas, maisProximo.especial);
+// ---------- POLUIÇÃO ----------
+function atualizarPoluicao() {
+    const total = CONFIG.CAPACIDADE_MAX_LIXO;
+    const ativo = estado.lixoAtivo.length;
+    const filtroMult = estado.up_filtro ? 0.7 : 1;
+    estado.poluicao = Math.min(100, (ativo / total) * 100 * filtroMult);
 
-                retornarLixoAoPool(maisProximo);
-                atualizarContadorLixo();
-                atualizarHUD();
+    dom.barra.style.width = estado.poluicao + '%';
+    if (estado.poluicao < 25) dom.barra.style.background = 'linear-gradient(90deg,#00d4ff,#00ff88)';
+    else if (estado.poluicao < 50) dom.barra.style.background = 'linear-gradient(90deg,#ffaa00,#ff8800)';
+    else if (estado.poluicao < 75) dom.barra.style.background = 'linear-gradient(90deg,#ff6600,#ff4400)';
+    else dom.barra.style.background = 'linear-gradient(90deg,#ff4400,#cc0033)';
 
-                if (estado.lixoColetadoAtual >= CONFIG.LIXO_POR_LIMPECA) {
-                    completarLimpeza();
-                }
+    const p = estado.poluicao / 100;
+    // água fica mais verde/turva com poluição
+    aguaMat.color.setHSL(0.55 - p * 0.32, 0.4 + p * 0.5, 0.35 - p * 0.14);
+    aguaMat.opacity = 0.12 + p * 0.42;
+    superficieMat.color.setHSL(0.55 - p * 0.25, 0.3 + p * 0.4, 0.5 - p * 0.16);
 
-                atualizarPoluicao();
+    // musgo cresce nas paredes/chão
+    manchasMusgo.forEach((m, i) => {
+        const limiar = (i % 30) / 30;
+        m.material.opacity = p > limiar ? Math.min(0.55, (p - limiar) * 1.4) : 0;
+    });
 
-                if (maisProximo.especial) {
-                    mostrarDialogo('🐟', '✨ Lixo raro! +' + moedasGanhas + ' moedas!', 0.8);
-                }
-            } else {
-                mostrarMensagemSistema('Nenhum lixo por perto!', 0.5);
-            }
+    // partículas de sujeira aumentam
+    particulasMat.opacity = 0.05 + p * 0.55;
+    particulasMat.size = 0.05 + p * 0.09;
+    particulasMat.color.setHSL(0.28 - p * 0.05, 0.5, 0.35 + p * 0.1);
 
-            setTimeout(() => { estado.coletando = false; }, 150);
-        }
+    if (estado.poluicao > 90 && estado.jogoAtivo) mostrarMensagemSistema('⚠️ O aquário está muito sujo! Limpe logo!', 1);
 
-        // ---------- EFEITO COLETA ----------
-        function criarEfeitoColeta(pos, moedas, especial) {
-            const cores = especial ? [0xffd700, 0xffaa00] : [0x00ff88, 0x44ddff];
-            for (let i = 0; i < 20; i++) {
-                const size = 0.04 + Math.random() * 0.1;
-                const geo = new THREE.SphereGeometry(size, 4, 4);
-                const mat = new THREE.MeshBasicMaterial({
-                    color: cores[Math.floor(Math.random() * cores.length)],
-                    transparent: true,
-                    opacity: 0.9,
-                });
-                const particula = new THREE.Mesh(geo, mat);
-                particula.position.copy(pos);
-                particula.position.x += (Math.random() - 0.5) * 0.7;
-                particula.position.z += (Math.random() - 0.5) * 0.7;
-                particula.position.y += 0.3;
-                scene.add(particula);
-
-                const vel = new THREE.Vector3(
-                    (Math.random() - 0.5) * 5,
-                    Math.random() * 6 + 1,
-                    (Math.random() - 0.5) * 5
-                );
-                let vida = 0.7 + Math.random() * 0.7;
-
-                function animarParticula() {
-                    if (vida <= 0) { scene.remove(particula); return; }
-                    vida -= 0.012;
-                    particula.position.add(vel.clone().multiplyScalar(0.02));
-                    vel.y -= 0.05;
-                    particula.material.opacity = vida;
-                    particula.scale.multiplyScalar(0.99);
-                    requestAnimationFrame(animarParticula);
-                }
-                animarParticula();
-            }
-
-            // Texto flutuante
-            const canvas = document.createElement('canvas');
-            canvas.width = 128;
-            canvas.height = 64;
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = especial ? '#ffd700' : '#00ff88';
-            ctx.font = 'bold 42px Arial';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.shadowColor = 'rgba(0,0,0,0.9)';
-            ctx.shadowBlur = 15;
-            ctx.fillText('+' + moedas, 64, 32);
-
-            const texture = new THREE.CanvasTexture(canvas);
-            const spriteMat = new THREE.SpriteMaterial({
-                map: texture,
-                transparent: true,
-                depthWrite: false,
-            });
-            const sprite = new THREE.Sprite(spriteMat);
-            sprite.position.copy(pos);
-            sprite.position.y += 0.7;
-            sprite.scale.set(1.4, 0.7, 1);
-            scene.add(sprite);
-
-            let vida = 1;
-
-            function animarTexto() {
-                if (vida <= 0) { scene.remove(sprite); return; }
-                vida -= 0.01;
-                sprite.position.y += 0.03;
-                sprite.material.opacity = vida;
-                sprite.scale.multiplyScalar(1.005);
-                requestAnimationFrame(animarTexto);
-            }
-            animarTexto();
-        }
-
-        // ---------- COMPLETAR LIMPEZA ----------
-        function completarLimpeza() {
-            estado.limpezasCompletas++;
-            estado.lixoColetadoAtual = 0;
-
-            mostrarDialogo('🐟', '🧹 Limpeza #' + estado.limpezasCompletas + ' concluída!', 2);
-
-            estado.nivelDificuldade++;
-            estado.intervaloAtual = Math.max(
-                CONFIG.INTERVALO_LIXO_MINIMO,
-                CONFIG.INTERVALO_LIXO_INICIAL - estado.nivelDificuldade * 0.08
-            );
-
-            if (estado.limpezasCompletas >= CONFIG.LIMPECAS_PARA_VENCER) {
-                vitoria();
-                return;
-            }
-
-            if (estado.limpezasCompletas === 10) {
-                mostrarDialogo('🐟', 'Já estou quase lá! Mais um pouco e o aquário fica limpo!', 2.5);
-            }
-
-            atualizarHUD();
+    if (estado.poluicao > 99 && estado.jogoAtivo) {
+        mostrarDialogo('🐟', 'Aff... transbordou de lixo! Vamos tentar de novo?', 2);
+        estado.jogoAtivo = false;
+        setTimeout(() => {
+            estado.jogoAtivo = true;
             atualizarPoluicao();
-        }
-
-        // ---------- POLUIÇÃO ----------
-        function atualizarPoluicao() {
-            const total = CONFIG.CAPACIDADE_MAX_LIXO;
-            const ativo = estado.lixoAtivo.length;
-            estado.poluicao = Math.min(100, (ativo / total) * 100);
-
-            const barra = dom.barra;
-            barra.style.width = estado.poluicao + '%';
-
-            if (estado.poluicao < 25) {
-                barra.style.background = 'linear-gradient(90deg, #00d4ff, #00ff88)';
-            } else if (estado.poluicao < 50) {
-                barra.style.background = 'linear-gradient(90deg, #ffaa00, #ff8800)';
-            } else if (estado.poluicao < 75) {
-                barra.style.background = 'linear-gradient(90deg, #ff6600, #ff4400)';
-            } else {
-                barra.style.background = 'linear-gradient(90deg, #ff4400, #cc0033)';
-            }
-
-            // Cor da água
-            const verde = Math.min(1, estado.poluicao / 40);
-            aguaMat.color.setHSL(0.55 - verde * 0.2, 0.4 + verde * 0.5, 0.35 - verde * 0.12);
-            aguaMat.opacity = 0.12 + verde * 0.35;
-
-            // Superfície da água
-            superficieMat.color.setHSL(0.55 - verde * 0.15, 0.3 + verde * 0.4, 0.5 - verde * 0.15);
-
-            if (estado.poluicao > 90 && estado.jogoAtivo) {
-                mostrarMensagemSistema('⚠️ O aquário está muito sujo! Limpe logo!', 1);
-            }
-
-            if (estado.poluicao > 99 && estado.jogoAtivo) {
-                mostrarDialogo('🐟', 'Aff... transbordou de lixo! Vamos tentar de novo?', 2);
-                estado.jogoAtivo = false;
-                setTimeout(() => {
-                    estado.jogoAtivo = true;
-                    estado.poluicao = 80;
-                    atualizarPoluicao();
-                    mostrarMensagemSistema('💪 Você consegue! Continue limpando!', 1.5);
-                }, 3000);
-            }
-        }
-
-        // ---------- MOVIMENTO PEIXE ----------
-        const teclas = { w: false, a: false, s: false, d: false, q: false, shift: false };
-
-        function atualizarMovimentoPeixe() {
-            if (!estado.jogoAtivo || estado.jogoVencido) return;
-
-            let dx = 0,
-                dz = 0,
-                dy = 0;
-
-            if (teclas.w) dz += 1;
-            if (teclas.s) dz -= 1;
-            if (teclas.a) dx -= 1;
-            if (teclas.d) dx += 1;
-            if (teclas.q) dy += 1;
-            if (teclas.shift) dy -= 1;
-
-            const magH = Math.sqrt(dx * dx + dz * dz);
-            if (magH > 0) { dx /= magH;
-                dz /= magH; }
-
-            const velocidade = estado.upgradeVelocidade ? CONFIG.VELOCIDADE_BASE * 1.5 : CONFIG.VELOCIDADE_BASE;
-            const velVertical = estado.upgradeVelocidade ? CONFIG.VELOCIDADE_VERTICAL * 1.5 : CONFIG.VELOCIDADE_VERTICAL;
-
-            const limiteX = CONFIG.TAMANHO_AQUARIO_X / 2 - 1.2;
-            const limiteZ = CONFIG.TAMANHO_AQUARIO_Z / 2 - 1.2;
-            const limiteYMin = CONFIG.PROFUNDIDADE_MIN;
-            const limiteYMax = CONFIG.PROFUNDIDADE_MAX;
-
-            const delta = 0.035;
-            peixe.position.x += dx * velocidade * delta;
-            peixe.position.z += dz * velocidade * delta;
-            peixe.position.y += dy * velVertical * delta;
-
-            peixe.position.x = Math.max(-limiteX, Math.min(limiteX, peixe.position.x));
-            peixe.position.z = Math.max(-limiteZ, Math.min(limiteZ, peixe.position.z));
-            peixe.position.y = Math.max(limiteYMin, Math.min(limiteYMax, peixe.position.y));
-
-            if (dx !== 0 || dz !== 0) {
-                const angulo = Math.atan2(dx, dz);
-                let diff = angulo - peixe.rotation.y;
-                while (diff > Math.PI) diff -= Math.PI * 2;
-                while (diff < -Math.PI) diff += Math.PI * 2;
-                peixe.rotation.y += diff * 0.12;
-                peixe.rotation.z = -dx * 0.2;
-                peixe.rotation.x = dz * 0.12 + dy * 0.15;
-            } else {
-                peixe.rotation.z *= 0.9;
-                peixe.rotation.x *= 0.9;
-            }
-
-            const cauda = peixe.children.find(c => c.geometry && c.geometry.type === 'ConeGeometry');
-            if (cauda) {
-                const velocidadeNado = Math.sqrt(dx * dx + dz * dz + dy * dy);
-                const offset = (dx + dz) * 2 + dy * 1.5;
-                cauda.rotation.z = Math.sin(Date.now() * 0.012 + offset) * 0.2 * (velocidadeNado + 0.5);
-            }
-
-            if (Math.random() < 0.015) {
-                criarBolha(peixe.position.clone());
-            }
-
-            atualizarCamera();
-        }
-
-        // ---------- CÂMERA ----------
-        function atualizarCamera() {
-            const pos = peixe.position;
-            const offset = CONFIG.CAMERA_OFFSET;
-            const altura = CONFIG.CAMERA_ALTURA;
-
-            const alvo = new THREE.Vector3(
-                pos.x * 0.5,
-                pos.y + altura * 0.7,
-                pos.z * 0.5 + offset
-            );
-
-            camera.position.lerp(alvo, estado.cameraSmoothness);
-            const lookTarget = new THREE.Vector3(pos.x, pos.y, pos.z);
-            camera.lookAt(lookTarget);
-            estado.targetCamPos.copy(alvo);
-        }
-
-        // ---------- BOLHAS ----------
-        function criarBolha(pos) {
-            const geo = new THREE.SphereGeometry(0.03 + Math.random() * 0.06, 4, 4);
-            const mat = new THREE.MeshBasicMaterial({
-                color: 0x88ddff,
-                transparent: true,
-                opacity: 0.15 + Math.random() * 0.25,
-            });
-            const bolha = new THREE.Mesh(geo, mat);
-            bolha.position.copy(pos);
-            bolha.position.x += (Math.random() - 0.5) * 0.4;
-            bolha.position.z += (Math.random() - 0.5) * 0.4;
-            bolha.position.y += 0.3;
-            scene.add(bolha);
-
-            let vida = 0.8 + Math.random() * 0.8;
-
-            function animarBolha() {
-                if (vida <= 0) { scene.remove(bolha); return; }
-                vida -= 0.007;
-                bolha.position.y += 0.025;
-                bolha.position.x += (Math.random() - 0.5) * 0.015;
-                bolha.scale.multiplyScalar(1.003);
-                bolha.material.opacity = vida * 0.4;
-                requestAnimationFrame(animarBolha);
-            }
-            animarBolha();
-        }
-
-        // ---------- SUPERFÍCIE DA ÁGUA (ondulação) ----------
-        function atualizarSuperficie() {
-            const positions = superficie.geometry.attributes.position;
-            const time = Date.now() * 0.001;
-            for (let i = 0; i < positions.count; i++) {
-                const x = positions.getX(i);
-                const z = positions.getZ(i);
-                const wave = Math.sin(x * 0.3 + time * 0.8) * 0.08 +
-                    Math.cos(z * 0.4 + time * 0.6) * 0.06 +
-                    Math.sin((x + z) * 0.2 + time * 0.5) * 0.05;
-                positions.setZ(i, wave);
-            }
-            positions.needsUpdate = true;
-            superficie.geometry.computeVertexNormals();
-        }
-
-        // ---------- HUD ----------
-        function atualizarHUD() {
-            dom.moedas.textContent = estado.moedas;
-            dom.limpezas.textContent = estado.limpezasCompletas;
-
-            const seg = Math.floor(estado.tempoJogado);
-            const min = Math.floor(seg / 60);
-            dom.tempo.textContent = String(min).padStart(2, '0') + ':' + String(seg % 60).padStart(2, '0');
-
-            if (dom.lojaMoedas) dom.lojaMoedas.textContent = estado.moedas;
-        }
-
-        function atualizarContadorLixo() {
-            dom.lixo.textContent = estado.lixoAtivo.length;
-        }
-
-        // ---------- DIÁLOGO ----------
-        let dialogoTimeout = null;
-        let mensagemTimeout = null;
-
-        function mostrarDialogo(nome, texto, duracao = 2) {
-            if (dialogoTimeout) {
-                clearTimeout(dialogoTimeout);
-                dom.dialogo.style.display = 'none';
-            }
-            const container = dom.dialogo;
-            const textoEl = dom.dialogoTexto;
-            document.querySelector('#dialogo-container .nome').textContent = nome;
-            textoEl.textContent = texto;
-            container.style.display = 'block';
-            estado.dialogoAtivo = true;
-
-            dialogoTimeout = setTimeout(() => {
-                container.style.display = 'none';
-                estado.dialogoAtivo = false;
-            }, duracao * 1000);
-        }
-
-        function mostrarMensagemSistema(texto, duracao = 1) {
-            if (mensagemTimeout) {
-                clearTimeout(mensagemTimeout);
-                dom.mensagem.style.display = 'none';
-            }
-            dom.mensagem.textContent = texto;
-            dom.mensagem.style.display = 'block';
-            mensagemTimeout = setTimeout(() => {
-                dom.mensagem.style.display = 'none';
-            }, duracao * 1000);
-        }
-
-        // ---------- LOJA ----------
-        const upgrades = [{
-            id: 'velocidade',
-            emoji: '🏎️',
-            nome: 'Nadadeira Rápida',
-            desc: 'Aumenta velocidade em 50%',
-            preco: 50,
-        }, {
-            id: 'ima',
-            emoji: '💰',
-            nome: 'Ímã de Moedas',
-            desc: '+50% de moedas por lixo',
-            preco: 75,
-        }, {
-            id: 'detector',
-            emoji: '🔍',
-            nome: 'Detector de Lixo',
-            desc: 'Mostra setas para o lixo',
-            preco: 100,
-        }, {
-            id: 'sorte',
-            emoji: '✨',
-            nome: 'Sorte de Peixe',
-            desc: '30% chance de lixo raro',
-            preco: 120,
-        }, ];
-
-        function renderizarLoja() {
-            const grid = dom.lojaGrid;
-            grid.innerHTML = '';
-
-            upgrades.forEach((up) => {
-                const comprado = estado['upgrade' + up.id.charAt(0).toUpperCase() + up.id.slice(1)];
-
-                const div = document.createElement('div');
-                div.className = 'loja-item';
-                div.innerHTML = `
-                    <span class="emoji">${up.emoji}</span>
-                    <div class="nome">${up.nome}</div>
-                    <div class="desc">${up.desc}</div>
-                    <div class="preco">🪙 ${up.preco}</div>
-                    <button class="btn-comprar ${comprado ? 'comprado' : ''}" 
-                            ${comprado ? 'disabled' : ''}
-                            data-id="${up.id}">
-                        ${comprado ? '✅ Comprado' : 'Comprar'}
-                    </button>
-                `;
-                grid.appendChild(div);
-
-                const btn = div.querySelector('.btn-comprar');
-                btn.addEventListener('click', () => {
-                    if (comprado) return;
-                    comprarUpgrade(up.id);
-                });
-            });
-
-            dom.lojaMoedas.textContent = estado.moedas;
-        }
-
-        function comprarUpgrade(id) {
-            const up = upgrades.find(u => u.id === id);
-            if (!up) return;
-
-            if (estado.moedas < up.preco) {
-                mostrarMensagemSistema('Moedas insuficientes!', 1);
-                return;
-            }
-
-            estado.moedas -= up.preco;
-            const key = 'upgrade' + id.charAt(0).toUpperCase() + id.slice(1);
-            estado[key] = true;
-
-            mostrarDialogo('🐟', '✨ Comprei ' + up.nome + '!', 1.5);
-            atualizarHUD();
-            renderizarLoja();
-
-            if (id === 'sorte') {
-                mostrarMensagemSistema('🍀 Agora 30% de chance de lixo raro!', 1.5);
-            }
-        }
-
-        // ---------- VITÓRIA ----------
-        function vitoria() {
-            estado.jogoVencido = true;
-            estado.jogoAtivo = false;
-
-            const stats = `
-                <div class="stat-row"><span class="label">🪙 Moedas</span><span class="value">${estado.moedas}</span></div>
-                <div class="stat-row"><span class="label">🔄 Limpezas</span><span class="value">${estado.limpezasCompletas}</span></div>
-                <div class="stat-row"><span class="label">⏱️ Tempo</span><span class="value">${dom.tempo.textContent}</span></div>
-                <div class="stat-row"><span class="label">🏎️ Velocidade</span><span class="value ${estado.upgradeVelocidade ? 'green' : 'red'}">${estado.upgradeVelocidade ? '✅' : '❌'}</span></div>
-                <div class="stat-row"><span class="label">💰 Ímã</span><span class="value ${estado.upgradeIma ? 'green' : 'red'}">${estado.upgradeIma ? '✅' : '❌'}</span></div>
-                <div class="stat-row"><span class="label">🔍 Detector</span><span class="value ${estado.upgradeDetector ? 'green' : 'red'}">${estado.upgradeDetector ? '✅' : '❌'}</span></div>
-                <div class="stat-row"><span class="label">✨ Sorte</span><span class="value ${estado.upgradeSorte ? 'green' : 'red'}">${estado.upgradeSorte ? '✅' : '❌'}</span></div>
-            `;
-            dom.vitoriaStats.innerHTML = stats;
-            dom.vitoriaOverlay.classList.add('aberta');
-
-            mostrarDialogo('🐟', '🎉 Finalmente! Meu aquário está limpo de novo!', 3);
-
-            // Confetes
-            for (let i = 0; i < 100; i++) {
-                setTimeout(() => {
-                    const pos = new THREE.Vector3(
-                        (Math.random() - 0.5) * CONFIG.TAMANHO_AQUARIO_X,
-                        Math.random() * CONFIG.ALTURA_AGUA + 2,
-                        (Math.random() - 0.5) * CONFIG.TAMANHO_AQUARIO_Z
-                    );
-                    const cores = [0xffd700, 0xff4444, 0x44ff44, 0x4444ff, 0xff44ff, 0x44ffff, 0xff8844];
-                    const geo = new THREE.BoxGeometry(0.06, 0.06, 0.12);
-                    const mat = new THREE.MeshBasicMaterial({
-                        color: cores[Math.floor(Math.random() * cores.length)],
-                    });
-                    const confete = new THREE.Mesh(geo, mat);
-                    confete.position.copy(pos);
-                    confete.rotation.set(Math.random() * 6, Math.random() * 6, Math.random() * 6);
-                    scene.add(confete);
-
-                    let vida = 4.5;
-                    const velY = 0.6 + Math.random() * 2;
-                    const velX = (Math.random() - 0.5) * 3.5;
-                    const velZ = (Math.random() - 0.5) * 3.5;
-
-                    function animarConfete() {
-                        if (vida <= 0) { scene.remove(confete); return; }
-                        vida -= 0.012;
-                        confete.position.y += velY * 0.025;
-                        confete.position.x += velX * 0.025;
-                        confete.position.z += velZ * 0.025;
-                        confete.rotation.x += 0.15;
-                        confete.rotation.z += 0.12;
-                        confete.scale.multiplyScalar(0.998);
-                        requestAnimationFrame(animarConfete);
-                    }
-                    animarConfete();
-                }, i * 35);
-            }
-        }
-
-        // ---------- GAME LOOP ----------
-        let ultimoTempoLixo = 0;
-
-        function gameLoop(time) {
-            requestAnimationFrame(gameLoop);
-
-            const delta = 0.016;
-
-            if (estado.jogoAtivo && !estado.jogoVencido) {
-                estado.tempoJogado += delta;
-                atualizarHUD();
-
-                ultimoTempoLixo += delta;
-                if (ultimoTempoLixo > estado.intervaloAtual) {
-                    ultimoTempoLixo = 0;
-                    const qtd = Math.min(4, 1 + Math.floor(estado.nivelDificuldade / 3));
-                    for (let i = 0; i < qtd; i++) {
-                        setTimeout(gerarLixo, i * 100);
-                    }
-                    if (estado.poluicao < 20 && estado.lixoAtivo.length < 25) {
-                        setTimeout(gerarLixo, 200);
-                        setTimeout(gerarLixo, 400);
-                    }
-                }
-
-                atualizarLixo();
-                atualizarPoluicao();
-                atualizarMovimentoPeixe();
-                atualizarSuperficie();
-
-                if (estado.upgradeDetector && estado.lixoAtivo.length > 0) {
-                    // Detector ativo
-                }
-            }
-
-            renderer.render(scene, camera);
-        }
-
-        // ---------- CONTROLES ----------
-        document.addEventListener('keydown', (e) => {
-            const key = e.key.toLowerCase();
-
-            if (key === 'w') teclas.w = true;
-            if (key === 'a') teclas.a = true;
-            if (key === 's') teclas.s = true;
-            if (key === 'd') teclas.d = true;
-            if (key === 'q') teclas.q = true;
-            if (key === 'shift') { teclas.shift = true;
-                e.preventDefault(); }
-
-            if (key === 'e' || key === ' ') {
-                e.preventDefault();
-                coletarLixo();
-            }
-
-            if (key === 'tab') {
-                e.preventDefault();
-                toggleLoja();
-            }
-
-            if (key === 'escape') {
-                if (dom.lojaOverlay.classList.contains('aberta')) {
-                    toggleLoja();
-                }
-            }
-        });
-
-        document.addEventListener('keyup', (e) => {
-            const key = e.key.toLowerCase();
-            if (key === 'w') teclas.w = false;
-            if (key === 'a') teclas.a = false;
-            if (key === 's') teclas.s = false;
-            if (key === 'd') teclas.d = false;
-            if (key === 'q') teclas.q = false;
-            if (key === 'shift') { teclas.shift = false;
-                e.preventDefault(); }
-        });
-
-        // ---------- LOJA UI ----------
-        function toggleLoja() {
-            const overlay = dom.lojaOverlay;
-            if (overlay.classList.contains('aberta')) {
-                overlay.classList.remove('aberta');
-                estado.lojaAberta = false;
-            } else {
-                renderizarLoja();
-                overlay.classList.add('aberta');
-                estado.lojaAberta = true;
-            }
-        }
-
-        dom.btnAbrirLoja.addEventListener('click', toggleLoja);
-        dom.btnFecharLoja.addEventListener('click', toggleLoja);
-
-        dom.lojaOverlay.addEventListener('click', (e) => {
-            if (e.target === dom.lojaOverlay) toggleLoja();
-        });
-
-        // ---------- REINICIAR ----------
-        dom.btnReiniciar.addEventListener('click', () => {
-            location.reload();
-        });
-
-        // ---------- RESIZE ----------
-        window.addEventListener('resize', () => {
-            const w = window.innerWidth;
-            const h = window.innerHeight;
-            camera.aspect = w / h;
-            camera.updateProjectionMatrix();
-            renderer.setSize(w, h);
-        });
-
-        // ---------- INICIALIZAR ----------
-        function iniciarJogo() {
-            setTimeout(() => { mostrarDialogo('🐟', 'Que dia tranquilo...', 2); }, 500);
-            setTimeout(() => { mostrarDialogo('🐟', 'O que é isso? Está caindo lixo!', 2.5); }, 3000);
-            setTimeout(() => { mostrarDialogo('🐟', 'Aff... que aquário sujo! Preciso limpar isso!', 3); }, 6000);
-            setTimeout(() => {
-                mostrarMensagemSistema('🎮 WASD = Mover | Q/Shift = Subir/Descer | E = Coletar | TAB = Loja', 3);
-            }, 9500);
-
-            estado.intervaloAtual = CONFIG.INTERVALO_LIXO_INICIAL;
+            mostrarMensagemSistema('💪 Você consegue! Continue limpando!', 1.5);
+        }, 3000);
+    }
+}
+
+// ---------- CÂMERA / MOVIMENTO (terceira pessoa) ----------
+const teclas = { w: false, a: false, s: false, d: false, e: false };
+let arrastando = false;
+let ultimoMouseX = 0, ultimoMouseY = 0;
+
+renderer.domElement.addEventListener('mousedown', (e) => {
+    arrastando = true; ultimoMouseX = e.clientX; ultimoMouseY = e.clientY;
+});
+window.addEventListener('mouseup', () => { arrastando = false; });
+window.addEventListener('mousemove', (e) => {
+    if (!arrastando) return;
+    const dx = e.clientX - ultimoMouseX, dy = e.clientY - ultimoMouseY;
+    ultimoMouseX = e.clientX; ultimoMouseY = e.clientY;
+    estado.camAzimuth -= dx * 0.006;
+    estado.camPitch = Math.max(-0.9, Math.min(0.9, estado.camPitch - dy * 0.005));
+});
+renderer.domElement.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 1) { arrastando = true; ultimoMouseX = e.touches[0].clientX; ultimoMouseY = e.touches[0].clientY; }
+}, { passive: true });
+renderer.domElement.addEventListener('touchmove', (e) => {
+    if (!arrastando || e.touches.length !== 1) return;
+    const dx = e.touches[0].clientX - ultimoMouseX, dy = e.touches[0].clientY - ultimoMouseY;
+    ultimoMouseX = e.touches[0].clientX; ultimoMouseY = e.touches[0].clientY;
+    estado.camAzimuth -= dx * 0.006;
+    estado.camPitch = Math.max(-0.9, Math.min(0.9, estado.camPitch - dy * 0.005));
+}, { passive: true });
+window.addEventListener('touchend', () => { arrastando = false; });
+
+function vetoresCamera() {
+    const forward = new THREE.Vector3(
+        Math.sin(estado.camAzimuth) * Math.cos(estado.camPitch),
+        Math.sin(estado.camPitch),
+        Math.cos(estado.camAzimuth) * Math.cos(estado.camPitch)
+    ).normalize();
+    const right = new THREE.Vector3(Math.sin(estado.camAzimuth - Math.PI / 2), 0, Math.cos(estado.camAzimuth - Math.PI / 2)).normalize();
+    return { forward, right };
+}
+
+function atualizarMovimentoPeixe(delta) {
+    if (!estado.jogoAtivo || estado.jogoVencido) return;
+    const { forward, right } = vetoresCamera();
+
+    let mov = new THREE.Vector3();
+    if (teclas.w) mov.add(forward);
+    if (teclas.s) mov.sub(forward);
+    if (teclas.d) mov.add(right);
+    if (teclas.a) mov.sub(right);
+
+    const movendo = mov.lengthSq() > 0.0001;
+    if (movendo) mov.normalize();
+
+    let velMult = 1;
+    if (estado.up_velocidade) velMult *= 1.4;
+    if (estado.up_velocidade2) velMult *= 1.25;
+    const velocidade = CONFIG.VELOCIDADE_BASE * velMult;
+
+    peixe.position.addScaledVector(mov, velocidade * delta);
+
+    const limiteX = W / 2 - 1.2, limiteZ = D / 2 - 1.2;
+    const limiteYMin = estado.up_folego ? CONFIG.PROFUNDIDADE_MIN - 0.8 : CONFIG.PROFUNDIDADE_MIN;
+    const limiteYMax = estado.up_folego ? CONFIG.PROFUNDIDADE_MAX + 0.8 : CONFIG.PROFUNDIDADE_MAX;
+    peixe.position.x = Math.max(-limiteX, Math.min(limiteX, peixe.position.x));
+    peixe.position.z = Math.max(-limiteZ, Math.min(limiteZ, peixe.position.z));
+    peixe.position.y = Math.max(limiteYMin, Math.min(limiteYMax, peixe.position.y));
+
+    if (movendo) {
+        const anguloAlvo = Math.atan2(mov.x, mov.z);
+        let diff = anguloAlvo - peixe.rotation.y;
+        while (diff > Math.PI) diff -= Math.PI * 2;
+        while (diff < -Math.PI) diff += Math.PI * 2;
+        peixe.rotation.y += diff * 0.15;
+        const inclinacao = Math.atan2(mov.y, Math.sqrt(mov.x * mov.x + mov.z * mov.z));
+        peixe.rotation.x += (inclinacao * 0.5 - peixe.rotation.x) * 0.12;
+        peixe.rotation.z += ((-diff) * 0.4 - peixe.rotation.z) * 0.1;
+    } else {
+        peixe.rotation.z *= 0.9;
+        peixe.rotation.x *= 0.94;
+    }
+
+    if (peixe.userData.cauda) {
+        const velocidadeNado = mov.length();
+        peixe.userData.cauda.rotation.z = Math.sin(Date.now() * 0.012) * 0.2 * (velocidadeNado + 0.5);
+    }
+
+    if (Math.random() < 0.02) criarBolha(peixe.position.clone());
+    luzPeixe.position.copy(peixe.position);
+}
+
+function atualizarCamera() {
+    const { forward, right } = vetoresCamera();
+    // câmera fica atrás do peixe, um pouco à direita, olhando por cima do ombro
+    const desejada = peixe.position.clone()
+        .addScaledVector(forward, -CONFIG.CAM_DIST)
+        .addScaledVector(right, CONFIG.CAM_LADO)
+        .add(new THREE.Vector3(0, CONFIG.CAM_ALTURA, 0));
+
+    if (estado.camPosAtual.lengthSq() === 0) estado.camPosAtual.copy(desejada);
+    estado.camPosAtual.lerp(desejada, 0.08);
+    camera.position.copy(estado.camPosAtual);
+
+    const alvoOlhar = peixe.position.clone().addScaledVector(forward, 2);
+    camera.lookAt(alvoOlhar);
+}
+
+// ---------- ANEL DETECTOR ----------
+function atualizarDetector() {
+    if (!estado.up_detector) { anelDetector.visible = false; return; }
+    const alvo = acharLixoMaisProximo() || estado.lixoAtivo.find(o => o.ativo && o.assentado);
+    if (alvo) {
+        anelDetector.visible = true;
+        anelDetector.position.copy(alvo.mesh.position);
+        anelDetector.position.y += 0.05;
+        anelDetector.rotation.z += 0.03;
+        anelDetector.scale.setScalar(1 + Math.sin(Date.now() * 0.006) * 0.15);
+    } else {
+        anelDetector.visible = false;
+    }
+}
+
+// ---------- BOLHAS ----------
+function criarBolha(pos) {
+    const bolha = new THREE.Mesh(new THREE.SphereGeometry(0.03 + Math.random() * 0.06, 4, 4), new THREE.MeshBasicMaterial({ color: 0x88ddff, transparent: true, opacity: 0.15 + Math.random() * 0.25 }));
+    bolha.position.copy(pos);
+    bolha.position.x += (Math.random() - 0.5) * 0.4;
+    bolha.position.z += (Math.random() - 0.5) * 0.4;
+    bolha.position.y += 0.3;
+    scene.add(bolha);
+    let vida = 0.8 + Math.random() * 0.8;
+    (function animar() {
+        if (vida <= 0) { scene.remove(bolha); return; }
+        vida -= 0.007;
+        bolha.position.y += 0.025;
+        bolha.position.x += (Math.random() - 0.5) * 0.015;
+        bolha.scale.multiplyScalar(1.003);
+        bolha.material.opacity = vida * 0.4;
+        requestAnimationFrame(animar);
+    })();
+}
+
+// ---------- SUPERFÍCIE / PLANTAS (animação) ----------
+function atualizarSuperficie() {
+    const positions = superficie.geometry.attributes.position;
+    const time = Date.now() * 0.001;
+    for (let i = 0; i < positions.count; i++) {
+        const x = positions.getX(i), z = positions.getZ(i);
+        const wave = Math.sin(x * 0.3 + time * 0.8) * 0.08 + Math.cos(z * 0.4 + time * 0.6) * 0.06 + Math.sin((x + z) * 0.2 + time * 0.5) * 0.05;
+        positions.setZ(i, wave);
+    }
+    positions.needsUpdate = true;
+    superficie.geometry.computeVertexNormals();
+}
+function atualizarPlantas(time) {
+    aquario.userData.plantas.forEach(p => {
+        p.rotation.z = p.userData.baseRotZ + Math.sin(time * 0.7 + p.userData.faseAnim) * 0.12;
+        p.rotation.x = p.userData.baseRotX + Math.cos(time * 0.5 + p.userData.faseAnim) * 0.06;
+    });
+}
+function atualizarParticulasSujeira(time) {
+    if (particulasMat.opacity <= 0.02) return;
+    const pos = particulasGeo.attributes.position;
+    for (let i = 0; i < NUM_PARTICULAS_SUJEIRA; i++) {
+        pos.array[i * 3 + 1] -= 0.003;
+        if (pos.array[i * 3 + 1] < 0.3) pos.array[i * 3 + 1] = H;
+        pos.array[i * 3] += Math.sin(time + i) * 0.001;
+    }
+    pos.needsUpdate = true;
+}
+
+// ---------- HUD ----------
+function atualizarHUD() {
+    dom.moedas.textContent = estado.moedas;
+    dom.limpezas.textContent = estado.limpezasCompletas;
+    const seg = Math.floor(estado.tempoJogado);
+    const min = Math.floor(seg / 60);
+    dom.tempo.textContent = String(min).padStart(2, '0') + ':' + String(seg % 60).padStart(2, '0');
+    if (dom.lojaMoedas) dom.lojaMoedas.textContent = estado.moedas;
+}
+function atualizarContadorLixo() { dom.lixo.textContent = estado.lixoAtivo.length; }
+
+// ---------- DIÁLOGO ----------
+let dialogoTimeout = null, mensagemTimeout = null;
+function mostrarDialogo(nome, texto, duracao = 2) {
+    if (dialogoTimeout) { clearTimeout(dialogoTimeout); dom.dialogo.style.display = 'none'; }
+    document.querySelector('#dialogo-container .nome').textContent = nome;
+    dom.dialogoTexto.textContent = texto;
+    dom.dialogo.style.display = 'block';
+    estado.dialogoAtivo = true;
+    dialogoTimeout = setTimeout(() => { dom.dialogo.style.display = 'none'; estado.dialogoAtivo = false; }, duracao * 1000);
+}
+function mostrarMensagemSistema(texto, duracao = 1) {
+    if (mensagemTimeout) { clearTimeout(mensagemTimeout); dom.mensagem.style.display = 'none'; }
+    dom.mensagem.textContent = texto;
+    dom.mensagem.style.display = 'block';
+    mensagemTimeout = setTimeout(() => { dom.mensagem.style.display = 'none'; }, duracao * 1000);
+}
+
+// ---------- LOJA (10 itens, 50-100 moedas) ----------
+const upgrades = [
+    { id: 'velocidade',    emoji: '🏎️', nome: 'Nadadeira Rápida',    desc: '+40% de velocidade',           preco: 60 },
+    { id: 'velocidade2',   emoji: '🚀', nome: 'Nadadeira Turbo',      desc: '+25% de velocidade extra',     preco: 90 },
+    { id: 'ima',           emoji: '💰', nome: 'Ímã de Moedas',        desc: '+50% de moedas por lixo',      preco: 70 },
+    { id: 'magnetismo',    emoji: '🧲', nome: 'Campo Magnético',      desc: 'Aumenta o raio de coleta',     preco: 80 },
+    { id: 'detector',      emoji: '🔍', nome: 'Detector de Lixo',     desc: 'Marca o lixo mais próximo',    preco: 65 },
+    { id: 'sorte',         emoji: '✨', nome: 'Sorte de Peixe',       desc: '30% de chance de lixo raro',   preco: 75 },
+    { id: 'coletaRapida',  emoji: '⚡', nome: 'Coleta Rápida',        desc: '-30% no tempo de coleta',      preco: 100 },
+    { id: 'folego',        emoji: '🫧', nome: 'Fôlego Extra',         desc: 'Nada mais fundo e mais alto',  preco: 55 },
+    { id: 'luz',           emoji: '💡', nome: 'Luz Aquática',         desc: 'Ilumina a área ao redor',      preco: 50 },
+    { id: 'filtro',        emoji: '🌀', nome: 'Filtro Anti-Poluição', desc: 'Reduz o acúmulo de poluição',  preco: 95 },
+];
+
+function renderizarLoja() {
+    const grid = dom.lojaGrid;
+    grid.innerHTML = '';
+    upgrades.forEach((up) => {
+        const comprado = estado['up_' + up.id];
+        const div = document.createElement('div');
+        div.className = 'loja-item';
+        div.innerHTML = `
+            <span class="emoji">${up.emoji}</span>
+            <div class="nome">${up.nome}</div>
+            <div class="desc">${up.desc}</div>
+            <div class="preco">🪙 ${up.preco}</div>
+            <button class="btn-comprar ${comprado ? 'comprado' : ''}" ${comprado ? 'disabled' : ''} data-id="${up.id}">
+                ${comprado ? '✅ Comprado' : 'Comprar'}
+            </button>`;
+        grid.appendChild(div);
+        div.querySelector('.btn-comprar').addEventListener('click', () => { if (!comprado) comprarUpgrade(up.id); });
+    });
+    dom.lojaMoedas.textContent = estado.moedas;
+}
+
+function comprarUpgrade(id) {
+    const up = upgrades.find(u => u.id === id);
+    if (!up) return;
+    if (estado.moedas < up.preco) { mostrarMensagemSistema('Moedas insuficientes!', 1); return; }
+    estado.moedas -= up.preco;
+    estado['up_' + id] = true;
+    mostrarDialogo('🐟', '✨ Comprei ' + up.nome + '!', 1.5);
+
+    if (id === 'luz') { luzPeixe.intensity = 1.4; luzPeixe.distance = 12; }
+
+    atualizarHUD();
+    renderizarLoja();
+}
+
+// ---------- VITÓRIA ----------
+function vitoria() {
+    estado.jogoVencido = true;
+    estado.jogoAtivo = false;
+    const linha = (label, ok) => `<div class="stat-row"><span class="label">${label}</span><span class="value ${ok ? 'green' : 'red'}">${ok ? '✅' : '❌'}</span></div>`;
+    dom.vitoriaStats.innerHTML = `
+        <div class="stat-row"><span class="label">🪙 Moedas</span><span class="value">${estado.moedas}</span></div>
+        <div class="stat-row"><span class="label">🔄 Limpezas</span><span class="value">${estado.limpezasCompletas}</span></div>
+        <div class="stat-row"><span class="label">⏱️ Tempo</span><span class="value">${dom.tempo.textContent}</span></div>
+        ${linha('🏎️ Velocidade', estado.up_velocidade)}
+        ${linha('💰 Ímã', estado.up_ima)}
+        ${linha('🔍 Detector', estado.up_detector)}
+        ${linha('✨ Sorte', estado.up_sorte)}
+    `;
+    dom.vitoriaOverlay.classList.add('aberta');
+    mostrarDialogo('🐟', '🎉 Finalmente! Meu aquário está limpo de novo!', 3);
+
+    for (let i = 0; i < 100; i++) {
+        setTimeout(() => {
+            const pos = new THREE.Vector3((Math.random() - 0.5) * W, Math.random() * H + 2, (Math.random() - 0.5) * D);
+            const cores = [0xffd700, 0xff4444, 0x44ff44, 0x4444ff, 0xff44ff, 0x44ffff, 0xff8844];
+            const confete = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.06, 0.12), new THREE.MeshBasicMaterial({ color: cores[Math.floor(Math.random() * cores.length)] }));
+            confete.position.copy(pos);
+            confete.rotation.set(Math.random() * 6, Math.random() * 6, Math.random() * 6);
+            scene.add(confete);
+            let vida = 4.5;
+            const velY = 0.6 + Math.random() * 2, velX = (Math.random() - 0.5) * 3.5, velZ = (Math.random() - 0.5) * 3.5;
+            (function animar() {
+                if (vida <= 0) { scene.remove(confete); return; }
+                vida -= 0.012;
+                confete.position.y += velY * 0.025;
+                confete.position.x += velX * 0.025;
+                confete.position.z += velZ * 0.025;
+                confete.rotation.x += 0.15;
+                confete.rotation.z += 0.12;
+                confete.scale.multiplyScalar(0.998);
+                requestAnimationFrame(animar);
+            })();
+        }, i * 35);
+    }
+}
+
+// ---------- GAME LOOP ----------
+let ultimoTempoLixo = 0;
+function gameLoop() {
+    requestAnimationFrame(gameLoop);
+    const delta = 0.016;
+    const time = Date.now() * 0.001;
+
+    if (estado.jogoAtivo && !estado.jogoVencido) {
+        estado.tempoJogado += delta;
+        atualizarHUD();
+
+        ultimoTempoLixo += delta;
+        if (ultimoTempoLixo > estado.intervaloAtual) {
             ultimoTempoLixo = 0;
-
-            peixe.position.set(0, CONFIG.ALTURA_AGUA / 2, 0);
-
-            atualizarHUD();
-            atualizarContadorLixo();
-            atualizarPoluicao();
-            renderizarLoja();
-
-            estado.targetCamPos.set(0, CONFIG.CAMERA_ALTURA, CONFIG.CAMERA_OFFSET);
-            camera.position.copy(estado.targetCamPos);
-
-            gameLoop(0);
-
-            console.log('🐟 Aquário Limpo - Premium Edition Iniciado!');
-            console.log('🎮 Controles: WASD = Mover | Q/Shift = Subir/Descer | E = Coletar | TAB = Loja');
-            console.log('🪙 F1 = +100 moedas | F2 = Completar limpeza');
+            const filtroDiv = estado.up_filtro ? 1.4 : 1;
+            const qtd = Math.max(1, Math.round(Math.min(4, 1 + Math.floor(estado.nivelDificuldade / 3)) / filtroDiv));
+            for (let i = 0; i < qtd; i++) setTimeout(gerarLixo, i * 100);
         }
 
-        iniciarJogo();
+        atualizarLixo();
+        atualizarPoluicao();
+        atualizarMovimentoPeixe(delta);
+        atualizarColeta(delta);
+        atualizarDetector();
+        atualizarSuperficie();
+        atualizarPlantas(time);
+        atualizarParticulasSujeira(time);
+    }
 
-        // ---------- DEBUG ----------
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'F1') {
-                estado.moedas += 100;
-                atualizarHUD();
-                renderizarLoja();
-                mostrarMensagemSistema('🪙 +100 moedas (debug)', 1);
-            }
-            if (e.key === 'F2') {
-                for (let i = estado.lixoAtivo.length - 1; i >= 0; i--) {
-                    const obj = estado.lixoAtivo[i];
-                    if (obj) retornarLixoAoPool(obj);
-                }
-                estado.lixoColetadoAtual = CONFIG.LIXO_POR_LIMPECA;
-                completarLimpeza();
-                mostrarMensagemSistema('🔄 Limpeza forçada (debug)', 1);
-            }
-        });
-    </script>
+    atualizarCamera();
+    renderer.render(scene, camera);
+}
 
+// ---------- CONTROLES ----------
+document.addEventListener('keydown', (e) => {
+    const key = e.key.toLowerCase();
+    if (key === 'w') teclas.w = true;
+    if (key === 'a') teclas.a = true;
+    if (key === 's') teclas.s = true;
+    if (key === 'd') teclas.d = true;
+    if (key === 'e') { teclas.e = true; estado.coletaSegurando = true; }
+    if (key === 'tab') { e.preventDefault(); toggleLoja(); }
+    if (key === 'escape' && dom.lojaOverlay.classList.contains('aberta')) toggleLoja();
+});
+document.addEventListener('keyup', (e) => {
+    const key = e.key.toLowerCase();
+    if (key === 'w') teclas.w = false;
+    if (key === 'a') teclas.a = false;
+    if (key === 's') teclas.s = false;
+    if (key === 'd') teclas.d = false;
+    if (key === 'e') { teclas.e = false; estado.coletaSegurando = false; }
+});
+
+function toggleLoja() {
+    const overlay = dom.lojaOverlay;
+    if (overlay.classList.contains('aberta')) { overlay.classList.remove('aberta'); estado.lojaAberta = false; }
+    else { renderizarLoja(); overlay.classList.add('aberta'); estado.lojaAberta = true; }
+}
+dom.btnAbrirLoja.addEventListener('click', toggleLoja);
+dom.btnFecharLoja.addEventListener('click', toggleLoja);
+dom.lojaOverlay.addEventListener('click', (e) => { if (e.target === dom.lojaOverlay) toggleLoja(); });
+dom.btnReiniciar.addEventListener('click', () => location.reload());
+
+window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// ---------- INICIALIZAR ----------
+function iniciarJogo() {
+    setTimeout(() => mostrarDialogo('🐟', 'Que dia tranquilo...', 2), 500);
+    setTimeout(() => mostrarDialogo('🐟', 'O que é isso? Está caindo lixo!', 2.5), 3000);
+    setTimeout(() => mostrarDialogo('🐟', 'Aff... que aquário sujo! Preciso limpar isso!', 3), 6000);
+    setTimeout(() => mostrarMensagemSistema('🎮 WASD = Nadar | Arraste o mouse = Câmera | Segure E = Coletar | TAB = Loja', 3.5), 9500);
+
+    estado.intervaloAtual = CONFIG.INTERVALO_LIXO_INICIAL;
+    ultimoTempoLixo = 0;
+    peixe.position.set(0, H / 2, 0);
+
+    atualizarHUD();
+    atualizarContadorLixo();
+    atualizarPoluicao();
+    renderizarLoja();
+    atualizarCamera();
+    camera.position.copy(estado.camPosAtual);
+
+    gameLoop();
+    console.log('🐟 Aquário Limpo - Premium Edition v2 Iniciado!');
+}
+iniciarJogo();
+
+// ---------- DEBUG ----------
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'F1') { estado.moedas += 100; atualizarHUD(); renderizarLoja(); mostrarMensagemSistema('🪙 +100 moedas (debug)', 1); }
+    if (e.key === 'F2') {
+        for (let i = estado.lixoAtivo.length - 1; i >= 0; i--) retornarLixoAoPool(estado.lixoAtivo[i]);
+        estado.lixoColetadoAtual = CONFIG.LIXO_POR_LIMPECA;
+        completarLimpeza();
+        mostrarMensagemSistema('🔄 Limpeza forçada (debug)', 1);
+    }
+});
+</script>
 </body>
 </html>
