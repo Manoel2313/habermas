@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🐟 Aquário Limpo - PC Edition</title>
+    <title>🐟 Aquário Limpo - Premium Edition</title>
     <style>
         * {
             margin: 0;
@@ -88,7 +88,7 @@
             height: 16px;
             background: rgba(0, 0, 0, 0.8);
             border-radius: 20px;
-            border: 2px solid rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.1);
             overflow: hidden;
             z-index: 10;
             backdrop-filter: blur(4px);
@@ -106,7 +106,7 @@
             bottom: 52px;
             left: 50%;
             transform: translateX(-50%);
-            color: rgba(255, 255, 255, 0.5);
+            color: rgba(255, 255, 255, 0.4);
             font-size: 12px;
             z-index: 10;
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
@@ -142,15 +142,6 @@
             to {
                 opacity: 1;
                 transform: scale(1);
-            }
-        }
-        @keyframes pulse {
-            0%,
-            100% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.05);
             }
         }
 
@@ -405,7 +396,7 @@
             box-shadow: 0 5px 35px rgba(0, 136, 255, 0.5);
         }
 
-        /* CONTROLES - PC */
+        /* CONTROLES INFO */
         #controles-info {
             position: fixed;
             bottom: 80px;
@@ -432,7 +423,6 @@
             font-weight: bold;
         }
 
-        /* RESPONSIVO */
         @media (max-width: 768px) {
             #controles-info {
                 display: none;
@@ -509,7 +499,6 @@
             }
         }
 
-        /* Scroll da loja */
         #loja-container::-webkit-scrollbar {
             width: 4px;
         }
@@ -571,9 +560,7 @@
             <h2>🏪 Loja do Aquário</h2>
             <div class="subtitle">✦ Compre upgrades para limpar mais rápido ✦</div>
             <div id="loja-moedas">🪙 <span id="loja-moedas-valor">0</span> moedas</div>
-            <div class="loja-grid" id="loja-grid">
-                <!-- Gerado via JS -->
-            </div>
+            <div class="loja-grid" id="loja-grid"></div>
             <button class="loja-fechar" id="btn-fechar-loja">✕ Fechar Loja</button>
         </div>
     </div>
@@ -583,9 +570,7 @@
         <div id="vitoria-container">
             <div class="titulo">🎉✨</div>
             <div class="subtitulo">Aquário Limpo!</div>
-            <div class="stats" id="vitoria-stats">
-                <!-- Gerado via JS -->
-            </div>
+            <div class="stats" id="vitoria-stats"></div>
             <button class="btn-reiniciar" id="btn-reiniciar">🔄 Jogar Novamente</button>
         </div>
     </div>
@@ -596,7 +581,7 @@
 
     <script>
         // =====================================================================
-        // 🐟 AQUÁRIO LIMPO - VERSÃO PC COMPLETA
+        // 🐟 AQUÁRIO LIMPO - PREMIUM EDITION
         // =====================================================================
 
         // ---------- CONFIGURAÇÕES ----------
@@ -607,18 +592,19 @@
             VELOCIDADE_BASE: 7,
             VELOCIDADE_VERTICAL: 4,
             RAIO_COLETA: 3.0,
-            INTERVALO_LIXO_INICIAL: 2.0,
-            INTERVALO_LIXO_MINIMO: 0.4,
-            TAMANHO_AQUARIO_X: 28, // 4x maior
-            TAMANHO_AQUARIO_Z: 20, // 4x maior
-            ALTURA_AGUA: 10, // 4x maior
-            PROFUNDIDADE_MIN: 1,
-            PROFUNDIDADE_MAX: 9,
+            INTERVALO_LIXO_INICIAL: 2.8,
+            INTERVALO_LIXO_MINIMO: 0.6,
+            VELOCIDADE_QUEDA_LIXO: 0.6,
+            TAMANHO_AQUARIO_X: 28,
+            TAMANHO_AQUARIO_Z: 20,
+            ALTURA_AGUA: 10,
+            PROFUNDIDADE_MIN: 1.5,
+            PROFUNDIDADE_MAX: 8.5,
             CAMERA_OFFSET: 14,
             CAMERA_ALTURA: 10,
         };
 
-        // ---------- ESTADO DO JOGO ----------
+        // ---------- ESTADO ----------
         const estado = {
             moedas: 0,
             limpezasCompletas: 0,
@@ -639,11 +625,12 @@
             coletando: false,
             dialogoAtivo: false,
             lojaAberta: false,
-            cameraSmoothness: 0.04,
+            cameraSmoothness: 0.035,
             targetCamPos: new THREE.Vector3(),
+            tempoAgua: 0,
         };
 
-        // ---------- REFERÊNCIAS DOM ----------
+        // ---------- DOM ----------
         const dom = {
             moedas: document.getElementById('moedas-display'),
             lixo: document.getElementById('lixo-display'),
@@ -663,10 +650,10 @@
             btnReiniciar: document.getElementById('btn-reiniciar'),
         };
 
-        // ---------- THREE.JS CENA ----------
+        // ---------- THREE.JS ----------
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x0a2a4a);
-        scene.fog = new THREE.Fog(0x0a2a4a, 30, 60);
+        scene.fog = new THREE.Fog(0x0a2a4a, 35, 65);
 
         const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 80);
         camera.position.set(0, CONFIG.CAMERA_ALTURA, CONFIG.CAMERA_OFFSET);
@@ -683,11 +670,11 @@
         document.body.prepend(renderer.domElement);
 
         // ---------- LUZES ----------
-        const ambientLight = new THREE.AmbientLight(0x4488aa, 0.5);
+        const ambientLight = new THREE.AmbientLight(0x4488bb, 0.5);
         scene.add(ambientLight);
 
-        const sunLight = new THREE.DirectionalLight(0xffeedd, 1.5);
-        sunLight.position.set(15, 20, 10);
+        const sunLight = new THREE.DirectionalLight(0xffeedd, 1.6);
+        sunLight.position.set(15, 22, 12);
         sunLight.castShadow = true;
         sunLight.shadow.mapSize.width = 2048;
         sunLight.shadow.mapSize.height = 2048;
@@ -699,69 +686,103 @@
         sunLight.shadow.camera.bottom = -25;
         scene.add(sunLight);
 
-        const rimLight = new THREE.DirectionalLight(0x4488ff, 0.4);
-        rimLight.position.set(-10, 5, -15);
+        const rimLight = new THREE.DirectionalLight(0x4488ff, 0.5);
+        rimLight.position.set(-12, 6, -18);
         scene.add(rimLight);
 
-        const bottomLight = new THREE.PointLight(0x00aaff, 0.3, 30);
+        const bottomLight = new THREE.PointLight(0x00aaff, 0.4, 35);
         bottomLight.position.set(0, -2, 0);
         scene.add(bottomLight);
 
-        // ---------- AQUÁRIO (4x maior) ----------
-        function criarAquario() {
+        // Luzes de destaque
+        const accentLight1 = new THREE.PointLight(0xff6633, 0.15, 15);
+        accentLight1.position.set(8, 5, 6);
+        scene.add(accentLight1);
+
+        const accentLight2 = new THREE.PointLight(0x33aaff, 0.15, 15);
+        accentLight2.position.set(-8, 5, -6);
+        scene.add(accentLight2);
+
+        // ---------- AQUÁRIO PREMIUM ----------
+        function criarAquarioPremium() {
             const grupo = new THREE.Group();
             const W = CONFIG.TAMANHO_AQUARIO_X;
             const D = CONFIG.TAMANHO_AQUARIO_Z;
             const H = CONFIG.ALTURA_AGUA;
 
-            // Chão (areia)
-            const geoChao = new THREE.PlaneGeometry(W + 6, D + 6);
-            const matChao = new THREE.MeshStandardMaterial({
-                color: 0xc2a67a,
+            // ===== CHÃO =====
+            // Areia com textura granulada (usando múltiplos círculos)
+            const matAreia = new THREE.MeshStandardMaterial({
+                color: 0xd4b896,
                 roughness: 0.95,
                 metalness: 0.0,
             });
-            const chao = new THREE.Mesh(geoChao, matChao);
+            const geoChao = new THREE.PlaneGeometry(W + 8, D + 8);
+            const chao = new THREE.Mesh(geoChao, matAreia);
             chao.rotation.x = -Math.PI / 2;
-            chao.position.y = 0.1;
+            chao.position.y = 0.05;
             chao.receiveShadow = true;
             grupo.add(chao);
 
-            // Fundo do aquário (texturizado)
-            const matFundo = new THREE.MeshStandardMaterial({
+            // Textura de areia com pequenas partículas
+            const matAreiaFina = new THREE.MeshStandardMaterial({
+                color: 0xc4a886,
+                roughness: 1.0,
+                metalness: 0.0,
+            });
+            for (let i = 0; i < 200; i++) {
+                const particula = new THREE.Mesh(
+                    new THREE.CircleGeometry(0.03 + Math.random() * 0.06, 4),
+                    matAreiaFina
+                );
+                particula.rotation.x = -Math.PI / 2;
+                particula.position.set(
+                    (Math.random() - 0.5) * (W - 2),
+                    0.08,
+                    (Math.random() - 0.5) * (D - 2)
+                );
+                particula.material.opacity = 0.3 + Math.random() * 0.3;
+                particula.material.transparent = true;
+                grupo.add(particula);
+            }
+
+            // ===== FUNDO DO AQUÁRIO =====
+            const matFundo = new THREE.MeshPhysicalMaterial({
                 color: 0x8B7355,
-                roughness: 0.8,
+                roughness: 0.7,
                 metalness: 0.0,
                 transparent: true,
-                opacity: 0.2,
+                opacity: 0.15,
             });
-            const geoFundo = new THREE.PlaneGeometry(W - 0.5, D - 0.5);
+            const geoFundo = new THREE.PlaneGeometry(W - 0.8, D - 0.8);
             const fundo = new THREE.Mesh(geoFundo, matFundo);
             fundo.rotation.x = -Math.PI / 2;
-            fundo.position.y = 0.2;
+            fundo.position.y = 0.1;
             grupo.add(fundo);
 
-            // Paredes de vidro
+            // ===== PAREDES DE VIDRO =====
             const vidroMat = new THREE.MeshPhysicalMaterial({
                 color: 0x88ccff,
                 transparent: true,
-                opacity: 0.06,
+                opacity: 0.05,
                 roughness: 0.0,
                 metalness: 0.0,
                 side: THREE.DoubleSide,
-                envMapIntensity: 0.5,
+                envMapIntensity: 0.8,
+                clearcoat: 0.1,
             });
 
-            const vidroBorda = new THREE.MeshPhysicalMaterial({
-                color: 0x88ccff,
+            const vidroBordaMat = new THREE.MeshPhysicalMaterial({
+                color: 0x6a8aaa,
                 transparent: true,
-                opacity: 0.15,
-                roughness: 0.1,
-                metalness: 0.1,
+                opacity: 0.25,
+                roughness: 0.2,
+                metalness: 0.3,
                 side: THREE.DoubleSide,
+                envMapIntensity: 0.3,
             });
 
-            // Paredes
+            // Paredes com moldura
             const paredes = [
                 { w: W, h: H, x: 0, z: -D / 2, ry: 0 },
                 { w: W, h: H, x: 0, z: D / 2, ry: 0 },
@@ -777,29 +798,31 @@
                 mesh.receiveShadow = true;
                 grupo.add(mesh);
 
-                // Borda da parede
-                const borda = new THREE.Mesh(
-                    new THREE.BoxGeometry(p.w + 0.1, 0.15, 0.15),
-                    vidroBorda
+                // Moldura superior
+                const molduraTop = new THREE.Mesh(
+                    new THREE.BoxGeometry(p.w + 0.2, 0.2, 0.2),
+                    vidroBordaMat
                 );
-                borda.position.set(p.x, H + 0.5, p.z);
-                borda.rotation.y = p.ry;
-                grupo.add(borda);
+                molduraTop.position.set(p.x, H + 0.6, p.z);
+                molduraTop.rotation.y = p.ry;
+                grupo.add(molduraTop);
 
-                const bordaBaixo = new THREE.Mesh(
-                    new THREE.BoxGeometry(p.w + 0.1, 0.15, 0.15),
-                    vidroBorda
+                // Moldura inferior
+                const molduraBot = new THREE.Mesh(
+                    new THREE.BoxGeometry(p.w + 0.2, 0.2, 0.2),
+                    vidroBordaMat
                 );
-                bordaBaixo.position.set(p.x, 0.5, p.z);
-                bordaBaixo.rotation.y = p.ry;
-                grupo.add(bordaBaixo);
+                molduraBot.position.set(p.x, 0.4, p.z);
+                molduraBot.rotation.y = p.ry;
+                grupo.add(molduraBot);
             });
 
-            // Cantos (colunas)
-            const colunaMat = new THREE.MeshStandardMaterial({
-                color: 0x4a6a8a,
+            // ===== COLUNAS DE CANTO =====
+            const colunaMat = new THREE.MeshPhysicalMaterial({
+                color: 0x5a7a9a,
                 roughness: 0.3,
-                metalness: 0.6,
+                metalness: 0.5,
+                envMapIntensity: 0.5,
             });
             const cantos = [
                 [-W / 2, -D / 2],
@@ -808,115 +831,207 @@
                 [W / 2, D / 2]
             ];
             cantos.forEach(c => {
+                // Coluna principal
                 const col = new THREE.Mesh(
-                    new THREE.CylinderGeometry(0.15, 0.2, H + 0.5, 8),
+                    new THREE.CylinderGeometry(0.2, 0.25, H + 0.8, 8),
                     colunaMat
                 );
                 col.position.set(c[0], H / 2 + 0.5, c[1]);
+                col.castShadow = true;
                 grupo.add(col);
+
+                // Base da coluna
+                const base = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.35, 0.4, 0.2, 8),
+                    colunaMat
+                );
+                base.position.set(c[0], 0.2, c[1]);
+                grupo.add(base);
+
+                // Topo da coluna
+                const topo = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.35, 0.3, 0.2, 8),
+                    colunaMat
+                );
+                topo.position.set(c[0], H + 0.8, c[1]);
+                grupo.add(topo);
             });
 
-            // Decoração: plantas (mais e maiores)
-            const plantaMat = new THREE.MeshStandardMaterial({
-                color: 0x2d8a4e,
-                roughness: 0.8,
-            });
-            const plantaMat2 = new THREE.MeshStandardMaterial({
-                color: 0x3daa5e,
-                roughness: 0.7,
-            });
-            for (let i = 0; i < 30; i++) {
-                const altura = 0.5 + Math.random() * 1.5;
-                const geo = new THREE.CylinderGeometry(0.05, 0.25, altura, 6);
-                const planta = new THREE.Mesh(geo, Math.random() > 0.5 ? plantaMat : plantaMat2);
+            // ===== PLANTAS AQUÁTICAS =====
+            const coresPlantas = [0x2d8a4e, 0x3daa5e, 0x4caf7a, 0x1a6a3a];
+            for (let i = 0; i < 40; i++) {
+                const altura = 0.6 + Math.random() * 1.8;
+                const matPlanta = new THREE.MeshStandardMaterial({
+                    color: coresPlantas[Math.floor(Math.random() * coresPlantas.length)],
+                    roughness: 0.8,
+                    metalness: 0.0,
+                });
+                const geo = new THREE.CylinderGeometry(0.04, 0.2, altura, 5);
+                const planta = new THREE.Mesh(geo, matPlanta);
                 const angulo = Math.random() * Math.PI * 2;
-                const raio = 2 + Math.random() * (W / 2 - 2.5);
+                const raio = 1.5 + Math.random() * (W / 2 - 2.5);
                 planta.position.set(
                     Math.cos(angulo) * raio,
-                    0.2 + altura / 2,
+                    0.15 + altura / 2,
                     Math.sin(angulo) * raio * (D / W)
                 );
-                planta.rotation.x = (Math.random() - 0.5) * 0.4;
-                planta.rotation.z = (Math.random() - 0.5) * 0.4;
-                planta.receiveShadow = true;
+                planta.rotation.x = (Math.random() - 0.5) * 0.5;
+                planta.rotation.z = (Math.random() - 0.5) * 0.5;
+                planta.castShadow = true;
                 grupo.add(planta);
 
-                // Folhas no topo
-                if (Math.random() > 0.5) {
+                // Folhas
+                const numFolhas = 2 + Math.floor(Math.random() * 3);
+                for (let j = 0; j < numFolhas; j++) {
                     const folha = new THREE.Mesh(
-                        new THREE.SphereGeometry(0.15 + Math.random() * 0.2, 5, 5),
-                        plantaMat2
+                        new THREE.SphereGeometry(0.1 + Math.random() * 0.15, 5, 5),
+                        new THREE.MeshStandardMaterial({
+                            color: coresPlantas[Math.floor(Math.random() * coresPlantas.length)],
+                            roughness: 0.7,
+                        })
                     );
-                    folha.position.copy(planta.position);
-                    folha.position.y += altura / 2 + 0.1;
-                    folha.scale.set(1, 0.5 + Math.random() * 0.5, 1);
+                    folha.position.set(
+                        planta.position.x + (Math.random() - 0.5) * 0.3,
+                        planta.position.y + (Math.random() - 0.5) * (altura / 2),
+                        planta.position.z + (Math.random() - 0.5) * 0.3
+                    );
+                    folha.scale.set(1, 0.4 + Math.random() * 0.4, 1);
+                    folha.rotation.set(Math.random() * 6, Math.random() * 6, Math.random() * 6);
                     grupo.add(folha);
                 }
             }
 
-            // Pedras (mais)
-            const pedraMat = new THREE.MeshStandardMaterial({
-                color: 0x7a7a7a,
-                roughness: 0.9,
-            });
-            const pedraMat2 = new THREE.MeshStandardMaterial({
-                color: 0x8a8a7a,
-                roughness: 0.85,
-            });
-            for (let i = 0; i < 20; i++) {
-                const geo = new THREE.DodecahedronGeometry(0.4 + Math.random() * 0.6);
-                const pedra = new THREE.Mesh(geo, Math.random() > 0.5 ? pedraMat : pedraMat2);
+            // ===== PEDRAS =====
+            const coresPedras = [0x7a7a7a, 0x8a8a7a, 0x6a6a6a, 0x9a8a7a];
+            for (let i = 0; i < 25; i++) {
+                const tamanho = 0.3 + Math.random() * 0.7;
+                const geo = new THREE.DodecahedronGeometry(tamanho, 0);
+                const pedra = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({
+                    color: coresPedras[Math.floor(Math.random() * coresPedras.length)],
+                    roughness: 0.9,
+                    metalness: 0.0,
+                }));
                 const angulo = Math.random() * Math.PI * 2;
                 const raio = 1.5 + Math.random() * (W / 2 - 2);
                 pedra.position.set(
                     Math.cos(angulo) * raio,
-                    0.15 + Math.random() * 0.2,
+                    0.1 + Math.random() * 0.2,
                     Math.sin(angulo) * raio * (D / W)
                 );
                 pedra.rotation.set(Math.random() * 6, Math.random() * 6, Math.random() * 6);
-                pedra.scale.set(1, 0.5 + Math.random() * 0.5, 0.7 + Math.random() * 0.3);
+                pedra.scale.set(1, 0.4 + Math.random() * 0.5, 0.6 + Math.random() * 0.4);
+                pedra.castShadow = true;
                 pedra.receiveShadow = true;
                 grupo.add(pedra);
+
+                // Pedras menores ao redor
+                if (Math.random() > 0.6) {
+                    const pedraPequena = new THREE.Mesh(
+                        new THREE.DodecahedronGeometry(tamanho * 0.4, 0),
+                        new THREE.MeshStandardMaterial({
+                            color: coresPedras[Math.floor(Math.random() * coresPedras.length)],
+                            roughness: 0.9,
+                        })
+                    );
+                    pedraPequena.position.set(
+                        pedra.position.x + (Math.random() - 0.5) * 0.6,
+                        0.05 + Math.random() * 0.1,
+                        pedra.position.z + (Math.random() - 0.5) * 0.6
+                    );
+                    pedraPequena.scale.set(1, 0.5 + Math.random() * 0.3, 0.7);
+                    pedraPequena.rotation.set(Math.random() * 6, Math.random() * 6, Math.random() * 6);
+                    grupo.add(pedraPequena);
+                }
+            }
+
+            // ===== CONCHAS DECORATIVAS =====
+            const conchaMat = new THREE.MeshPhysicalMaterial({
+                color: 0xf5e6d0,
+                roughness: 0.3,
+                metalness: 0.0,
+                clearcoat: 0.2,
+            });
+            for (let i = 0; i < 6; i++) {
+                const concha = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.15 + Math.random() * 0.2, 6, 6),
+                    conchaMat
+                );
+                const angulo = Math.random() * Math.PI * 2;
+                const raio = 2 + Math.random() * (W / 2 - 3);
+                concha.position.set(
+                    Math.cos(angulo) * raio,
+                    0.08,
+                    Math.sin(angulo) * raio * (D / W)
+                );
+                concha.scale.set(1, 0.3 + Math.random() * 0.3, 0.8 + Math.random() * 0.4);
+                concha.rotation.set(Math.random() * 6, Math.random() * 6, Math.random() * 6);
+                grupo.add(concha);
             }
 
             return grupo;
         }
 
-        const aquario = criarAquario();
+        const aquario = criarAquarioPremium();
         scene.add(aquario);
 
         // ---------- ÁGUA ----------
         const aguaMat = new THREE.MeshPhysicalMaterial({
-            color: 0x0088cc,
+            color: 0x0066aa,
             transparent: true,
-            opacity: 0.2,
+            opacity: 0.18,
             roughness: 0.0,
             metalness: 0.0,
-            envMapIntensity: 0.3,
-            clearcoat: 0.1,
+            envMapIntensity: 0.5,
+            clearcoat: 0.15,
+            clearcoatRoughness: 0.2,
         });
         const aguaGeo = new THREE.BoxGeometry(
-            CONFIG.TAMANHO_AQUARIO_X - 1,
+            CONFIG.TAMANHO_AQUARIO_X - 1.2,
             CONFIG.ALTURA_AGUA - 0.8,
-            CONFIG.TAMANHO_AQUARIO_Z - 1
+            CONFIG.TAMANHO_AQUARIO_Z - 1.2
         );
         const aguaMesh = new THREE.Mesh(aguaGeo, aguaMat);
         aguaMesh.position.set(0, CONFIG.ALTURA_AGUA / 2 + 0.5, 0);
         scene.add(aguaMesh);
+
+        // ---------- SUPERFÍCIE DA ÁGUA ----------
+        const superficieMat = new THREE.MeshPhysicalMaterial({
+            color: 0x88ccff,
+            transparent: true,
+            opacity: 0.12,
+            roughness: 0.0,
+            metalness: 0.0,
+            envMapIntensity: 0.8,
+            clearcoat: 0.3,
+            clearcoatRoughness: 0.1,
+            side: THREE.DoubleSide,
+        });
+        const superficieGeo = new THREE.PlaneGeometry(
+            CONFIG.TAMANHO_AQUARIO_X - 0.8,
+            CONFIG.TAMANHO_AQUARIO_Z - 0.8,
+            40,
+            40
+        );
+        const superficie = new THREE.Mesh(superficieGeo, superficieMat);
+        superficie.rotation.x = -Math.PI / 2;
+        superficie.position.set(0, CONFIG.ALTURA_AGUA + 0.5, 0);
+        scene.add(superficie);
 
         // ---------- PEIXE ----------
         function criarPeixe() {
             const grupo = new THREE.Group();
 
             // Corpo
-            const corpoMat = new THREE.MeshStandardMaterial({
+            const corpoMat = new THREE.MeshPhysicalMaterial({
                 color: 0xff6633,
-                roughness: 0.25,
+                roughness: 0.2,
                 metalness: 0.05,
                 emissive: 0xff4400,
-                emissiveIntensity: 0.05,
+                emissiveIntensity: 0.06,
+                clearcoat: 0.3,
+                clearcoatRoughness: 0.2,
             });
-            const corpoGeo = new THREE.SphereGeometry(0.8, 18, 18);
+            const corpoGeo = new THREE.SphereGeometry(0.8, 20, 20);
             const corpo = new THREE.Mesh(corpoGeo, corpoMat);
             corpo.scale.set(1.5, 0.85, 0.95);
             corpo.position.z = -0.2;
@@ -924,10 +1039,11 @@
             grupo.add(corpo);
 
             // Cauda
-            const caudaMat = new THREE.MeshStandardMaterial({
+            const caudaMat = new THREE.MeshPhysicalMaterial({
                 color: 0xff5533,
-                roughness: 0.4,
+                roughness: 0.3,
                 metalness: 0.05,
+                clearcoat: 0.2,
             });
             const caudaGeo = new THREE.ConeGeometry(0.8, 0.9, 6);
             const cauda = new THREE.Mesh(caudaGeo, caudaMat);
@@ -937,12 +1053,13 @@
             grupo.add(cauda);
 
             // Barbatana dorsal
-            const barbatanaMat = new THREE.MeshStandardMaterial({
+            const barbatanaMat = new THREE.MeshPhysicalMaterial({
                 color: 0xff6633,
-                roughness: 0.5,
+                roughness: 0.4,
                 metalness: 0.0,
                 transparent: true,
-                opacity: 0.8,
+                opacity: 0.75,
+                clearcoat: 0.1,
             });
             const dorsal = new THREE.Mesh(
                 new THREE.ConeGeometry(0.35, 0.6, 4),
@@ -966,43 +1083,64 @@
                 grupo.add(peitoral);
             }
 
+            // Barbatana anal
+            const anal = new THREE.Mesh(
+                new THREE.ConeGeometry(0.2, 0.25, 4),
+                barbatanaMat
+            );
+            anal.position.set(0, -0.5, -0.4);
+            anal.scale.set(1, 0.3, 0.5);
+            anal.rotation.x = -0.2;
+            grupo.add(anal);
+
             // Olhos
-            const olhoMat = new THREE.MeshStandardMaterial({
+            const olhoMat = new THREE.MeshPhysicalMaterial({
                 color: 0xffffff,
                 roughness: 0.05,
                 metalness: 0.0,
+                clearcoat: 0.5,
             });
-            const pupilaMat = new THREE.MeshStandardMaterial({
+            const pupilaMat = new THREE.MeshPhysicalMaterial({
                 color: 0x111111,
                 roughness: 0.0,
                 metalness: 0.0,
+                clearcoat: 0.8,
             });
             for (let lado = -1; lado <= 1; lado += 2) {
                 const olho = new THREE.Mesh(
-                    new THREE.SphereGeometry(0.16, 8, 8),
+                    new THREE.SphereGeometry(0.16, 10, 10),
                     olhoMat
                 );
                 olho.position.set(lado * 0.5, 0.2, 0.4);
                 grupo.add(olho);
 
                 const pupila = new THREE.Mesh(
-                    new THREE.SphereGeometry(0.07, 8, 8),
+                    new THREE.SphereGeometry(0.07, 10, 10),
                     pupilaMat
                 );
                 pupila.position.set(lado * 0.55, 0.2, 0.48);
                 grupo.add(pupila);
+
+                // Brilho no olho
+                const brilhoOlho = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.03, 6, 6),
+                    new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.6 })
+                );
+                brilhoOlho.position.set(lado * 0.52, 0.24, 0.5);
+                grupo.add(brilhoOlho);
             }
 
-            // Brilho
-            const brilhoMat = new THREE.MeshStandardMaterial({
+            // Brilho corporal
+            const brilhoMat = new THREE.MeshPhysicalMaterial({
                 color: 0x88ddff,
                 emissive: 0x88ddff,
-                emissiveIntensity: 0.08,
+                emissiveIntensity: 0.06,
                 transparent: true,
-                opacity: 0.15,
+                opacity: 0.12,
+                clearcoat: 0.5,
             });
             const brilho = new THREE.Mesh(
-                new THREE.SphereGeometry(0.95, 8, 8),
+                new THREE.SphereGeometry(0.95, 10, 10),
                 brilhoMat
             );
             brilho.scale.set(1.6, 1.1, 1.1);
@@ -1018,15 +1156,13 @@
         scene.add(peixe);
 
         // ---------- LIXO ----------
-        const lixos = [];
-
         function criarLixo(tipo) {
             const grupo = new THREE.Group();
             let mat;
 
             switch (tipo || Math.floor(Math.random() * 4)) {
                 case 0: // Garrafa PET
-                    mat = new THREE.MeshStandardMaterial({ color: 0x44aa88, roughness: 0.3, metalness: 0.1 });
+                    mat = new THREE.MeshPhysicalMaterial({ color: 0x44aa88, roughness: 0.3, metalness: 0.1, clearcoat: 0.2 });
                     const corpo = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.28, 0.7, 8), mat);
                     corpo.position.y = 0.35;
                     grupo.add(corpo);
@@ -1034,12 +1170,19 @@
                     gargalo.position.y = 0.8;
                     grupo.add(gargalo);
                     const tampa = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.06, 8),
-                        new THREE.MeshStandardMaterial({ color: 0x00aa88, roughness: 0.5 }));
+                        new THREE.MeshPhysicalMaterial({ color: 0x00aa88, roughness: 0.5, clearcoat: 0.3 }));
                     tampa.position.y = 0.92;
                     grupo.add(tampa);
+                    // Rótulo
+                    const rotulo = new THREE.Mesh(
+                        new THREE.CylinderGeometry(0.22, 0.24, 0.2, 8),
+                        new THREE.MeshPhysicalMaterial({ color: 0x44dd88, roughness: 0.6, metalness: 0.0 })
+                    );
+                    rotulo.position.y = 0.45;
+                    grupo.add(rotulo);
                     break;
                 case 1: // Lata
-                    mat = new THREE.MeshStandardMaterial({ color: 0xcc8844, roughness: 0.6, metalness: 0.4 });
+                    mat = new THREE.MeshPhysicalMaterial({ color: 0xcc8844, roughness: 0.5, metalness: 0.5, clearcoat: 0.1 });
                     const lata = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.32, 0.6, 12), mat);
                     lata.position.y = 0.3;
                     grupo.add(lata);
@@ -1051,38 +1194,73 @@
                     lataFundo.rotation.x = Math.PI / 2;
                     lataFundo.position.y = 0.0;
                     grupo.add(lataFundo);
+                    // Anel
+                    const anel = new THREE.Mesh(
+                        new THREE.TorusGeometry(0.15, 0.02, 6, 12),
+                        new THREE.MeshPhysicalMaterial({ color: 0xccaa88, metalness: 0.6, roughness: 0.3 })
+                    );
+                    anel.position.set(0, 0.62, 0);
+                    anel.rotation.x = Math.PI / 2;
+                    grupo.add(anel);
                     break;
-                case 2: // Sacola
-                    mat = new THREE.MeshStandardMaterial({
+                case 2: // Sacola plástica
+                    mat = new THREE.MeshPhysicalMaterial({
                         color: 0x999999,
-                        roughness: 0.8,
+                        roughness: 0.7,
                         metalness: 0.0,
                         transparent: true,
-                        opacity: 0.6,
+                        opacity: 0.5,
                         side: THREE.DoubleSide,
+                        clearcoat: 0.1,
                     });
-                    for (let i = 0; i < 4; i++) {
-                        const saco = new THREE.Mesh(new THREE.CircleGeometry(0.2 + Math.random() * 0.15, 5), mat);
+                    for (let i = 0; i < 5; i++) {
+                        const saco = new THREE.Mesh(new THREE.CircleGeometry(0.18 + Math.random() * 0.15, 5), mat);
                         saco.position.set((Math.random() - 0.5) * 0.5, Math.random() * 0.3, (Math.random() - 0.5) * 0.5);
                         saco.rotation.set(Math.random() * 6, Math.random() * 6, Math.random() * 6);
                         grupo.add(saco);
                     }
+                    // Alças
+                    const alcaMat = new THREE.MeshPhysicalMaterial({
+                        color: 0x888888,
+                        roughness: 0.8,
+                        metalness: 0.0,
+                        transparent: true,
+                        opacity: 0.4,
+                    });
+                    for (let i = -1; i <= 1; i += 2) {
+                        const alca = new THREE.Mesh(
+                            new THREE.TorusGeometry(0.15, 0.015, 4, 8),
+                            alcaMat
+                        );
+                        alca.position.set(i * 0.15, 0.35, 0);
+                        alca.rotation.x = 0.3;
+                        alca.rotation.z = i * 0.2;
+                        grupo.add(alca);
+                    }
                     break;
                 case 3: // Papelão
-                    mat = new THREE.MeshStandardMaterial({ color: 0xbb9966, roughness: 0.9, metalness: 0.0 });
+                    mat = new THREE.MeshPhysicalMaterial({ color: 0xbb9966, roughness: 0.95, metalness: 0.0 });
                     const caixa = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.35, 0.5), mat);
                     caixa.position.y = 0.18;
                     grupo.add(caixa);
-                    const detMat = new THREE.MeshStandardMaterial({ color: 0xaa8855, roughness: 0.8 });
+                    const detMat = new THREE.MeshPhysicalMaterial({ color: 0xaa8855, roughness: 0.9 });
                     for (let i = 0; i < 2; i++) {
                         const det = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.02, 0.02), detMat);
                         det.position.set(0, 0.25, (i - 0.5) * 0.18);
                         grupo.add(det);
                     }
+                    // Fita adesiva
+                    const fita = new THREE.Mesh(
+                        new THREE.BoxGeometry(0.1, 0.02, 0.3),
+                        new THREE.MeshPhysicalMaterial({ color: 0xddccaa, roughness: 0.7, transparent: true,
+                            opacity: 0.6 })
+                    );
+                    fita.position.set(0, 0.32, 0);
+                    grupo.add(fita);
                     break;
             }
 
-            grupo.scale.set(0.6 + Math.random() * 0.5, 0.6 + Math.random() * 0.5, 0.6 + Math.random() * 0.5);
+            grupo.scale.set(0.5 + Math.random() * 0.6, 0.5 + Math.random() * 0.6, 0.5 + Math.random() * 0.6);
             return grupo;
         }
 
@@ -1101,7 +1279,7 @@
             const mesh = criarLixo();
             scene.add(mesh);
             mesh.visible = false;
-            const obj = { mesh, ativo: false, especial: false, velocidadeQueda: 0.5, rotacaoVel: 0 };
+            const obj = { mesh, ativo: false, especial: false, velocidadeQueda: 0.4, rotacaoVel: 0 };
             poolLixo.push(obj);
             return obj;
         }
@@ -1111,11 +1289,9 @@
             obj.mesh.visible = false;
             obj.mesh.position.set(0, -20, 0);
             estado.lixoAtivo = estado.lixoAtivo.filter(l => l !== obj);
-            // Remover glow se existir
-            if (obj.mesh.children.length > 0) {
-                const glow = obj.mesh.children.find(c => c.material && c.material.type === 'MeshBasicMaterial');
-                if (glow) obj.mesh.remove(glow);
-            }
+            // Remover glow
+            const glows = obj.mesh.children.filter(c => c.material && c.material.type === 'MeshBasicMaterial');
+            glows.forEach(g => obj.mesh.remove(g));
         }
 
         // ---------- GERADOR DE LIXO ----------
@@ -1130,12 +1306,12 @@
             const D = CONFIG.TAMANHO_AQUARIO_Z;
             const posX = (Math.random() - 0.5) * (W - 3);
             const posZ = (Math.random() - 0.5) * (D - 3);
-            obj.mesh.position.set(posX, CONFIG.ALTURA_AGUA + 1 + Math.random() * 1.5, posZ);
+            obj.mesh.position.set(posX, CONFIG.ALTURA_AGUA + 0.5 + Math.random() * 1, posZ);
             obj.mesh.rotation.set(Math.random() * 6, Math.random() * 6, Math.random() * 6);
             obj.mesh.scale.set(
-                0.5 + Math.random() * 0.7,
-                0.5 + Math.random() * 0.7,
-                0.5 + Math.random() * 0.7
+                0.5 + Math.random() * 0.6,
+                0.5 + Math.random() * 0.6,
+                0.5 + Math.random() * 0.6
             );
             obj.mesh.visible = true;
             obj.especial = Math.random() < (estado.upgradeSorte ? 0.3 : 0.08);
@@ -1145,17 +1321,32 @@
                 const glowMat = new THREE.MeshBasicMaterial({
                     color: 0xffd700,
                     transparent: true,
-                    opacity: 0.15,
+                    opacity: 0.2,
                 });
                 const glow = new THREE.Mesh(
-                    new THREE.SphereGeometry(0.7, 6, 6),
+                    new THREE.SphereGeometry(0.8, 8, 8),
                     glowMat
                 );
                 obj.mesh.add(glow);
+
+                // Anel dourado
+                const anelMat = new THREE.MeshBasicMaterial({
+                    color: 0xffd700,
+                    transparent: true,
+                    opacity: 0.3,
+                    wireframe: true,
+                });
+                const anel = new THREE.Mesh(
+                    new THREE.TorusGeometry(0.6, 0.05, 8, 12),
+                    anelMat
+                );
+                anel.rotation.x = Math.PI / 2;
+                obj.mesh.add(anel);
             }
 
-            obj.velocidadeQueda = 0.4 + Math.random() * 0.6;
-            obj.rotacaoVel = (Math.random() - 0.5) * 2.5;
+            // Velocidade de queda mais lenta (CONFIG)
+            obj.velocidadeQueda = CONFIG.VELOCIDADE_QUEDA_LIXO * (0.6 + Math.random() * 0.5);
+            obj.rotacaoVel = (Math.random() - 0.5) * 1.5;
 
             estado.lixoAtivo.push(obj);
             atualizarContadorLixo();
@@ -1168,9 +1359,9 @@
                 const obj = estado.lixoAtivo[i];
                 if (!obj || !obj.ativo) continue;
 
-                obj.mesh.position.y -= obj.velocidadeQueda * delta * 2.5;
+                obj.mesh.position.y -= obj.velocidadeQueda * delta * 2;
                 obj.mesh.rotation.x += obj.rotacaoVel * delta;
-                obj.mesh.rotation.z += obj.rotacaoVel * 0.6 * delta;
+                obj.mesh.rotation.z += obj.rotacaoVel * 0.5 * delta;
 
                 if (obj.mesh.position.y < 0.3) {
                     obj.mesh.position.y = 0.3;
@@ -1234,8 +1425,8 @@
         // ---------- EFEITO COLETA ----------
         function criarEfeitoColeta(pos, moedas, especial) {
             const cores = especial ? [0xffd700, 0xffaa00] : [0x00ff88, 0x44ddff];
-            for (let i = 0; i < 15; i++) {
-                const size = 0.04 + Math.random() * 0.08;
+            for (let i = 0; i < 20; i++) {
+                const size = 0.04 + Math.random() * 0.1;
                 const geo = new THREE.SphereGeometry(size, 4, 4);
                 const mat = new THREE.MeshBasicMaterial({
                     color: cores[Math.floor(Math.random() * cores.length)],
@@ -1244,23 +1435,23 @@
                 });
                 const particula = new THREE.Mesh(geo, mat);
                 particula.position.copy(pos);
-                particula.position.x += (Math.random() - 0.5) * 0.6;
-                particula.position.z += (Math.random() - 0.5) * 0.6;
+                particula.position.x += (Math.random() - 0.5) * 0.7;
+                particula.position.z += (Math.random() - 0.5) * 0.7;
                 particula.position.y += 0.3;
                 scene.add(particula);
 
                 const vel = new THREE.Vector3(
-                    (Math.random() - 0.5) * 4,
-                    Math.random() * 5 + 1,
-                    (Math.random() - 0.5) * 4
+                    (Math.random() - 0.5) * 5,
+                    Math.random() * 6 + 1,
+                    (Math.random() - 0.5) * 5
                 );
-                let vida = 0.6 + Math.random() * 0.6;
+                let vida = 0.7 + Math.random() * 0.7;
 
                 function animarParticula() {
                     if (vida <= 0) { scene.remove(particula); return; }
-                    vida -= 0.015;
+                    vida -= 0.012;
                     particula.position.add(vel.clone().multiplyScalar(0.02));
-                    vel.y -= 0.06;
+                    vel.y -= 0.05;
                     particula.material.opacity = vida;
                     particula.scale.multiplyScalar(0.99);
                     requestAnimationFrame(animarParticula);
@@ -1274,11 +1465,11 @@
             canvas.height = 64;
             const ctx = canvas.getContext('2d');
             ctx.fillStyle = especial ? '#ffd700' : '#00ff88';
-            ctx.font = 'bold 40px Arial';
+            ctx.font = 'bold 42px Arial';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.shadowColor = 'rgba(0,0,0,0.9)';
-            ctx.shadowBlur = 12;
+            ctx.shadowBlur = 15;
             ctx.fillText('+' + moedas, 64, 32);
 
             const texture = new THREE.CanvasTexture(canvas);
@@ -1289,18 +1480,18 @@
             });
             const sprite = new THREE.Sprite(spriteMat);
             sprite.position.copy(pos);
-            sprite.position.y += 0.6;
-            sprite.scale.set(1.2, 0.6, 1);
+            sprite.position.y += 0.7;
+            sprite.scale.set(1.4, 0.7, 1);
             scene.add(sprite);
 
             let vida = 1;
 
             function animarTexto() {
                 if (vida <= 0) { scene.remove(sprite); return; }
-                vida -= 0.012;
-                sprite.position.y += 0.025;
+                vida -= 0.01;
+                sprite.position.y += 0.03;
                 sprite.material.opacity = vida;
-                sprite.scale.multiplyScalar(1.006);
+                sprite.scale.multiplyScalar(1.005);
                 requestAnimationFrame(animarTexto);
             }
             animarTexto();
@@ -1316,7 +1507,7 @@
             estado.nivelDificuldade++;
             estado.intervaloAtual = Math.max(
                 CONFIG.INTERVALO_LIXO_MINIMO,
-                CONFIG.INTERVALO_LIXO_INICIAL - estado.nivelDificuldade * 0.1
+                CONFIG.INTERVALO_LIXO_INICIAL - estado.nivelDificuldade * 0.08
             );
 
             if (estado.limpezasCompletas >= CONFIG.LIMPECAS_PARA_VENCER) {
@@ -1352,9 +1543,12 @@
             }
 
             // Cor da água
-            const verde = Math.min(1, estado.poluicao / 45);
-            aguaMat.color.setHSL(0.55 - verde * 0.2, 0.5 + verde * 0.4, 0.4 - verde * 0.15);
-            aguaMat.opacity = 0.15 + verde * 0.3;
+            const verde = Math.min(1, estado.poluicao / 40);
+            aguaMat.color.setHSL(0.55 - verde * 0.2, 0.4 + verde * 0.5, 0.35 - verde * 0.12);
+            aguaMat.opacity = 0.12 + verde * 0.35;
+
+            // Superfície da água
+            superficieMat.color.setHSL(0.55 - verde * 0.15, 0.3 + verde * 0.4, 0.5 - verde * 0.15);
 
             if (estado.poluicao > 90 && estado.jogoAtivo) {
                 mostrarMensagemSistema('⚠️ O aquário está muito sujo! Limpe logo!', 1);
@@ -1372,7 +1566,7 @@
             }
         }
 
-        // ---------- MOVIMENTO DO PEIXE ----------
+        // ---------- MOVIMENTO PEIXE ----------
         const teclas = { w: false, a: false, s: false, d: false, q: false, shift: false };
 
         function atualizarMovimentoPeixe() {
@@ -1382,17 +1576,13 @@
                 dz = 0,
                 dy = 0;
 
-            // Movimento horizontal
             if (teclas.w) dz += 1;
             if (teclas.s) dz -= 1;
             if (teclas.a) dx -= 1;
             if (teclas.d) dx += 1;
-
-            // Movimento vertical (CIMA/BAIXO)
             if (teclas.q) dy += 1;
             if (teclas.shift) dy -= 1;
 
-            // Normalizar horizontal
             const magH = Math.sqrt(dx * dx + dz * dz);
             if (magH > 0) { dx /= magH;
                 dz /= magH; }
@@ -1400,32 +1590,26 @@
             const velocidade = estado.upgradeVelocidade ? CONFIG.VELOCIDADE_BASE * 1.5 : CONFIG.VELOCIDADE_BASE;
             const velVertical = estado.upgradeVelocidade ? CONFIG.VELOCIDADE_VERTICAL * 1.5 : CONFIG.VELOCIDADE_VERTICAL;
 
-            // Limites
             const limiteX = CONFIG.TAMANHO_AQUARIO_X / 2 - 1.2;
             const limiteZ = CONFIG.TAMANHO_AQUARIO_Z / 2 - 1.2;
-            const limiteYMin = CONFIG.PROFUNDIDADE_MIN + 0.5;
-            const limiteYMax = CONFIG.PROFUNDIDADE_MAX + 0.5;
+            const limiteYMin = CONFIG.PROFUNDIDADE_MIN;
+            const limiteYMax = CONFIG.PROFUNDIDADE_MAX;
 
-            // Aplicar movimento
             const delta = 0.035;
             peixe.position.x += dx * velocidade * delta;
             peixe.position.z += dz * velocidade * delta;
             peixe.position.y += dy * velVertical * delta;
 
-            // Limitar posição
             peixe.position.x = Math.max(-limiteX, Math.min(limiteX, peixe.position.x));
             peixe.position.z = Math.max(-limiteZ, Math.min(limiteZ, peixe.position.z));
             peixe.position.y = Math.max(limiteYMin, Math.min(limiteYMax, peixe.position.y));
 
-            // Rotação para direção
             if (dx !== 0 || dz !== 0) {
                 const angulo = Math.atan2(dx, dz);
-                const rotAtual = peixe.rotation.y;
-                let diff = angulo - rotAtual;
+                let diff = angulo - peixe.rotation.y;
                 while (diff > Math.PI) diff -= Math.PI * 2;
                 while (diff < -Math.PI) diff += Math.PI * 2;
                 peixe.rotation.y += diff * 0.12;
-
                 peixe.rotation.z = -dx * 0.2;
                 peixe.rotation.x = dz * 0.12 + dy * 0.15;
             } else {
@@ -1433,7 +1617,6 @@
                 peixe.rotation.x *= 0.9;
             }
 
-            // Balanço da cauda
             const cauda = peixe.children.find(c => c.geometry && c.geometry.type === 'ConeGeometry');
             if (cauda) {
                 const velocidadeNado = Math.sqrt(dx * dx + dz * dz + dy * dy);
@@ -1441,46 +1624,38 @@
                 cauda.rotation.z = Math.sin(Date.now() * 0.012 + offset) * 0.2 * (velocidadeNado + 0.5);
             }
 
-            // Bolhas
             if (Math.random() < 0.015) {
                 criarBolha(peixe.position.clone());
             }
 
-            // Atualizar câmera
             atualizarCamera();
         }
 
-        // ---------- CÂMERA DINÂMICA ----------
+        // ---------- CÂMERA ----------
         function atualizarCamera() {
             const pos = peixe.position;
             const offset = CONFIG.CAMERA_OFFSET;
             const altura = CONFIG.CAMERA_ALTURA;
 
-            // Posição alvo da câmera (atrás e acima do peixe)
             const alvo = new THREE.Vector3(
                 pos.x * 0.5,
                 pos.y + altura * 0.7,
                 pos.z * 0.5 + offset
             );
 
-            // Suavizar movimento
             camera.position.lerp(alvo, estado.cameraSmoothness);
-
-            // Olhar para o peixe
             const lookTarget = new THREE.Vector3(pos.x, pos.y, pos.z);
             camera.lookAt(lookTarget);
-
-            // Guardar posição alvo para referência
             estado.targetCamPos.copy(alvo);
         }
 
         // ---------- BOLHAS ----------
         function criarBolha(pos) {
-            const geo = new THREE.SphereGeometry(0.03 + Math.random() * 0.05, 4, 4);
+            const geo = new THREE.SphereGeometry(0.03 + Math.random() * 0.06, 4, 4);
             const mat = new THREE.MeshBasicMaterial({
                 color: 0x88ddff,
                 transparent: true,
-                opacity: 0.2 + Math.random() * 0.3,
+                opacity: 0.15 + Math.random() * 0.25,
             });
             const bolha = new THREE.Mesh(geo, mat);
             bolha.position.copy(pos);
@@ -1493,14 +1668,30 @@
 
             function animarBolha() {
                 if (vida <= 0) { scene.remove(bolha); return; }
-                vida -= 0.008;
+                vida -= 0.007;
                 bolha.position.y += 0.025;
                 bolha.position.x += (Math.random() - 0.5) * 0.015;
                 bolha.scale.multiplyScalar(1.003);
-                bolha.material.opacity = vida * 0.5;
+                bolha.material.opacity = vida * 0.4;
                 requestAnimationFrame(animarBolha);
             }
             animarBolha();
+        }
+
+        // ---------- SUPERFÍCIE DA ÁGUA (ondulação) ----------
+        function atualizarSuperficie() {
+            const positions = superficie.geometry.attributes.position;
+            const time = Date.now() * 0.001;
+            for (let i = 0; i < positions.count; i++) {
+                const x = positions.getX(i);
+                const z = positions.getZ(i);
+                const wave = Math.sin(x * 0.3 + time * 0.8) * 0.08 +
+                    Math.cos(z * 0.4 + time * 0.6) * 0.06 +
+                    Math.sin((x + z) * 0.2 + time * 0.5) * 0.05;
+                positions.setZ(i, wave);
+            }
+            positions.needsUpdate = true;
+            superficie.geometry.computeVertexNormals();
         }
 
         // ---------- HUD ----------
@@ -1654,14 +1845,14 @@
             mostrarDialogo('🐟', '🎉 Finalmente! Meu aquário está limpo de novo!', 3);
 
             // Confetes
-            for (let i = 0; i < 80; i++) {
+            for (let i = 0; i < 100; i++) {
                 setTimeout(() => {
                     const pos = new THREE.Vector3(
                         (Math.random() - 0.5) * CONFIG.TAMANHO_AQUARIO_X,
                         Math.random() * CONFIG.ALTURA_AGUA + 2,
                         (Math.random() - 0.5) * CONFIG.TAMANHO_AQUARIO_Z
                     );
-                    const cores = [0xffd700, 0xff4444, 0x44ff44, 0x4444ff, 0xff44ff, 0x44ffff];
+                    const cores = [0xffd700, 0xff4444, 0x44ff44, 0x4444ff, 0xff44ff, 0x44ffff, 0xff8844];
                     const geo = new THREE.BoxGeometry(0.06, 0.06, 0.12);
                     const mat = new THREE.MeshBasicMaterial({
                         color: cores[Math.floor(Math.random() * cores.length)],
@@ -1671,24 +1862,24 @@
                     confete.rotation.set(Math.random() * 6, Math.random() * 6, Math.random() * 6);
                     scene.add(confete);
 
-                    let vida = 4;
-                    const velY = 0.8 + Math.random() * 2;
-                    const velX = (Math.random() - 0.5) * 3;
-                    const velZ = (Math.random() - 0.5) * 3;
+                    let vida = 4.5;
+                    const velY = 0.6 + Math.random() * 2;
+                    const velX = (Math.random() - 0.5) * 3.5;
+                    const velZ = (Math.random() - 0.5) * 3.5;
 
                     function animarConfete() {
                         if (vida <= 0) { scene.remove(confete); return; }
-                        vida -= 0.015;
+                        vida -= 0.012;
                         confete.position.y += velY * 0.025;
                         confete.position.x += velX * 0.025;
                         confete.position.z += velZ * 0.025;
                         confete.rotation.x += 0.15;
                         confete.rotation.z += 0.12;
-                        confete.scale.multiplyScalar(0.997);
+                        confete.scale.multiplyScalar(0.998);
                         requestAnimationFrame(animarConfete);
                     }
                     animarConfete();
-                }, i * 40);
+                }, i * 35);
             }
         }
 
@@ -1704,45 +1895,33 @@
                 estado.tempoJogado += delta;
                 atualizarHUD();
 
-                // Gerar lixo
                 ultimoTempoLixo += delta;
                 if (ultimoTempoLixo > estado.intervaloAtual) {
                     ultimoTempoLixo = 0;
-                    const qtd = Math.min(5, 1 + Math.floor(estado.nivelDificuldade / 3));
+                    const qtd = Math.min(4, 1 + Math.floor(estado.nivelDificuldade / 3));
                     for (let i = 0; i < qtd; i++) {
-                        setTimeout(gerarLixo, i * 80);
+                        setTimeout(gerarLixo, i * 100);
                     }
                     if (estado.poluicao < 20 && estado.lixoAtivo.length < 25) {
-                        setTimeout(gerarLixo, 150);
-                        setTimeout(gerarLixo, 300);
+                        setTimeout(gerarLixo, 200);
+                        setTimeout(gerarLixo, 400);
                     }
                 }
 
                 atualizarLixo();
                 atualizarPoluicao();
                 atualizarMovimentoPeixe();
+                atualizarSuperficie();
 
-                // Detector
                 if (estado.upgradeDetector && estado.lixoAtivo.length > 0) {
-                    let maisProx = null;
-                    let distMin = Infinity;
-                    for (const obj of estado.lixoAtivo) {
-                        if (!obj || !obj.ativo) continue;
-                        const dist = peixe.position.distanceTo(obj.mesh.position);
-                        if (dist < distMin) { distMin = dist;
-                            maisProx = obj; }
-                    }
-                    if (maisProx && distMin < 4) {
-                        // Indicador visual: o lixo mais próximo brilha
-                        // (já implementado via glow)
-                    }
+                    // Detector ativo
                 }
             }
 
             renderer.render(scene, camera);
         }
 
-        // ---------- CONTROLES DE TECLADO ----------
+        // ---------- CONTROLES ----------
         document.addEventListener('keydown', (e) => {
             const key = e.key.toLowerCase();
 
@@ -1828,7 +2007,6 @@
             estado.intervaloAtual = CONFIG.INTERVALO_LIXO_INICIAL;
             ultimoTempoLixo = 0;
 
-            // Posicionar peixe no centro
             peixe.position.set(0, CONFIG.ALTURA_AGUA / 2, 0);
 
             atualizarHUD();
@@ -1836,15 +2014,14 @@
             atualizarPoluicao();
             renderizarLoja();
 
-            // Iniciar camera
             estado.targetCamPos.set(0, CONFIG.CAMERA_ALTURA, CONFIG.CAMERA_OFFSET);
             camera.position.copy(estado.targetCamPos);
 
             gameLoop(0);
 
-            console.log('🐟 Aquário Limpo - PC Edition Iniciado!');
+            console.log('🐟 Aquário Limpo - Premium Edition Iniciado!');
             console.log('🎮 Controles: WASD = Mover | Q/Shift = Subir/Descer | E = Coletar | TAB = Loja');
-            console.log('🪙 F1 = +100 moedas (debug) | F2 = Completar limpeza (debug)');
+            console.log('🪙 F1 = +100 moedas | F2 = Completar limpeza');
         }
 
         iniciarJogo();
@@ -1867,13 +2044,6 @@
                 mostrarMensagemSistema('🔄 Limpeza forçada (debug)', 1);
             }
         });
-
-        // ---------- ANIMAÇÃO DA ÁGUA ----------
-        let tempoAgua = 0;
-        setInterval(() => {
-            tempoAgua += 0.01;
-            aguaMesh.position.y = CONFIG.ALTURA_AGUA / 2 + 0.5 + Math.sin(tempoAgua) * 0.04;
-        }, 50);
     </script>
 
 </body>
