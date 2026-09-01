@@ -107,6 +107,41 @@ canvas:active { cursor: grabbing; }
 #barra-energia { height: 100%; width: 100%; border-radius: 10px; transition: width .1s linear, background .3s ease; background: linear-gradient(90deg,#00ffcc,#00aaff); }
 #barra-energia-bg.ativa #barra-energia { background: linear-gradient(90deg,#ffd700,#ff8800); }
 
+#barra-hp-container {
+    position: fixed; bottom: 90px; left: 30px;
+    width: 180px; z-index: 10; display: none;
+}
+#barra-hp-label {
+    color: rgba(255,255,255,0.6); font-size: 11px; margin-bottom: 4px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8); letter-spacing: 1px; text-transform: uppercase; font-weight: bold;
+}
+#barra-hp-bg {
+    width: 100%; height: 14px; background: rgba(0,0,0,0.7); border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.15); overflow: hidden;
+}
+#barra-hp { height: 100%; width: 100%; border-radius: 10px; transition: width .2s ease, background .3s ease; background: linear-gradient(90deg,#ff3355,#ff7755); }
+
+#radar-container {
+    position: fixed; top: 90px; right: 25px; z-index: 10; display: none;
+    text-align: center;
+}
+#radar-label {
+    color: rgba(255,255,255,0.5); font-size: 10px; margin-bottom: 4px;
+    letter-spacing: 2px; text-transform: uppercase; text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+}
+#radar-canvas {
+    background: rgba(0,10,20,0.65); border-radius: 50%;
+    border: 2px solid rgba(0,212,255,0.35); backdrop-filter: blur(3px);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.5);
+}
+
+#tela-vermelha {
+    position: fixed; top:0; left:0; right:0; bottom:0; pointer-events:none; z-index: 50;
+    background: radial-gradient(circle, transparent 40%, rgba(255,0,30,0.35) 100%);
+    opacity: 0; transition: opacity .15s ease;
+}
+#tela-vermelha.ativa { opacity: 1; }
+
 #loja-overlay {
     position: fixed; top:0; left:0; right:0; bottom:0;
     background: rgba(0,0,0,0.88); backdrop-filter: blur(12px); z-index: 100;
@@ -224,6 +259,9 @@ canvas:active { cursor: grabbing; }
     .loja-grid { grid-template-columns: 1fr; gap: 10px; }
     #loja-container h2 { font-size:22px; }
     #barra-energia-container { width: 130px; bottom: 20px; left: 20px; }
+    #barra-hp-container { width: 130px; bottom: 75px; left: 20px; }
+    #radar-container { top: 70px; right: 15px; }
+    #radar-canvas { width: 90px !important; height: 90px !important; }
 }
 @media (max-width: 480px) {
     #hud { padding: 8px 12px; }
@@ -234,6 +272,8 @@ canvas:active { cursor: grabbing; }
 </style>
 </head>
 <body>
+
+<div id="tela-vermelha"></div>
 
 <div id="hud">
     <div id="hud-left">
@@ -249,6 +289,16 @@ canvas:active { cursor: grabbing; }
             <span class="icon">🏪</span> Loja [TAB]
         </div>
     </div>
+</div>
+
+<div id="radar-container">
+    <div id="radar-label">🛰️ Radar</div>
+    <canvas id="radar-canvas" width="120" height="120"></canvas>
+</div>
+
+<div id="barra-hp-container">
+    <div id="barra-hp-label">❤️ Vida</div>
+    <div id="barra-hp-bg"><div id="barra-hp"></div></div>
 </div>
 
 <div id="barra-energia-container">
@@ -277,6 +327,7 @@ canvas:active { cursor: grabbing; }
     <span class="key">Arraste o mouse</span> Câmera<br>
     <span class="key">Segure E</span> Coletar<br>
     <span class="key">ESPAÇO</span> Ativar boost<br>
+    <span class="key">R</span> Atirar boia<br>
     <span class="key">TAB</span> Loja
 </div>
 
@@ -299,7 +350,7 @@ canvas:active { cursor: grabbing; }
 <div id="vitoria-overlay">
     <div id="vitoria-container">
         <div class="titulo">🎉✨</div>
-        <div class="subtitulo">Oceano Limpo!</div>
+        <div class="subtitulo" id="vitoria-subtitulo">Oceano Limpo!</div>
         <div class="stats" id="vitoria-stats"></div>
         <button class="btn-reiniciar" id="btn-reiniciar">🔄 Jogar Novamente</button>
     </div>
@@ -320,7 +371,7 @@ const CONFIG = {
     CAM_LADO: 2.0,
 
     AQUARIO: {
-        TEMPO_LIMITE: 180, // 3 minutos até a transição
+        TEMPO_LIMITE: 60, // 1 minuto até a transição
         TAMANHO_X: 30,
         TAMANHO_Z: 22,
         ALTURA_AGUA: 11,
@@ -333,7 +384,7 @@ const CONFIG = {
     ESGOTO: {
         COMPRIMENTO: 50,
         RAIO_TUBO: 2.6,
-        NUM_BARREIRAS: 4,
+        NUM_BARREIRAS: 1,
         PECAS_POR_BARREIRA: 3,
     },
     OCEANO: {
@@ -345,6 +396,15 @@ const CONFIG = {
         LIXO_ALVO: 500,
         RAIO_SPAWN: 150,
         MAX_LIXO_ATIVO: 45,
+    },
+    TUBARAO: {
+        TEMPO_PRIMEIRO_SPAWN: 180, // 3 minutos depois de entrar no oceano
+        TEMPO_RESPAWN: 120,        // 2 minutos após ser derrotado
+        VELOCIDADE_MULT: 0.7,      // 30% mais lento que o jogador
+        DANO: 10,
+        HP: 7,                     // tiros de boia necessários
+        RAIO_COLISAO: 2.6,
+        INVULNERABILIDADE: 1.2,
     },
     LOJA: {
         RECUPERACAO_ENERGIA: 10, // segundos para recarregar do zero ao cheio (vale para os 3 níveis)
@@ -359,6 +419,19 @@ const CONFIG = {
             { nivel: 1, custo: 150, bonus: 5 },
             { nivel: 2, custo: 400, bonus: 15 },
             { nivel: 3, custo: 700, bonus: 30 },
+        ],
+        BOIA: [
+            { nivel: 1, custo: 250 },
+        ],
+        RADAR: [
+            { nivel: 1, custo: 60 },
+        ],
+        // Obs: o pedido só trouxe o preço do nível 1 (120) — usei uma progressão
+        // parecida com a do boost de velocidade para os níveis 2 e 3.
+        COLETA: [
+            { nivel: 1, custo: 120, mult: 2 },
+            { nivel: 2, custo: 350, mult: 4 },
+            { nivel: 3, custo: 600, mult: 6 },
         ],
     },
 };
@@ -375,6 +448,7 @@ const estado = {
     transicaoAtiva: false,
     moedas: 0,
     tempoJogado: 0,
+    faseTimer: 0,
     jogoAtivo: true,
     jogoVencido: false,
     lixoAtivo: [],
@@ -387,6 +461,8 @@ const estado = {
     oceanoSpawnTimer: 0,
     chunkTimer: 0,
     chunksOceano: new Map(),
+    oceanoTimer: 0,
+    peixesDecorativos: new Map(),
     // câmera
     camAzimuth: Math.PI + 0.35,
     camPitch: 0.28,
@@ -399,6 +475,14 @@ const estado = {
     lojaAberta: false,
     boost: { nivel: 0, ativo: false, energia: 1 },
     bonusMoeda: { nivel: 0 },
+    tiroBoia: { comprado: false },
+    radar: { comprado: false },
+    coletaRapida: { nivel: 0 },
+    // tubarão / combate
+    jogador: { hp: 100, regenTimer: 0, invulneravel: 0 },
+    tubarao: { ativo: false, mesh: null, hp: 0, proximoSpawn: CONFIG.TUBARAO.TEMPO_PRIMEIRO_SPAWN },
+    projeteis: [],
+    ultimoTiro: -999,
 };
 
 const dom = {
@@ -416,6 +500,7 @@ const dom = {
     loadingTexto: document.getElementById('loading-texto'),
     vitoriaOverlay: document.getElementById('vitoria-overlay'),
     vitoriaStats: document.getElementById('vitoria-stats'),
+    vitoriaSubtitulo: document.getElementById('vitoria-subtitulo'),
     btnReiniciar: document.getElementById('btn-reiniciar'),
     coletaContainer: document.getElementById('coleta-container'),
     coletaLabel: document.getElementById('coleta-label'),
@@ -429,6 +514,11 @@ const dom = {
     energiaContainer: document.getElementById('barra-energia-container'),
     energiaBg: document.getElementById('barra-energia-bg'),
     energiaBarra: document.getElementById('barra-energia'),
+    hpContainer: document.getElementById('barra-hp-container'),
+    hpBarra: document.getElementById('barra-hp'),
+    radarContainer: document.getElementById('radar-container'),
+    radarCanvas: document.getElementById('radar-canvas'),
+    telaVermelha: document.getElementById('tela-vermelha'),
 };
 
 // ---------- THREE.JS núcleo ----------
@@ -498,6 +588,9 @@ function limparCena() {
     estado.lixoAtivo = [];
     estado.esgotoBarreiras = [];
     estado.chunksOceano = new Map();
+    estado.peixesDecorativos = new Map();
+    limparProjeteis();
+    removerTubarao();
     dom.promptColeta.style.display = 'none';
     dom.coletaContainer.style.display = 'none';
 }
@@ -666,9 +759,16 @@ function removerLixo(obj) {
     atualizarContadorLixo();
 }
 
+// ---------- multiplicador de coleta (loja) ----------
+function multiplicadorColeta() {
+    if (estado.coletaRapida.nivel <= 0) return 1;
+    return CONFIG.LOJA.COLETA[estado.coletaRapida.nivel - 1].mult;
+}
+
 // ---------- COLETA (segurar E) — genérica para qualquer fase ----------
 function acharLixoMaisProximo() {
-    let maisProximo = null, distMin = CONFIG.RAIO_COLETA;
+    const raioAtual = CONFIG.RAIO_COLETA * multiplicadorColeta();
+    let maisProximo = null, distMin = raioAtual;
     for (const obj of estado.lixoAtivo) {
         if (!obj || !obj.ativo || !obj.assentado) continue;
         const dist = peixe.position.distanceTo(obj.mesh.position);
@@ -705,10 +805,11 @@ function atualizarColeta(delta) {
         estado.coletaProgresso += delta;
         dom.coletaContainer.style.display = 'block';
         dom.coletaLabel.textContent = 'Coletando ' + alvo.nome + '...';
-        const frac = Math.min(1, estado.coletaProgresso / alvo.tempoColeta);
+        const tempoEfetivo = alvo.tempoColeta / multiplicadorColeta();
+        const frac = Math.min(1, estado.coletaProgresso / tempoEfetivo);
         dom.coletaBarra.style.width = (frac * 100) + '%';
 
-        if (estado.coletaProgresso >= alvo.tempoColeta) {
+        if (estado.coletaProgresso >= tempoEfetivo) {
             finalizarColeta(alvo);
         }
     } else {
@@ -945,6 +1046,7 @@ function construirCenaAquario() {
     limparCena();
     estado.fase = 'aquario';
     estado.jogoVencido = false;
+    estado.faseTimer = 0;
     estado.intervaloAtual = CONFIG.AQUARIO.INTERVALO_LIXO;
     configurarLuzes('aquario');
     scene.fog = new THREE.Fog(0x04182c, 28, 60);
@@ -957,6 +1059,8 @@ function construirCenaAquario() {
     dom.barraContainer.style.display = 'none';
     dom.barraLabel.style.display = 'none';
     dom.fase.textContent = '🐠 AQUÁRIO';
+    dom.hpContainer.style.display = 'none';
+    dom.radarContainer.style.display = 'none';
 
     peixe.position.set(0, CONFIG.AQUARIO.ALTURA_AGUA / 2, 0);
     peixe.rotation.set(0, 0, 0);
@@ -969,6 +1073,13 @@ function construirCenaAquario() {
     setTimeout(() => mostrarDialogo('🐟', 'O que é isso? Está caindo lixo!', 2.5), 3000);
     setTimeout(() => mostrarDialogo('🐟', 'Aff... que aquário sujo! Preciso limpar isso!', 3), 6000);
     setTimeout(() => mostrarMensagemSistema('🎮 WASD = Nadar | Arraste o mouse = Câmera | Segure E = Coletar', 3.5), 9500);
+}
+
+// Reconstrói o aquário após a vitória final, com uma fala diferente
+function construirCenaAquarioPosVitoria() {
+    construirCenaAquario();
+    dom.dialogo.style.display = 'none';
+    setTimeout(() => mostrarDialogo('🐟', 'Ufa.... que dia cansativo.... finalmente terminei minha tarefa...', 4), 600);
 }
 
 function gerarLixoAquario() {
@@ -1090,6 +1201,8 @@ function construirCenaEsgoto() {
     dom.barraContainer.style.display = 'none';
     dom.barraLabel.style.display = 'none';
     dom.fase.textContent = '🚽 ESGOTO';
+    dom.hpContainer.style.display = 'none';
+    dom.radarContainer.style.display = 'none';
 
     peixe.position.set(0, raio, 2);
     peixe.rotation.set(0, Math.PI, 0);
@@ -1150,12 +1263,86 @@ function alturaOceano(x, z) {
 
 const materialFundoOceano = new THREE.MeshStandardMaterial({ color: 0x3a5a3a, roughness: 0.95 });
 const materialRochaOceano = new THREE.MeshStandardMaterial({ color: 0x556677, roughness: 0.9 });
+const materialAlga = new THREE.MeshStandardMaterial({ color: 0x2f8f4f, roughness: 0.85, side: THREE.DoubleSide });
+const coresCoral = [0xff5566, 0xff8844, 0xffaa33, 0xdd44aa, 0x44ccaa, 0xff6699];
+
+function criarAlga() {
+    const grupo = new THREE.Group();
+    const numFolhas = 4 + Math.floor(Math.random() * 4);
+    for (let i = 0; i < numFolhas; i++) {
+        const altura = 1.2 + Math.random() * 2.2;
+        const folha = new THREE.Mesh(new THREE.PlaneGeometry(0.35, altura), materialAlga);
+        const ang = (i / numFolhas) * Math.PI * 2;
+        folha.position.set(Math.cos(ang) * 0.15, altura / 2, Math.sin(ang) * 0.15);
+        folha.rotation.y = ang;
+        folha.rotation.x = (Math.random() - 0.5) * 0.2;
+        folha.userData.faseAnim = Math.random() * 10;
+        grupo.add(folha);
+    }
+    grupo.userData.isAlga = true;
+    return grupo;
+}
+
+function criarCoral() {
+    const grupo = new THREE.Group();
+    const cor = coresCoral[Math.floor(Math.random() * coresCoral.length)];
+    const mat = new THREE.MeshStandardMaterial({ color: cor, roughness: 0.75 });
+    const tipo = Math.floor(Math.random() * 3);
+    if (tipo === 0) {
+        // coral ramificado (galhos)
+        const numGalhos = 5 + Math.floor(Math.random() * 5);
+        for (let i = 0; i < numGalhos; i++) {
+            const altura = 0.5 + Math.random() * 1.3;
+            const galho = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.09, altura, 5), mat);
+            const ang = Math.random() * Math.PI * 2;
+            const inc = Math.random() * 0.5;
+            galho.position.set(Math.cos(ang) * 0.3, altura / 2, Math.sin(ang) * 0.3);
+            galho.rotation.z = Math.cos(ang) * inc;
+            galho.rotation.x = Math.sin(ang) * inc;
+            grupo.add(galho);
+        }
+    } else if (tipo === 1) {
+        // coral em cúpula
+        const cupula = new THREE.Mesh(new THREE.SphereGeometry(0.5 + Math.random() * 0.5, 10, 8, 0, Math.PI * 2, 0, Math.PI / 2), mat);
+        grupo.add(cupula);
+    } else {
+        // coral em leque
+        for (let i = 0; i < 3; i++) {
+            const leque = new THREE.Mesh(new THREE.ConeGeometry(0.5 + Math.random() * 0.3, 0.9 + Math.random() * 0.6, 6, 1, true), mat);
+            leque.position.y = 0.45;
+            leque.rotation.z = Math.PI;
+            leque.rotation.y = i * 1.4;
+            leque.scale.set(1, 1, 0.25);
+            grupo.add(leque);
+        }
+    }
+    grupo.userData.isCoral = true;
+    return grupo;
+}
+
+function criarPeixeDecorativo() {
+    const grupo = new THREE.Group();
+    const coresPeixe = [0xffaa33, 0x44aaff, 0xff5577, 0xffee44, 0x66ddaa, 0xcc77ff];
+    const cor = coresPeixe[Math.floor(Math.random() * coresPeixe.length)];
+    const mat = new THREE.MeshStandardMaterial({ color: cor, roughness: 0.4 });
+    const corpo = new THREE.Mesh(new THREE.SphereGeometry(0.35, 10, 10), mat);
+    corpo.scale.set(1.4, 0.75, 0.55);
+    grupo.add(corpo);
+    const cauda = new THREE.Mesh(new THREE.ConeGeometry(0.3, 0.4, 5), mat);
+    cauda.rotation.x = Math.PI / 2;
+    cauda.position.set(0, 0, -0.42);
+    cauda.scale.set(1, 0.2, 0.5);
+    grupo.add(cauda);
+    grupo.userData.cauda = cauda;
+    return grupo;
+}
 
 function chunkKey(cx, cz) { return cx + '_' + cz; }
 
 function construirChunkOceano(cx, cz) {
     const size = CONFIG.OCEANO.CHUNK_SIZE;
     const objetos = [];
+    const chaveChunk = chunkKey(cx, cz);
 
     const geo = new THREE.PlaneGeometry(size, size, 6, 6);
     geo.rotateX(-Math.PI / 2);
@@ -1185,6 +1372,54 @@ function construirChunkOceano(cx, cz) {
         grupoCena.add(rocha);
         objetos.push(rocha);
     }
+
+    // Algas e corais no fundo — aproximadamente um a cada 30m (grade com jitter, sem exagero)
+    const passoDecoracao = 30;
+    const celulas = Math.max(1, Math.round(size / passoDecoracao));
+    for (let gx = 0; gx < celulas; gx++) {
+        for (let gz = 0; gz < celulas; gz++) {
+            if (rng() > 0.6) continue; // nem toda célula recebe algo, pra não ficar em grade perfeita
+            const wx = cx * size + (gx + 0.3 + rng() * 0.4) * (size / celulas);
+            const wz = cz * size + (gz + 0.3 + rng() * 0.4) * (size / celulas);
+            const wy = alturaOceano(wx, wz);
+            const decor = rng() < 0.5 ? criarAlga() : criarCoral();
+            decor.position.set(wx, wy, wz);
+            decor.rotation.y = rng() * Math.PI * 2;
+            const escala = 0.7 + rng() * 0.8;
+            decor.scale.set(escala, escala, escala);
+            grupoCena.add(decor);
+            objetos.push(decor);
+        }
+    }
+
+    // Peixinhos decorativos nadando — aproximadamente 1-2 a cada 25m
+    const passoPeixe = 25;
+    const celulasPeixe = Math.max(1, Math.round(size / passoPeixe));
+    for (let gx = 0; gx < celulasPeixe; gx++) {
+        for (let gz = 0; gz < celulasPeixe; gz++) {
+            if (rng() > 0.55) continue;
+            const numCardume = 1 + (rng() < 0.35 ? 1 : 0); // as vezes 2 juntos
+            const baseX = cx * size + (gx + 0.5) * (size / celulasPeixe) + (rng() - 0.5) * 10;
+            const baseZ = cz * size + (gz + 0.5) * (size / celulasPeixe) + (rng() - 0.5) * 10;
+            const baseY = Math.min(-4, alturaOceano(baseX, baseZ) + 6 + rng() * 20);
+            for (let f = 0; f < numCardume; f++) {
+                const peixinho = criarPeixeDecorativo();
+                const offX = (rng() - 0.5) * 3, offZ = (rng() - 0.5) * 3;
+                peixinho.position.set(baseX + offX, baseY + (rng() - 0.5) * 2, baseZ + offZ);
+                const escala = 0.6 + rng() * 0.6;
+                peixinho.scale.set(escala, escala, escala);
+                peixinho.userData.centro = new THREE.Vector3(baseX, baseY, baseZ);
+                peixinho.userData.raio = 4 + rng() * 5;
+                peixinho.userData.velAng = 0.15 + rng() * 0.35;
+                peixinho.userData.faseAnim = rng() * Math.PI * 2;
+                peixinho.userData.alturaOsc = 0.5 + rng() * 1.5;
+                grupoCena.add(peixinho);
+                objetos.push(peixinho);
+                estado.peixesDecorativos.set(peixinho.uuid, { mesh: peixinho, chunk: chaveChunk });
+            }
+        }
+    }
+
     return objetos;
 }
 
@@ -1206,9 +1441,26 @@ function atualizarChunksOceano() {
     }
     for (const [key, objs] of estado.chunksOceano) {
         if (!necessarios.has(key)) {
-            objs.forEach(o => { grupoCena.remove(o); if (o.geometry) o.geometry.dispose(); });
+            objs.forEach(o => {
+                grupoCena.remove(o);
+                if (o.geometry) o.geometry.dispose();
+                if (estado.peixesDecorativos.has(o.uuid)) estado.peixesDecorativos.delete(o.uuid);
+            });
             estado.chunksOceano.delete(key);
         }
+    }
+}
+
+function atualizarPeixesDecorativos(time) {
+    for (const { mesh } of estado.peixesDecorativos.values()) {
+        const c = mesh.userData.centro;
+        const ang = time * mesh.userData.velAng + mesh.userData.faseAnim;
+        mesh.position.x = c.x + Math.cos(ang) * mesh.userData.raio;
+        mesh.position.z = c.z + Math.sin(ang) * mesh.userData.raio;
+        mesh.position.y = c.y + Math.sin(time * 0.6 + mesh.userData.faseAnim) * mesh.userData.alturaOsc * 0.2;
+        const anguloOlhar = ang + Math.PI / 2;
+        mesh.rotation.y = -anguloOlhar;
+        if (mesh.userData.cauda) mesh.userData.cauda.rotation.z = Math.sin(time * 8 + mesh.userData.faseAnim) * 0.3;
     }
 }
 
@@ -1218,6 +1470,13 @@ function construirCenaOceano() {
     estado.oceanoColetados = 0;
     estado.oceanoSpawnTimer = 0;
     estado.chunkTimer = 0;
+    estado.oceanoTimer = 0;
+    estado.jogador.hp = 100;
+    estado.jogador.regenTimer = 0;
+    estado.jogador.invulneravel = 0;
+    estado.tubarao.proximoSpawn = CONFIG.TUBARAO.TEMPO_PRIMEIRO_SPAWN;
+    removerTubarao();
+    limparProjeteis();
     configurarLuzes('oceano');
     scene.fog = new THREE.Fog(0x083a4a, 40, CONFIG.OCEANO.DIST_FOG);
     scene.background = new THREE.Color(0x052233);
@@ -1225,6 +1484,8 @@ function construirCenaOceano() {
     dom.barraContainer.style.display = 'block';
     dom.barraLabel.style.display = 'block';
     dom.fase.textContent = '🌊 OCEANO ABERTO';
+    dom.hpContainer.style.display = 'block';
+    dom.radarContainer.style.display = estado.radar.comprado ? 'block' : 'none';
 
     peixe.position.set(0, -30, 0);
     peixe.rotation.set(0, 0, 0);
@@ -1234,6 +1495,7 @@ function construirCenaOceano() {
 
     atualizarChunksOceano();
     atualizarPoluicaoOceano();
+    atualizarHPBar();
 
     estado.jogoAtivo = true;
     mostrarDialogo('🐟', 'Preciso limpar isso tudo... vou nadar em busca de lixo!', 3);
@@ -1292,6 +1554,304 @@ function atualizarFlutuacaoOceano(time) {
         if (!obj.flutuando) continue;
         obj.mesh.position.y += Math.sin(time * 1.3 + obj.mesh.position.x) * 0.003;
         obj.mesh.rotation.y += 0.003;
+    }
+}
+
+// =====================================================================
+// TUBARÃO (predador do oceano)
+// =====================================================================
+function criarTubarao() {
+    const grupo = new THREE.Group();
+    const mat = new THREE.MeshStandardMaterial({ color: 0x6a7a88, roughness: 0.55 });
+    const matBarriga = new THREE.MeshStandardMaterial({ color: 0xd8dde0, roughness: 0.6 });
+
+    const corpo = new THREE.Mesh(new THREE.ConeGeometry(1.1, 5, 10), mat);
+    corpo.rotation.x = Math.PI / 2;
+    corpo.scale.set(1, 0.75, 1);
+    grupo.add(corpo);
+
+    const barriga = new THREE.Mesh(new THREE.ConeGeometry(0.75, 4.6, 8), matBarriga);
+    barriga.rotation.x = Math.PI / 2;
+    barriga.position.y = -0.35;
+    barriga.scale.set(0.85, 0.5, 0.85);
+    grupo.add(barriga);
+
+    const dorsal = new THREE.Mesh(new THREE.ConeGeometry(0.65, 1.3, 4), mat);
+    dorsal.position.set(0, 1.05, 0.3);
+    dorsal.scale.set(1, 1, 0.3);
+    grupo.add(dorsal);
+
+    const cauda = new THREE.Mesh(new THREE.ConeGeometry(1.1, 1.7, 4), mat);
+    cauda.rotation.x = -Math.PI / 2;
+    cauda.position.set(0, 0.3, -2.6);
+    cauda.scale.set(1, 0.18, 0.85);
+    grupo.add(cauda);
+
+    for (let lado = -1; lado <= 1; lado += 2) {
+        const peit = new THREE.Mesh(new THREE.ConeGeometry(0.35, 1.3, 4), mat);
+        peit.position.set(lado * 0.7, -0.2, 1.0);
+        peit.rotation.z = lado * 1.1;
+        peit.scale.set(1, 0.22, 0.55);
+        grupo.add(peit);
+    }
+
+    const focinho = new THREE.Mesh(new THREE.ConeGeometry(0.35, 0.9, 8), mat);
+    focinho.rotation.x = Math.PI / 2;
+    focinho.position.set(0, 0, 2.6);
+    grupo.add(focinho);
+
+    grupo.userData.cauda = cauda;
+    grupo.castShadow = true;
+    return grupo;
+}
+
+function spawnTubarao() {
+    const ang = Math.random() * Math.PI * 2;
+    const dist = 70 + Math.random() * 40;
+    const x = peixe.position.x + Math.cos(ang) * dist;
+    const z = peixe.position.z + Math.sin(ang) * dist;
+    const y = peixe.position.y + (Math.random() - 0.5) * 10;
+
+    const mesh = criarTubarao();
+    mesh.position.set(x, y, z);
+    grupoCena.add(mesh);
+
+    estado.tubarao.ativo = true;
+    estado.tubarao.mesh = mesh;
+    estado.tubarao.hp = CONFIG.TUBARAO.HP;
+
+    mostrarMensagemSistema('🦈 Um tubarão apareceu... fuja ou lute!', 2.5);
+}
+
+function removerTubarao() {
+    if (estado.tubarao.mesh) {
+        grupoCena.remove(estado.tubarao.mesh);
+        estado.tubarao.mesh.traverse(m => { if (m.geometry) m.geometry.dispose(); });
+    }
+    estado.tubarao.mesh = null;
+    estado.tubarao.ativo = false;
+}
+
+function matarTubarao() {
+    const pos = estado.tubarao.mesh ? estado.tubarao.mesh.position.clone() : peixe.position.clone();
+    removerTubarao();
+    estado.tubarao.proximoSpawn = estado.oceanoTimer + CONFIG.TUBARAO.TEMPO_RESPAWN;
+    criarEfeitoColeta(pos, 0, true);
+    mostrarDialogo('🐟', '🦈💀 Tubarão derrotado! Novo predador em ~2 min.', 2.5);
+}
+
+function atualizarTubarao(delta) {
+    if (!estado.tubarao.ativo) {
+        if (estado.oceanoTimer >= estado.tubarao.proximoSpawn) spawnTubarao();
+        return;
+    }
+    const mesh = estado.tubarao.mesh;
+    if (!mesh) return;
+
+    const direcao = peixe.position.clone().sub(mesh.position);
+    const dist = direcao.length();
+    direcao.normalize();
+
+    const velocidade = CONFIG.VELOCIDADE_BASE * CONFIG.TUBARAO.VELOCIDADE_MULT;
+    mesh.position.addScaledVector(direcao, velocidade * delta);
+
+    const anguloAlvo = Math.atan2(direcao.x, direcao.z);
+    let diff = anguloAlvo - mesh.rotation.y;
+    while (diff > Math.PI) diff -= Math.PI * 2;
+    while (diff < -Math.PI) diff += Math.PI * 2;
+    mesh.rotation.y += diff * 0.06;
+    mesh.rotation.x = -Math.asin(Math.max(-1, Math.min(1, direcao.y))) * 0.5;
+
+    if (mesh.userData.cauda) mesh.userData.cauda.rotation.y = Math.sin(Date.now() * 0.006) * 0.35;
+
+    if (estado.jogador.invulneravel > 0) estado.jogador.invulneravel -= delta;
+
+    if (dist < CONFIG.TUBARAO.RAIO_COLISAO && estado.jogador.invulneravel <= 0) {
+        estado.jogador.invulneravel = CONFIG.TUBARAO.INVULNERABILIDADE;
+        estado.jogador.hp -= CONFIG.TUBARAO.DANO;
+        piscarTelaVermelha();
+        mostrarMensagemSistema('🦈 Mordida! -' + CONFIG.TUBARAO.DANO + ' HP', 0.8);
+        atualizarHPBar();
+        if (estado.jogador.hp <= 0) {
+            estado.jogador.hp = 0;
+            atualizarHPBar();
+            gameOverTubarao();
+        }
+    }
+}
+
+function piscarTelaVermelha() {
+    dom.telaVermelha.classList.add('ativa');
+    setTimeout(() => dom.telaVermelha.classList.remove('ativa'), 250);
+}
+
+function atualizarRegenHP(delta) {
+    if (estado.fase !== 'oceano' || estado.jogador.hp <= 0) return;
+    if (estado.jogador.hp >= 100) return;
+    estado.jogador.regenTimer += delta;
+    if (estado.jogador.regenTimer >= 15) {
+        estado.jogador.regenTimer = 0;
+        estado.jogador.hp = Math.min(100, estado.jogador.hp + 10);
+        atualizarHPBar();
+    }
+}
+
+function atualizarHPBar() {
+    const pct = Math.max(0, estado.jogador.hp);
+    dom.hpBarra.style.width = pct + '%';
+    dom.hpBarra.style.background = pct > 50 ? 'linear-gradient(90deg,#00ff88,#00cc66)' : pct > 25 ? 'linear-gradient(90deg,#ffaa00,#ff8800)' : 'linear-gradient(90deg,#ff3355,#cc0033)';
+}
+
+function gameOverTubarao() {
+    estado.jogoAtivo = false;
+    removerTubarao();
+    mostrarDialogo('🐟', 'Ai... o tubarão me pegou!', 2);
+    setTimeout(() => {
+        mostrarCarregamento(2600, () => { resetOceanoAposMorte(); }, 'Voltando ao ponto de entrada...');
+    }, 1600);
+}
+
+function resetOceanoAposMorte() {
+    limparProjeteis();
+    peixe.position.set(0, -30, 0);
+    peixe.rotation.set(0, 0, 0);
+    estado.jogador.hp = 100;
+    estado.jogador.regenTimer = 0;
+    estado.jogador.invulneravel = 1.5;
+    estado.oceanoTimer = 0;
+    estado.tubarao.proximoSpawn = CONFIG.TUBARAO.TEMPO_PRIMEIRO_SPAWN;
+    atualizarChunksOceano();
+    resetCameraSnap();
+    atualizarHPBar();
+    mostrarDialogo('🐟', 'Ufa... por pouco. Vou continuar limpando o oceano!', 2.5);
+}
+
+// =====================================================================
+// TIRO DE BOIA
+// =====================================================================
+function criarBoiaMesh() {
+    const mat = new THREE.MeshStandardMaterial({ color: 0xff6622, roughness: 0.4 });
+    const matFaixa = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.4 });
+    const grupo = new THREE.Group();
+    const anel = new THREE.Mesh(new THREE.TorusGeometry(0.35, 0.13, 8, 14), mat);
+    grupo.add(anel);
+    for (let i = 0; i < 4; i++) {
+        const faixa = new THREE.Mesh(new THREE.TorusGeometry(0.35, 0.135, 4, 3, Math.PI / 5), matFaixa);
+        faixa.rotation.z = (i / 4) * Math.PI * 2;
+        grupo.add(faixa);
+    }
+    return grupo;
+}
+
+function atirarBoia() {
+    if (!estado.tiroBoia.comprado) {
+        mostrarMensagemSistema('🛟 Compre o Tiro de Boia na loja primeiro!', 1.5);
+        return;
+    }
+    if (estado.fase !== 'oceano' || !estado.jogoAtivo) return;
+    if (estado.tempoJogado - estado.ultimoTiro < 0.35) return; // limite de taxa de tiro
+    estado.ultimoTiro = estado.tempoJogado;
+
+    const dir = new THREE.Vector3(Math.sin(peixe.rotation.y), 0, Math.cos(peixe.rotation.y)).normalize();
+    const mesh = criarBoiaMesh();
+    mesh.position.copy(peixe.position).addScaledVector(dir, 1.3);
+    grupoCena.add(mesh);
+    estado.projeteis.push({ mesh, dir, vida: 3.0 });
+}
+
+function atualizarProjeteis(delta) {
+    for (let i = estado.projeteis.length - 1; i >= 0; i--) {
+        const p = estado.projeteis[i];
+        p.mesh.position.addScaledVector(p.dir, 26 * delta);
+        p.mesh.rotation.x += delta * 6;
+        p.vida -= delta;
+
+        let acertou = false;
+        if (estado.tubarao.ativo && estado.tubarao.mesh) {
+            if (p.mesh.position.distanceTo(estado.tubarao.mesh.position) < 2.2) {
+                acertou = true;
+                estado.tubarao.hp--;
+                mostrarMensagemSistema('🛟 Acertou! (' + Math.max(0, estado.tubarao.hp) + '/' + CONFIG.TUBARAO.HP + ')', 0.6);
+                if (estado.tubarao.hp <= 0) matarTubarao();
+            }
+        }
+
+        if (acertou || p.vida <= 0) {
+            grupoCena.remove(p.mesh);
+            p.mesh.traverse(m => { if (m.geometry) m.geometry.dispose(); });
+            estado.projeteis.splice(i, 1);
+        }
+    }
+}
+
+function limparProjeteis() {
+    estado.projeteis.forEach(p => {
+        grupoCena.remove(p.mesh);
+        p.mesh.traverse(m => { if (m.geometry) m.geometry.dispose(); });
+    });
+    estado.projeteis = [];
+}
+
+// =====================================================================
+// RADAR
+// =====================================================================
+const radarCtx = dom.radarCanvas.getContext('2d');
+function desenharRadar() {
+    if (!estado.radar.comprado || estado.fase !== 'oceano') return;
+    const w = dom.radarCanvas.width, h = dom.radarCanvas.height;
+    const cx = w / 2, cy = h / 2;
+    const alcance = 120; // metros representados até a borda do radar
+    const raioTela = w / 2 - 8;
+
+    radarCtx.clearRect(0, 0, w, h);
+    radarCtx.beginPath();
+    radarCtx.arc(cx, cy, raioTela, 0, Math.PI * 2);
+    radarCtx.strokeStyle = 'rgba(0,212,255,0.25)';
+    radarCtx.lineWidth = 1;
+    radarCtx.stroke();
+
+    // jogador no centro
+    radarCtx.beginPath();
+    radarCtx.arc(cx, cy, 4, 0, Math.PI * 2);
+    radarCtx.fillStyle = '#00d4ff';
+    radarCtx.fill();
+
+    function posicaoRelativa(alvoPos) {
+        const dx = alvoPos.x - peixe.position.x;
+        const dz = alvoPos.z - peixe.position.z;
+        // gira conforme a direção da câmera para o radar acompanhar a visão
+        const ang = -estado.camAzimuth;
+        const rx = dx * Math.cos(ang) - dz * Math.sin(ang);
+        const rz = dx * Math.sin(ang) + dz * Math.cos(ang);
+        let dist = Math.sqrt(rx * rx + rz * rz);
+        const escala = Math.min(1, alcance / Math.max(1, dist)) * Math.min(dist, alcance) / alcance;
+        const fator = (Math.min(dist, alcance) / alcance) * raioTela;
+        const distClamp = Math.max(dist, 0.001);
+        return { x: cx + (rx / distClamp) * fator, y: cy + (rz / distClamp) * fator, dist };
+    }
+
+    // lixo mais próximo
+    let lixoProximo = null, distMin = Infinity;
+    for (const obj of estado.lixoAtivo) {
+        if (!obj.ativo) continue;
+        const d = peixe.position.distanceTo(obj.mesh.position);
+        if (d < distMin) { distMin = d; lixoProximo = obj; }
+    }
+    if (lixoProximo) {
+        const p = posicaoRelativa(lixoProximo.mesh.position);
+        radarCtx.beginPath();
+        radarCtx.arc(p.x, p.y, 3.5, 0, Math.PI * 2);
+        radarCtx.fillStyle = '#ffd700';
+        radarCtx.fill();
+    }
+
+    // tubarão
+    if (estado.tubarao.ativo && estado.tubarao.mesh) {
+        const p = posicaoRelativa(estado.tubarao.mesh.position);
+        radarCtx.beginPath();
+        radarCtx.arc(p.x, p.y, 4.5, 0, Math.PI * 2);
+        radarCtx.fillStyle = '#ff3344';
+        radarCtx.fill();
     }
 }
 
@@ -1484,6 +2044,27 @@ const lojaItens = [
         comprar: (n) => { estado.bonusMoeda.nivel = n.nivel; },
         descNivel: (n) => `+${n.bonus} moedas por lixo coletado`,
     },
+    {
+        id: 'coleta', emoji: '🧲', nome: 'Coleta Rápida',
+        niveis: CONFIG.LOJA.COLETA,
+        nivelAtual: () => estado.coletaRapida.nivel,
+        comprar: (n) => { estado.coletaRapida.nivel = n.nivel; },
+        descNivel: (n) => `${n.mult}x mais rápido e ${n.mult}x mais alcance para coletar`,
+    },
+    {
+        id: 'boia', emoji: '🛟', nome: 'Tiro de Boia',
+        niveis: CONFIG.LOJA.BOIA,
+        nivelAtual: () => (estado.tiroBoia.comprado ? 1 : 0),
+        comprar: () => { estado.tiroBoia.comprado = true; },
+        descNivel: () => 'Atire boias (tecla R). 7 tiros derrotam um tubarão.',
+    },
+    {
+        id: 'radar', emoji: '🛰️', nome: 'Radar',
+        niveis: CONFIG.LOJA.RADAR,
+        nivelAtual: () => (estado.radar.comprado ? 1 : 0),
+        comprar: () => { estado.radar.comprado = true; dom.radarContainer.style.display = (estado.fase === 'oceano') ? 'block' : 'none'; },
+        descNivel: () => 'Mostra no mapa o lixo mais próximo e a posição do tubarão.',
+    },
 ];
 
 function renderizarLoja() {
@@ -1530,7 +2111,7 @@ function comprarNivel(item, proximo) {
     if (estado.moedas < proximo.custo) { mostrarMensagemSistema('Moedas insuficientes!', 1); return; }
     estado.moedas -= proximo.custo;
     item.comprar(proximo);
-    mostrarDialogo('🐟', '✨ ' + item.nome + ' nível ' + proximo.nivel + ' comprado!', 1.5);
+    mostrarDialogo('🐟', '✨ ' + item.nome + (proximo.nivel ? ' nível ' + proximo.nivel : '') + ' comprado!', 1.5);
     atualizarHUD();
     renderizarLoja();
 }
@@ -1599,16 +2180,28 @@ function iniciarTransicaoOceano() {
     }, 2600);
 }
 
+function iniciarTransicaoAquarioPosVitoria() {
+    if (estado.transicaoAtiva) return;
+    estado.transicaoAtiva = true;
+    estado.jogoAtivo = false;
+    dom.vitoriaOverlay.classList.remove('aberta');
+    setTimeout(() => {
+        mostrarCarregamento(2600, () => { construirCenaAquarioPosVitoria(); }, 'Voltando para o aquário...');
+    }, 400);
+}
+
 // ---------- VITÓRIA ----------
 function vitoriaFinal() {
     estado.jogoVencido = true;
     estado.jogoAtivo = false;
+    dom.vitoriaSubtitulo.textContent = 'Oceano Limpo!';
     dom.vitoriaStats.innerHTML = `
         <div class="stat-row"><span class="label">🪙 Moedas</span><span class="value">${estado.moedas}</span></div>
         <div class="stat-row"><span class="label">🗑️ Lixo coletado no oceano</span><span class="value">${estado.oceanoColetados}/${CONFIG.OCEANO.LIXO_ALVO}</span></div>
         <div class="stat-row"><span class="label">⏱️ Tempo total</span><span class="value">${dom.tempo.textContent}</span></div>
     `;
     dom.vitoriaOverlay.classList.add('aberta');
+    dom.btnReiniciar.textContent = '🐠 Voltar ao aquário';
     mostrarDialogo('🐟', '🎉 O oceano está limpo de novo!', 3);
 
     for (let i = 0; i < 100; i++) {
@@ -1645,6 +2238,7 @@ function gameLoop() {
 
     if (estado.jogoAtivo && !estado.jogoVencido) {
         estado.tempoJogado += delta;
+        estado.faseTimer += delta;
         atualizarHUD();
 
         if (estado.fase === 'aquario') {
@@ -1652,7 +2246,7 @@ function gameLoop() {
             if (ultimoTempoLixo > estado.intervaloAtual) { ultimoTempoLixo = 0; gerarLixoAquario(); }
             atualizarLixoQueda(delta);
             atualizarSuperficieAquario();
-            if (estado.tempoJogado >= CONFIG.AQUARIO.TEMPO_LIMITE && !estado.transicaoAtiva) {
+            if (estado.faseTimer >= CONFIG.AQUARIO.TEMPO_LIMITE && !estado.transicaoAtiva) {
                 iniciarTransicaoEsgoto();
             }
         } else if (estado.fase === 'esgoto') {
@@ -1660,8 +2254,14 @@ function gameLoop() {
                 iniciarTransicaoOceano();
             }
         } else if (estado.fase === 'oceano') {
+            estado.oceanoTimer += delta;
             gerenciarLixoOceano(delta);
             atualizarFlutuacaoOceano(time);
+            atualizarPeixesDecorativos(time);
+            atualizarTubarao(delta);
+            atualizarProjeteis(delta);
+            atualizarRegenHP(delta);
+            desenharRadar();
             estado.chunkTimer += delta;
             if (estado.chunkTimer > 0.4) { estado.chunkTimer = 0; atualizarChunksOceano(); }
         }
@@ -1686,6 +2286,7 @@ document.addEventListener('keydown', (e) => {
     if (key === 'e') { teclas.e = true; estado.coletaSegurando = true; }
     if (key === 'tab') { e.preventDefault(); toggleLoja(); }
     if (key === ' ' || key === 'spacebar') { e.preventDefault(); alternarBoost(); }
+    if (key === 'r') { atirarBoia(); }
     if (key === 'escape' && estado.lojaAberta) toggleLoja();
 });
 document.addEventListener('keyup', (e) => {
@@ -1697,7 +2298,13 @@ document.addEventListener('keyup', (e) => {
     if (key === 'e') { teclas.e = false; estado.coletaSegurando = false; }
 });
 
-dom.btnReiniciar.addEventListener('click', () => location.reload());
+dom.btnReiniciar.addEventListener('click', () => {
+    if (estado.jogoVencido) {
+        iniciarTransicaoAquarioPosVitoria();
+    } else {
+        location.reload();
+    }
+});
 
 window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
@@ -1709,7 +2316,7 @@ window.addEventListener('resize', () => {
 document.addEventListener('keydown', (e) => {
     if (e.key === 'F1') { estado.moedas += 100; atualizarHUD(); mostrarMensagemSistema('🪙 +100 moedas (debug)', 1); }
     if (e.key === 'F2') {
-        if (estado.fase === 'aquario') { estado.tempoJogado = CONFIG.AQUARIO.TEMPO_LIMITE; }
+        if (estado.fase === 'aquario') { estado.faseTimer = CONFIG.AQUARIO.TEMPO_LIMITE; }
         else if (estado.fase === 'esgoto') {
             estado.esgotoBarreiras.forEach(b => { b.concluida = true; });
             estado.lixoAtivo.filter(o => o.barreira).forEach(o => removerLixo(o));
@@ -1721,6 +2328,7 @@ document.addEventListener('keydown', (e) => {
         }
         mostrarMensagemSistema('⏩ Avanço forçado (debug)', 1);
     }
+    if (e.key === 'F3' && estado.fase === 'oceano') { spawnTubarao(); mostrarMensagemSistema('🦈 Tubarão forçado (debug)', 1); }
 });
 
 // ---------- INICIALIZAR ----------
