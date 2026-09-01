@@ -1,1126 +1,1803 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>🧓 Jürgen Habermas - Três Versões</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐟 Aquário Limpo - Jogo 3D</title>
     <style>
-        /* === ESTILOS GERAIS === */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
-            font-family: 'Segoe UI', 'Arial', sans-serif;
-            background: #f5f0eb;
-            min-height: 100vh;
-            padding: 20px;
+            overflow: hidden;
+            background: #0a0a1a;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            user-select: none;
         }
-
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 30px;
-            padding: 30px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
-        }
-
-        /* === CABEÇALHO === */
-        .header {
-            text-align: center;
-            padding: 20px 0 10px;
-            border-bottom: 4px solid #e8ddd0;
-        }
-
-        .header h1 {
-            font-size: 2.8rem;
-            color: #2c3e50;
-        }
-
-        .header h1 span {
-            font-size: 3.5rem;
-        }
-
-        .header .sub {
-            font-size: 1.2rem;
-            color: #7f8c8d;
-            margin-top: 8px;
-        }
-
-        /* === ABA DE NAVEGAÇÃO === */
-        .tabs {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin: 25px 0 30px;
-            flex-wrap: wrap;
-        }
-
-        .tab-btn {
-            padding: 14px 30px;
-            font-size: 1.15rem;
-            font-weight: bold;
-            border: none;
-            border-radius: 60px;
-            cursor: pointer;
-            transition: 0.3s;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-            font-family: inherit;
-        }
-
-        .tab-btn.infantil {
-            background: #fce8b2;
-            color: #5d3a1a;
-        }
-
-        .tab-btn.infantil:hover,
-        .tab-btn.infantil.ativo {
-            background: #f7d794;
-            transform: scale(1.03);
-            box-shadow: 0 6px 20px rgba(247, 215, 148, 0.4);
-        }
-
-        .tab-btn.medio {
-            background: #d5e5f0;
-            color: #1d4b6e;
-        }
-
-        .tab-btn.medio:hover,
-        .tab-btn.medio.ativo {
-            background: #b0c9dd;
-            transform: scale(1.03);
-            box-shadow: 0 6px 20px rgba(176, 201, 221, 0.4);
-        }
-
-        .tab-btn.resumo {
-            background: #d5f0e0;
-            color: #1a5d3a;
-        }
-
-        .tab-btn.resumo:hover,
-        .tab-btn.resumo.ativo {
-            background: #a8e0c0;
-            transform: scale(1.03);
-            box-shadow: 0 6px 20px rgba(168, 224, 192, 0.4);
-        }
-
-        /* === CONTEÚDO DAS ABAS === */
-        .tab-content {
-            display: none;
-            animation: fadeIn 0.5s;
-        }
-
-        .tab-content.ativo {
+        canvas {
             display: block;
+        }
+
+        /* HUD */
+        #hud {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            pointer-events: none;
+            z-index: 10;
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0.6) 0%, transparent 100%);
+        }
+        #hud-left {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        #hud-right {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            align-items: flex-end;
+        }
+        .hud-item {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 6px 14px;
+            border-radius: 20px;
+            color: #fff;
+            font-size: 18px;
+            font-weight: bold;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            pointer-events: auto;
+        }
+        .hud-item .icon {
+            margin-right: 8px;
+        }
+
+        #barra-poluicao-container {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            max-width: 500px;
+            height: 14px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+            z-index: 10;
+            backdrop-filter: blur(4px);
+        }
+        #barra-poluicao {
+            height: 100%;
+            width: 0%;
+            border-radius: 20px;
+            transition: width 0.5s ease, background 0.5s ease;
+            background: linear-gradient(90deg, #00d4ff, #00ff88);
+        }
+        #barra-poluicao-label {
+            position: fixed;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 12px;
+            z-index: 10;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+            letter-spacing: 1px;
+        }
+
+        /* LOJA */
+        #loja-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+        #loja-overlay.aberta {
+            display: flex;
         }
 
         @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: translateY(20px);
+                transform: scale(0.95);
             }
             to {
                 opacity: 1;
-                transform: translateY(0);
+                transform: scale(1);
             }
         }
 
-        /* === CARTÕES === */
-        .card {
-            background: #faf8f5;
-            border-radius: 25px;
-            padding: 25px 30px;
-            margin: 25px 0;
-            border-left: 8px solid #3498db;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+        #loja-container {
+            background: linear-gradient(145deg, #1a2a3a, #0d1a26);
+            border-radius: 30px;
+            padding: 40px;
+            max-width: 700px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8);
+        }
+        #loja-container h2 {
+            color: #fff;
+            font-size: 32px;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        #loja-container .subtitle {
+            color: rgba(255, 255, 255, 0.5);
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+        #loja-moedas {
+            color: #ffd700;
+            font-size: 22px;
+            text-align: center;
+            margin-bottom: 25px;
+            background: rgba(255, 215, 0, 0.1);
+            padding: 10px;
+            border-radius: 15px;
+        }
+        .loja-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        .loja-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+        .loja-item:hover {
+            transform: translateY(-3px);
+            border-color: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .loja-item .emoji {
+            font-size: 40px;
+            display: block;
+            margin-bottom: 8px;
+        }
+        .loja-item .nome {
+            color: #fff;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .loja-item .desc {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
+            margin: 5px 0;
+        }
+        .loja-item .preco {
+            color: #ffd700;
+            font-size: 18px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .loja-item .btn-comprar {
+            background: linear-gradient(135deg, #00d4ff, #0088ff);
+            border: none;
+            color: #fff;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        .loja-item .btn-comprar:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(0, 136, 255, 0.4);
+        }
+        .loja-item .btn-comprar:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        .loja-item .btn-comprar.comprado {
+            background: linear-gradient(135deg, #00ff88, #00cc66);
+        }
+        .loja-fechar {
+            display: block;
+            margin: 25px auto 0;
+            padding: 12px 40px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: transparent;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .loja-fechar:hover {
+            background: rgba(255, 255, 255, 0.1);
         }
 
-        .card h2 {
-            font-size: 1.8rem;
-            color: #2c3e50;
-            margin-bottom: 15px;
-            display: flex;
+        /* DIÁLOGO */
+        #dialogo-container {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            padding: 15px 30px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 15;
+            display: none;
+            max-width: 80%;
+            text-align: center;
+            animation: fadeIn 0.3s ease;
+        }
+        #dialogo-container .texto {
+            color: #fff;
+            font-size: 20px;
+            font-weight: 500;
+        }
+        #dialogo-container .nome {
+            color: #00d4ff;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        /* TELA DE VITÓRIA */
+        #vitoria-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(15px);
+            z-index: 200;
+            display: none;
+            justify-content: center;
             align-items: center;
-            gap: 12px;
+            animation: fadeIn 0.5s ease;
+        }
+        #vitoria-overlay.aberta {
+            display: flex;
+        }
+        #vitoria-container {
+            text-align: center;
+            padding: 40px;
+            max-width: 500px;
+        }
+        #vitoria-container .titulo {
+            font-size: 48px;
+            color: #ffd700;
+            margin-bottom: 10px;
+        }
+        #vitoria-container .subtitulo {
+            font-size: 24px;
+            color: #fff;
+            margin-bottom: 20px;
+        }
+        #vitoria-container .stats {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 18px;
+            line-height: 2;
+        }
+        #vitoria-container .stats span {
+            color: #ffd700;
+            font-weight: bold;
+        }
+        .btn-reiniciar {
+            margin-top: 30px;
+            padding: 15px 50px;
+            border-radius: 30px;
+            border: none;
+            background: linear-gradient(135deg, #00d4ff, #0088ff);
+            color: #fff;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-reiniciar:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 30px rgba(0, 136, 255, 0.5);
         }
 
-        .card h2 .icone {
-            font-size: 2.2rem;
+        /* CONTROLES (mobile) */
+        #controles-mobile {
+            position: fixed;
+            bottom: 80px;
+            left: 0;
+            right: 0;
+            display: none;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 5;
+            pointer-events: none;
         }
-
-        .card p {
-            font-size: 1.15rem;
-            line-height: 1.8;
-            color: #2d2d2d;
-            margin-bottom: 12px;
-        }
-
-        .card ul {
-            list-style: none;
-            padding-left: 10px;
-        }
-
-        .card ul li {
-            font-size: 1.1rem;
-            line-height: 1.7;
-            padding: 6px 0;
-            padding-left: 30px;
+        #joystick-area {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            pointer-events: auto;
+            touch-action: none;
             position: relative;
         }
-
-        .card.infantil ul li::before {
-            content: "🧸 ";
+        #joystick-knob {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
             position: absolute;
-            left: 0;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
         }
-
-        .card.medio ul li::before {
-            content: "▸ ";
-            color: #3498db;
-            font-weight: bold;
-            position: absolute;
-            left: 0;
-        }
-
-        .card.resumo ul li::before {
-            content: "▪ ";
-            color: #27ae60;
-            font-weight: bold;
-            position: absolute;
-            left: 0;
-        }
-
-        .destaque {
-            background: #fef9f0;
-            border-radius: 20px;
-            padding: 18px 24px;
-            border-left: 8px solid #f39c12;
-            margin: 18px 0;
-            font-style: italic;
-            font-size: 1.15rem;
-        }
-
-        .destaque strong {
-            font-style: normal;
-            color: #2c3e50;
-        }
-
-        /* === CARTÃO RESUMO (ESTILO DIFERENCIADO) === */
-        .card.resumo {
-            border-left-color: #27ae60;
-            background: #f5faf7;
-        }
-
-        .card.resumo .destaque {
-            background: #e8f5e9;
-            border-left-color: #43a047;
-        }
-
-        .card.resumo .contexto-box {
-            background: #e8f5e9;
-            border-color: #81c784;
-        }
-
-        .resumo-tag {
-            display: inline-block;
-            background: #27ae60;
-            color: white;
-            font-size: 0.8rem;
-            font-weight: bold;
-            padding: 2px 14px;
-            border-radius: 30px;
-            margin-left: 10px;
-            vertical-align: middle;
-        }
-
-        /* === QUIZ === */
-        .quiz-box {
-            background: #f0f6fa;
-            border-radius: 25px;
-            padding: 25px 30px;
-            border: 3px solid #b0c9dd;
-            margin-top: 20px;
-        }
-
-        .quiz-box.resumo-quiz {
-            background: #f0faf5;
-            border-color: #81c784;
-        }
-
-        .pergunta {
-            background: white;
-            border-radius: 20px;
-            padding: 18px 22px;
-            margin: 18px 0;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
-            border-left: 6px solid #3498db;
-        }
-
-        .pergunta.resumo-pergunta {
-            border-left-color: #27ae60;
-        }
-
-        .pergunta .num {
-            font-weight: bold;
-            color: #2980b9;
-            margin-right: 8px;
-        }
-
-        .pergunta .texto {
-            font-size: 1.15rem;
-            font-weight: 600;
-            color: #2c3e50;
-        }
-
-        .pergunta .alternativas {
-            margin-top: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .pergunta .alternativas label {
+        #btn-coletar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(0, 212, 255, 0.3);
+            border: 2px solid rgba(0, 212, 255, 0.5);
+            color: #fff;
+            font-size: 30px;
+            pointer-events: auto;
+            touch-action: manipulation;
+            cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 12px;
-            background: #f7fafc;
-            padding: 10px 16px;
-            border-radius: 30px;
-            border: 2px solid #e8edf2;
-            font-size: 1.05rem;
-            cursor: pointer;
-            transition: 0.2s;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        #btn-coletar:active {
+            transform: scale(0.9);
+            background: rgba(0, 212, 255, 0.5);
         }
 
-        .pergunta .alternativas label:hover {
-            background: #e8f0f7;
-            border-color: #7fb0d6;
-        }
-
-        .pergunta .alternativas input[type="radio"] {
-            width: 20px;
-            height: 20px;
-            accent-color: #2980b9;
-            flex-shrink: 0;
-            cursor: pointer;
-        }
-
-        .btn-verificar {
-            background: #2980b9;
-            color: white;
-            border: none;
-            font-size: 1.4rem;
-            font-weight: bold;
-            padding: 14px 40px;
-            border-radius: 60px;
-            cursor: pointer;
-            box-shadow: 0 6px 0 #1a5276;
-            transition: 0.1s;
-            font-family: inherit;
-            display: block;
-            margin: 20px auto 0;
-        }
-
-        .btn-verificar:active {
-            transform: translateY(5px);
-            box-shadow: 0 1px 0 #1a5276;
-        }
-
-        .btn-verificar.resumo-btn {
-            background: #27ae60;
-            box-shadow: 0 6px 0 #1a7a3a;
-        }
-
-        .btn-verificar.resumo-btn:active {
-            box-shadow: 0 1px 0 #1a7a3a;
-        }
-
-        .resultado {
-            background: #fef9f0;
-            border-radius: 25px;
-            padding: 20px 25px;
-            margin-top: 25px;
-            text-align: center;
-            font-size: 1.3rem;
-            font-weight: bold;
-            border: 4px solid #f39c12;
-            display: none;
-        }
-
-        .resultado .nota {
-            font-size: 2.8rem;
-            color: #2980b9;
-        }
-
-        .resultado .mensagem {
-            font-size: 1.2rem;
-            font-weight: normal;
-            margin-top: 8px;
-        }
-
-        .gabarito {
-            margin-top: 20px;
-            background: #e8edf2;
-            border-radius: 20px;
-            padding: 18px 22px;
-            font-size: 1.05rem;
-            display: none;
-        }
-
-        .gabarito .certa {
-            color: #27ae60;
-            font-weight: bold;
-        }
-
-        .gabarito .errada {
-            color: #e74c3c;
-            font-weight: bold;
-        }
-
-        /* === CONTEXTUALIZAÇÃO ESPECIAL === */
-        .contexto-box {
-            background: #ebf5fb;
-            border-radius: 25px;
-            padding: 20px 25px;
-            border: 3px solid #aed6f1;
-            margin: 15px 0;
-        }
-
-        .contexto-box strong {
-            color: #1a5276;
-        }
-
-        /* === RODAPÉ === */
-        .footer {
-            text-align: center;
-            margin-top: 40px;
-            padding-top: 25px;
-            border-top: 4px dotted #d5d8dc;
-            color: #7f8c8d;
-            font-size: 1.05rem;
-        }
-
-        .footer .icones {
-            font-size: 2.2rem;
-            letter-spacing: 10px;
-        }
-
-        /* === RESPONSIVO === */
-        @media (max-width: 700px) {
-            .container {
-                padding: 16px;
+        @media (max-width: 768px) {
+            #controles-mobile {
+                display: flex;
             }
-            .header h1 {
-                font-size: 2rem;
+            .hud-item {
+                font-size: 14px;
+                padding: 4px 10px;
             }
-            .tab-btn {
-                padding: 10px 18px;
-                font-size: 1rem;
+            #barra-poluicao-container {
+                width: 80%;
+                height: 10px;
+                bottom: 20px;
             }
-            .card h2 {
-                font-size: 1.5rem;
+            #dialogo-container .texto {
+                font-size: 16px;
             }
-            .card p,
-            .card li {
-                font-size: 1rem;
+            #loja-container {
+                padding: 20px;
             }
-            .pergunta .texto {
-                font-size: 1rem;
+            .loja-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
             }
-            .pergunta .alternativas label {
-                font-size: 0.95rem;
-                padding: 8px 14px;
+        }
+
+        @media (max-width: 480px) {
+            #hud {
+                padding: 10px 15px;
             }
-            .btn-verificar {
-                font-size: 1.2rem;
-                padding: 12px 28px;
+            .hud-item {
+                font-size: 12px;
+                padding: 3px 8px;
             }
+            #loja-container h2 {
+                font-size: 24px;
+            }
+            .loja-item .emoji {
+                font-size: 30px;
+            }
+        }
+
+        /* Scroll da loja */
+        #loja-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        #loja-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        #loja-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-
-        <!-- CABEÇALHO -->
-        <div class="header">
-            <h1><span>🧓</span> Jürgen Habermas</h1>
-            <div class="sub">Três versões: infantil 🧒 • ensino médio 🧑 • resumo 📝</div>
+    <!-- HUD -->
+    <div id="hud">
+        <div id="hud-left">
+            <div class="hud-item"><span class="icon">🪙</span> <span id="moedas-display">0</span></div>
+            <div class="hud-item"><span class="icon">📦</span> <span id="lixo-display">0</span></div>
         </div>
-
-        <!-- ABAS -->
-        <div class="tabs">
-            <button class="tab-btn infantil ativo" onclick="trocarAba('infantil')">
-                🧒 Infantil (8 anos)
-            </button>
-            <button class="tab-btn medio" onclick="trocarAba('medio')">
-                🧑 Ensino Médio
-            </button>
-            <button class="tab-btn resumo" onclick="trocarAba('resumo')">
-                📝 Resumo (EM)
-            </button>
+        <div id="hud-right">
+            <div class="hud-item"><span class="icon">🔄</span> Limpezas: <span id="limpezas-display">0</span>/15</div>
+            <div class="hud-item"><span class="icon">⏱️</span> <span id="tempo-display">00:00</span></div>
+            <div class="hud-item" style="cursor:pointer;pointer-events:auto;" id="btn-abrir-loja">🏪 Loja [TAB]</div>
         </div>
-
-        <!-- ============================================================ -->
-        <!-- ===================== MODO INFANTIL ========================= -->
-        <!-- ============================================================ -->
-        <div class="tab-content ativo" id="conteudo-infantil">
-
-            <div style="text-align:center; font-size:1.3rem; color:#5d3a1a; background:#fce8b2; border-radius:60px; padding:12px 20px; margin-bottom:20px;">
-                🌟 <strong>Bem-vindo ao mundo do avô que amava conversas!</strong> 🌟
-            </div>
-
-            <!-- O QUE É -->
-            <div class="card infantil" style="border-left-color:#f39c12;">
-                <h2><span class="icone">🧓</span> O que é a filosofia de Habermas?</h2>
-                <p>
-                    Jürgen Habermas foi um filósofo alemão que viveu até os 96 anos (1929–2026). 
-                    Ele passou a vida inteira pensando em como as pessoas podem <strong>se entender melhor</strong>.
-                </p>
-                <p>
-                    Para ele, a coisa mais importante do mundo é <strong>saber conversar</strong> — 
-                    não é gritar, não é brigar, não é empurrar. É <strong>sentar, ouvir e explicar</strong> 
-                    o que a gente pensa.
-                </p>
-                <div class="destaque">
-                    🗨️ <strong>“A força do melhor argumento é mais forte que a força do punho.”</strong>
-                </div>
-            </div>
-
-            <!-- O QUE DEFENDE -->
-            <div class="card infantil" style="border-left-color:#e67e22;">
-                <h2><span class="icone">🛡️</span> O que ele defende?</h2>
-                <ul>
-                    <li><strong>Conversar é melhor que brigar</strong> — sempre dá para achar um acordo</li>
-                    <li><strong>Todo mundo deve ter voz</strong> — até as crianças podem opinar!</li>
-                    <li><strong>As regras só são justas se servem para todos</strong> — inclusive para quem as criou</li>
-                    <li><strong>Ninguém é dono da verdade</strong> — a verdade aparece quando a gente conversa</li>
-                </ul>
-            </div>
-
-            <!-- PRINCIPAL TEORIA -->
-            <div class="card infantil" style="border-left-color:#2ecc71;">
-                <h2><span class="icone">💬</span> Principal teoria: A Conversa Mágica (Ação Comunicativa)</h2>
-                <p>
-                    Habermas inventou um nome bonito: <strong>Ação Comunicativa</strong>. 
-                    Mas é bem simples:
-                </p>
-                <ul>
-                    <li>Sentar em círculo com os outros</li>
-                    <li>Escutar com atenção o que cada um diz</li>
-                    <li>Dar <strong>argumentos</strong> (explicações) verdadeiras</li>
-                    <li>Deixar todo mundo falar sem interromper</li>
-                    <li>Decidir juntos o que é melhor para todos</li>
-                </ul>
-                <p>
-                    Ele dizia que, quando a gente conversa assim, <strong>ninguém precisa brigar</strong> 
-                    — porque a melhor ideia aparece naturalmente!
-                </p>
-            </div>
-
-            <!-- CONTEXTUALIZAÇÃO -->
-            <div class="card infantil" style="border-left-color:#9b59b6;">
-                <h2><span class="icone">📜</span> De onde veio essa ideia? (Contexto)</h2>
-                <div class="contexto-box">
-                    <p>
-                        <strong>🧓 Habermas era alemão e cresceu durante a Segunda Guerra Mundial.</strong> 
-                        Ele viu seu país ser dominado por um ditador que <strong>não deixava ninguém falar</strong> 
-                        e que usava a força para mandar nas pessoas.
-                    </p>
-                    <p>
-                        Isso o marcou profundamente. Ele pensou: <em>“Como evitar que isso aconteça de novo?”</em> 
-                        E a resposta dele foi: <strong>ensinando as pessoas a conversarem!</strong>
-                    </p>
-                    <p>
-                        Se todo mundo aprender a ouvir e a dar argumentos, <strong>ninguém consegue enganar 
-                        ou mandar nos outros</strong> — porque a verdade aparece quando todos falam.
-                    </p>
-                </div>
-                <p>
-                    Ele também se inspirou em filósofos antigos, como <strong>Sócrates</strong>, que ensinava 
-                    perguntando e conversando, e em pensadores modernos que acreditavam na <strong>democracia</strong> 
-                    (o poder do povo).
-                </p>
-            </div>
-
-            <!-- QUIZ INFANTIL -->
-            <div class="card infantil" style="border-left-color:#3498db; background:#f3f9fe;">
-                <h2><span class="icone">🧠</span> Quiz: O que você aprendeu?</h2>
-                <p>Marque as respostas e clique em <strong>"Verificar"</strong>!</p>
-
-                <div class="quiz-box" id="quizInfantil">
-
-                    <div class="pergunta" data-pergunta="1">
-                        <div><span class="num">1.</span> <span class="texto">Qual era a ideia mais importante de Habermas?</span></div>
-                        <div class="alternativas">
-                            <label><input type="radio" name="inf-q1" value="a" /> <span>💪 Quem é mais forte manda</span></label>
-                            <label><input type="radio" name="inf-q1" value="b" /> <span>🗣️ Conversar e se entender é o mais importante</span></label>
-                            <label><input type="radio" name="inf-q1" value="c" /> <span>💰 Quem tem mais dinheiro tem razão</span></label>
-                            <label><input type="radio" name="inf-q1" value="d" /> <span>📺 Ficar quieto e não falar nada</span></label>
-                        </div>
-                    </div>
-
-                    <div class="pergunta" data-pergunta="2">
-                        <div><span class="num">2.</span> <span class="texto">O que a "Regra de Ouro" do Habermas nos ensina?</span></div>
-                        <div class="alternativas">
-                            <label><input type="radio" name="inf-q2" value="a" /> <span>🤔 Pensar se a regra é justa para todo mundo, inclusive para mim</span></label>
-                            <label><input type="radio" name="inf-q2" value="b" /> <span>🏃 Fugir de todas as regras</span></label>
-                            <label><input type="radio" name="inf-q2" value="c" /> <span>😡 Fazer regras só para os outros</span></label>
-                            <label><input type="radio" name="inf-q2" value="d" /> <span>🙈 Ignorar as regras e fazer o que quiser</span></label>
-                        </div>
-                    </div>
-
-                    <div class="pergunta" data-pergunta="3">
-                        <div><span class="num">3.</span> <span class="texto">Como Habermas chamava o lugar onde as pessoas discutem as regras da cidade?</span></div>
-                        <div class="alternativas">
-                            <label><input type="radio" name="inf-q3" value="a" /> <span>🏛️ Esfera Pública (a "praça dos debates")</span></label>
-                            <label><input type="radio" name="inf-q3" value="b" /> <span>🎠 Parque de diversões</span></label>
-                            <label><input type="radio" name="inf-q3" value="c" /> <span>🏫 Sala de aula</span></label>
-                            <label><input type="radio" name="inf-q3" value="d" /> <span>🛒 Supermercado</span></label>
-                        </div>
-                    </div>
-
-                    <div class="pergunta" data-pergunta="4">
-                        <div><span class="num">4.</span> <span class="texto">Segundo Habermas, o que é mais forte que a força do punho?</span></div>
-                        <div class="alternativas">
-                            <label><input type="radio" name="inf-q4" value="a" /> <span>🥊 A força do soco</span></label>
-                            <label><input type="radio" name="inf-q4" value="b" /> <span>💬 A força do melhor argumento (da melhor explicação)</span></label>
-                            <label><input type="radio" name="inf-q4" value="c" /> <span>🏋️ A força do músculo</span></label>
-                            <label><input type="radio" name="inf-q4" value="d" /> <span>🔊 A força do grito mais alto</span></label>
-                        </div>
-                    </div>
-
-                    <div class="pergunta" data-pergunta="5">
-                        <div><span class="num">5.</span> <span class="texto">O que Habermas achava que devemos fazer para resolver uma briga?</span></div>
-                        <div class="alternativas">
-                            <label><input type="radio" name="inf-q5" value="a" /> <span>🤫 Ficar em silêncio e não fazer nada</span></label>
-                            <label><input type="radio" name="inf-q5" value="b" /> <span>👊 Brigar até um desistir</span></label>
-                            <label><input type="radio" name="inf-q5" value="c" /> <span>🗣️ Sentar, conversar, ouvir e decidir juntos</span></label>
-                            <label><input type="radio" name="inf-q5" value="d" /> <span>📱 Chamar os pais ou a professora para resolver</span></label>
-                        </div>
-                    </div>
-
-                    <button class="btn-verificar" onclick="verificarQuiz('inf')">✅ Verificar respostas</button>
-
-                    <div class="resultado" id="resultadoInf">
-                        <div class="nota" id="notaInf">⭐</div>
-                        <div class="mensagem" id="mensagemInf"></div>
-                    </div>
-
-                    <div class="gabarito" id="gabaritoInf">
-                        <p><strong>📖 Gabarito:</strong></p>
-                        <p>1. <span class="certa">b</span> — Conversar e se entender é o mais importante</p>
-                        <p>2. <span class="certa">a</span> — Pensar se a regra é justa para todo mundo</p>
-                        <p>3. <span class="certa">a</span> — Esfera Pública (a "praça dos debates")</p>
-                        <p>4. <span class="certa">b</span> — A força do melhor argumento</p>
-                        <p>5. <span class="certa">c</span> — Sentar, conversar, ouvir e decidir juntos</p>
-                    </div>
-
-                </div>
-            </div>
-
-        </div>
-        <!-- FIM MODO INFANTIL -->
-
-        <!-- ============================================================ -->
-        <!-- ===================== MODO ENSINO MÉDIO ==================== -->
-        <!-- ============================================================ -->
-        <div class="tab-content" id="conteudo-medio">
-
-            <div style="text-align:center; font-size:1.2rem; color:#1d4b6e; background:#d5e5f0; border-radius:60px; padding:12px 20px; margin-bottom:20px;">
-                📚 <strong>Bem-vindo ao estudo aprofundado de Jürgen Habermas</strong> 📚
-            </div>
-
-            <!-- O QUE É -->
-            <div class="card medio" style="border-left-color:#2c3e50;">
-                <h2><span class="icone">📖</span> O que é a filosofia de Habermas?</h2>
-                <p>
-                    <strong>Jürgen Habermas</strong> (1929–2026) foi um dos filósofos e sociólogos 
-                    mais influentes do século XX e XXI. Pertenceu à <strong>segunda geração da Escola de Frankfurt</strong> 
-                    e dedicou sua vida a desenvolver a <strong>Teoria Crítica</strong>, mas com um enfoque inovador: 
-                    a <strong>comunicação</strong> como fundamento da racionalidade e da emancipação social.
-                </p>
-                <p>
-                    Sua obra busca superar o pessimismo da primeira geração (Horkheimer e Adorno) 
-                    e reconstruir a razão a partir do <strong>diálogo</strong> e da <strong>intersubjetividade</strong>.
-                </p>
-                <div class="destaque">
-                    <strong>“A racionalidade comunicativa se realiza no entendimento linguístico, 
-                    na força do melhor argumento.”</strong> — Habermas
-                </div>
-            </div>
-
-            <!-- O QUE DEFENDE -->
-            <div class="card medio" style="border-left-color:#2980b9;">
-                <h2><span class="icone">⚖️</span> O que ele defende?</h2>
-                <ul>
-                    <li><strong>Racionalidade comunicativa</strong> — a razão não é apenas instrumental (meios-fins), mas também se manifesta na busca de entendimento mútuo.</li>
-                    <li><strong>Democracia deliberativa</strong> — a legitimidade das leis vem de um processo público de debate, acessível a todos os afetados.</li>
-                    <li><strong>Ética do discurso</strong> — normas morais só são válidas se puderem ser universalizadas e aceitas em um diálogo livre de coerção.</li>
-                    <li><strong>Esfera pública</strong> — espaço de discussão crítica onde os cidadãos podem formar opinião livre da dominação do Estado e do mercado.</li>
-                    <li><strong>Autonomia e emancipação</strong> — a comunicação livre é condição para que os indivíduos se tornem sujeitos autônomos.</li>
-                </ul>
-            </div>
-
-            <!-- PRINCIPAL TEORIA -->
-            <div class="card medio" style="border-left-color:#27ae60;">
-                <h2><span class="icone">📘</span> Principal teoria: Ação Comunicativa</h2>
-                <p>
-                    A <strong>Teoria da Ação Comunicativa</strong> (1981) é a obra magna de Habermas. 
-                    Nela, ele distingue dois tipos fundamentais de racionalidade:
-                </p>
-                <ul>
-                    <li><strong>Ação instrumental/estratégica:</strong> orientada para o sucesso, 
-                    para o cálculo de meios e fins (ex: uma empresa que maximiza lucros).</li>
-                    <li><strong>Ação comunicativa:</strong> orientada para o entendimento mútuo, 
-                    onde os agentes buscam chegar a um consenso por meio da linguagem.</li>
-                </ul>
-                <p>
-                    Para Habermas, a <strong>linguagem</strong> não é apenas uma ferramenta, mas 
-                    o <strong>meio constitutivo da própria sociedade</strong>. A ação comunicativa 
-                    pressupõe <strong>quatro pretensões de validade</strong>:
-                </p>
-                <ul>
-                    <li><strong>Inteligibilidade</strong> — o que se diz deve ser compreensível</li>
-                    <li><strong>Verdade</strong> — o que se diz sobre o mundo deve ser verdadeiro</li>
-                    <li><strong>Correção normativa</strong> — o que se diz deve estar de acordo com normas legítimas</li>
-                    <li><strong>Sinceridade</strong> — o falante deve ser autêntico e não enganar</li>
-                </ul>
-                <p>
-                    Quando essas pretensões são problematizadas, entra-se no <strong>discurso</strong> 
-                    — um processo argumentativo onde a <strong>força do melhor argumento</strong> 
-                    prevalece, sem coerção externa.
-                </p>
-            </div>
-
-            <!-- CONTEXTUALIZAÇÃO -->
-            <div class="card medio" style="border-left-color:#8e44ad;">
-                <h2><span class="icone">🏛️</span> Contextualização: Origem da Teoria</h2>
-
-                <div class="contexto-box">
-                    <p><strong>📍 Contexto histórico e biográfico:</strong></p>
-                    <p>
-                        Habermas nasceu em 1929, na Alemanha, e viveu a <strong>ascensão do nazismo</strong> 
-                        e a <strong>Segunda Guerra Mundial</strong>. Essa experiência traumática o marcou 
-                        profundamente: como a razão moderna pôde ser usada para legitimar o totalitarismo e o extermínio?
-                    </p>
-                    <p>
-                        Essa pergunta o acompanhou por toda a vida. Ele rejeitou tanto o <strong>pessimismo 
-                        irracionalista</strong> (que via a razão como mera dominação) quanto o <strong>positivismo 
-                        ingênuo</strong> (que via a ciência como valor neutro).
-                    </p>
-                </div>
-
-                <div class="contexto-box">
-                    <p><strong>📍 Influências filosóficas:</strong></p>
-                    <ul>
-                        <li><strong>Immanuel Kant:</strong> a ideia de uma razão autônoma e universal</li>
-                        <li><strong>G.W.F. Hegel:</strong> a noção de reconhecimento intersubjetivo</li>
-                        <li><strong>Karl Marx:</strong> a crítica à dominação e à ideologia</li>
-                        <li><strong>Max Weber:</strong> a análise da racionalização moderna</li>
-                        <li><strong>George Herbert Mead:</strong> a construção do self pela interação social</li>
-                        <li><strong>John L. Austin & Searle:</strong> a teoria dos atos de fala (linguagem como ação)</li>
-                    </ul>
-                    <p>
-                        Habermas sintetizou essas influências para construir uma <strong>teoria social 
-                        com base na linguagem</strong>, rompendo com o paradigma da consciência (típico da 
-                        filosofia moderna) e adotando o <strong>paradigma da comunicação</strong>.
-                    </p>
-                </div>
-
-                <div class="contexto-box">
-                    <p><strong>📍 Debate com a Escola de Frankfurt:</strong></p>
-                    <p>
-                        A primeira geração (Horkheimer, Adorno, Marcuse) via a razão instrumental como 
-                        uma força de dominação que havia se voltado contra si mesma. Para eles, o 
-                        <em>Esclarecimento</em> (Iluminismo) havia gerado o totalitarismo.
-                    </p>
-                    <p>
-                        Habermas discordou: para ele, a razão não precisa ser abandonada, mas 
-                        <strong>reconstruída</strong> a partir da comunicação. A <strong>razão comunicativa</strong> 
-                        é a base para uma sociedade verdadeiramente democrática e emancipada.
-                    </p>
-                    <p>
-                        Essa virada comunicativa foi uma das maiores inovações da filosofia do século XX.
-                    </p>
-                </div>
-            </div>
-
-            <!-- QUIZ ENSINO MÉDIO -->
-            <div class="card medio" style="border-left-color:#3498db; background:#f0f6fa;">
-                <h2><span class="icone">🧠</span> Quiz: Verifique seus conhecimentos</h2>
-                <p>Responda às perguntas e clique em <strong>"Verificar"</strong>.</p>
-
-                <div class="quiz-box" id="quizMedio">
-
-                    <div class="pergunta" data-pergunta="1">
-                        <div><span class="num">1.</span> <span class="texto">Qual é o principal conceito que diferencia a filosofia de Habermas da primeira geração da Escola de Frankfurt?</span></div>
-                        <div class="alternativas">
-                            <label><input type="radio" name="med-q1" value="a" /> <span>A crítica ao capitalismo</span></label>
-                            <label><input type="radio" name="med-q1" value="b" /> <span>A ênfase na razão comunicativa em vez da razão instrumental</span></label>
-                            <label><input type="radio" name="med-q1" value="c" /> <span>A defesa do marxismo ortodoxo</span></label>
-                            <label><input type="radio" name="med-q1" value="d" /> <span>O abandono total da razão</span></label>
-                        </div>
-                    </div>
-
-                    <div class="pergunta" data-pergunta="2">
-                        <div><span class="num">2.</span> <span class="texto">O que a Teoria da Ação Comunicativa propõe como fundamento da sociedade?</span></div>
-                        <div class="alternativas">
-                            <label><input type="radio" name="med-q2" value="a" /> <span>A luta de classes como motor da história</span></label>
-                            <label><input type="radio" name="med-q2" value="b" /> <span>A linguagem e o entendimento mútuo como base da intersubjetividade</span></label>
-                            <label><input type="radio" name="med-q2" value="c" /> <span>O mercado como regulador das relações sociais</span></label>
-                            <label><input type="radio" name="med-q2" value="d" /> <span>A vontade de poder como força motriz</span></label>
-                        </div>
-                    </div>
-
-                    <div class="pergunta" data-pergunta="3">
-                        <div><span class="num">3.</span> <span class="texto">Quais são as quatro pretensões de validade da ação comunicativa?</span></div>
-                        <div class="alternativas">
-                            <label><input type="radio" name="med-q3" value="a" /> <span>Verdade, poder, dinheiro e status</span></label>
-                            <label><input type="radio" name="med-q3" value="b" /> <span>Inteligibilidade, verdade, correção normativa e sinceridade</span></label>
-                            <label><input type="radio" name="med-q3" value="c" /> <span>Força, autoridade, tradição e carisma</span></label>
-                            <label><input type="radio" name="med-q3" value="d" /> <span>Clareza, objetividade, subjetividade e emoção</span></label>
-                        </div>
-                    </div>
-
-                    <div class="pergunta" data-pergunta="4">
-                        <div><span class="num">4.</span> <span class="texto">O que Habermas entende por "Esfera Pública"?</span></div>
-                        <div class="alternativas">
-                            <label><input type="radio" name="med-q4" value="a" /> <span>O espaço físico onde ocorrem eleições</span></label>
-                            <label><input type="radio" name="med-q4" value="b" /> <span>O conjunto de instituições estatais</span></label>
-                            <label><input type="radio" name="med-q4" value="c" /> <span>O espaço de discussão crítica dos cidadãos, livre da dominação do Estado e do mercado</span></label>
-                            <label><input type="radio" name="med-q4" value="d" /> <span>A mídia de massa e as redes sociais</span></label>
-                        </div>
-                    </div>
-
-                    <div class="pergunta" data-pergunta="5">
-                        <div><span class="num">5.</span> <span class="texto">Qual foi a principal motivação histórica que levou Habermas a desenvolver sua teoria?</span></div>
-                        <div class="alternativas">
-                            <label><input type="radio" name="med-q5" value="a" /> <span>A Revolução Industrial</span></label>
-                            <label><input type="radio" name="med-q5" value="b" /> <span>A experiência do nazismo e a necessidade de reconstruir a razão democrática</span></label>
-                            <label><input type="radio" name="med-q5" value="c" /> <span>A Guerra Fria e a corrida armamentista</span></label>
-                            <label><input type="radio" name="med-q5" value="d" /> <span>A crise econômica de 1929</span></label>
-                        </div>
-                    </div>
-
-                    <button class="btn-verificar" onclick="verificarQuiz('med')">✅ Verificar respostas</button>
-
-                    <div class="resultado" id="resultadoMed">
-                        <div class="nota" id="notaMed">⭐</div>
-                        <div class="mensagem" id="mensagemMed"></div>
-                    </div>
-
-                    <div class="gabarito" id="gabaritoMed">
-                        <p><strong>📖 Gabarito:</strong></p>
-                        <p>1. <span class="certa">b</span> — A ênfase na razão comunicativa em vez da razão instrumental</p>
-                        <p>2. <span class="certa">b</span> — A linguagem e o entendimento mútuo como base da intersubjetividade</p>
-                        <p>3. <span class="certa">b</span> — Inteligibilidade, verdade, correção normativa e sinceridade</p>
-                        <p>4. <span class="certa">c</span> — O espaço de discussão crítica dos cidadãos, livre da dominação do Estado e do mercado</p>
-                        <p>5. <span class="certa">b</span> — A experiência do nazismo e a necessidade de reconstruir a razão democrática</p>
-                    </div>
-
-                </div>
-            </div>
-
-        </div>
-        <!-- FIM MODO ENSINO MÉDIO -->
-
-        <!-- ============================================================ -->
-        <!-- ================= MODO RESUMO (ENSINO MÉDIO) =============== -->
-        <!-- ============================================================ -->
-        <div class="tab-content" id="conteudo-resumo">
-
-            <div style="text-align:center; font-size:1.2rem; color:#1a5d3a; background:#d5f0e0; border-radius:60px; padding:12px 20px; margin-bottom:20px;">
-                📝 <strong>Resumo para Ensino Médio — Revisão Rápida</strong> 📝
-            </div>
-
-            <!-- O QUE É -->
-            <div class="card resumo" style="border-left-color:#27ae60;">
-                <h2><span class="icone">📌</span> O que é a filosofia de Habermas? <span class="resumo-tag">RESUMO</span></h2>
-                <p>
-                    <strong>Jürgen Habermas</strong> (1929–2026) foi um filósofo alemão, 
-                    principal representante da <strong>segunda geração da Escola de Frankfurt</strong>. 
-                    Sua filosofia propõe uma <strong>virada comunicativa</strong> na Teoria Crítica: 
-                    a <strong>razão comunicativa</strong> substitui a razão instrumental como 
-                    fundamento da emancipação social.
-                </p>
-                <p>
-                    <strong>Objetivo:</strong> reconstruir a razão moderna a partir do 
-                    <strong>diálogo</strong> e da <strong>intersubjetividade</strong>, 
-                    superando o pessimismo de Horkheimer e Adorno.
-                </p>
-                <div class="destaque">
-                    💡 <strong>Ideia central:</strong> a linguagem é o meio constitutivo da 
-                    sociedade — o entendimento mútuo é a base da democracia e da justiça.
-                </div>
-            </div>
-
-            <!-- O QUE DEFENDE -->
-            <div class="card resumo" style="border-left-color:#2e7d32;">
-                <h2><span class="icone">⚡</span> O que ele defende? <span class="resumo-tag">RESUMO</span></h2>
-                <ul>
-                    <li><strong>Racionalidade comunicativa:</strong> a razão não é só cálculo (meios-fins), mas também busca de entendimento mútuo.</li>
-                    <li><strong>Democracia deliberativa:</strong> leis legítimas vêm do debate público, não só de eleições.</li>
-                    <li><strong>Ética do discurso:</strong> normas morais são válidas se todos os afetados concordarem em diálogo livre.</li>
-                    <li><strong>Esfera pública:</strong> espaço de discussão crítica dos cidadãos, livre do Estado e do mercado.</li>
-                    <li><strong>Emancipação:</strong> a comunicação livre é condição para a autonomia dos indivíduos.</li>
-                </ul>
-            </div>
-
-            <!-- PRINCIPAL TEORIA (RESUMIDA) -->
-            <div class="card resumo" style="border-left-color:#1b8a3a;">
-                <h2><span class="icone">📘</span> Principal teoria: Ação Comunicativa <span class="resumo-tag">RESUMO</span></h2>
-                <p>
-                    A <strong>Teoria da Ação Comunicativa</strong> (1981) é a obra central de Habermas. 
-                    Ela distingue:
-                </p>
-                <ul>
-                    <li><strong>Ação instrumental:</strong> orientada para o sucesso (ex: empresa que maximiza lucros).</li>
-                    <li><strong>Ação comunicativa:</strong> orientada para o entendimento mútuo via linguagem.</li>
-                </ul>
-                <p>
-                    <strong>Quatro pretensões de validade</strong> de todo ato de fala:
-                </p>
-                <ul>
-                    <li><strong>Inteligibilidade</strong> — ser compreensível</li>
-                    <li><strong>Verdade</strong> — ser verdadeiro sobre o mundo</li>
-                    <li><strong>Correção normativa</strong> — estar de acordo com normas legítimas</li>
-                    <li><strong>Sinceridade</strong> — ser autêntico</li>
-                </ul>
-                <p>
-                    Quando essas pretensões são questionadas, entra-se no <strong>discurso</strong> 
-                    — um debate onde vence a <strong>força do melhor argumento</strong>, sem coerção.
-                </p>
-                <div class="destaque" style="background:#e8f5e9; border-left-color:#43a047;">
-                    🎯 <strong>Conclusão:</strong> a sociedade se organiza pela comunicação, 
-                    não pela dominação.
-                </div>
-            </div>
-
-            <!-- CONTEXTUALIZAÇÃO (RESUMIDA) -->
-            <div class="card resumo" style="border-left-color:#6a1b9a;">
-                <h2><span class="icone">🏛️</span> Contextualização <span class="resumo-tag">RESUMO</span></h2>
-
-                <div class="contexto-box" style="background:#e8f5e9; border-color:#81c784;">
-                    <p><strong>📍 Contexto histórico:</strong></p>
-                    <p>
-                        Habermas viveu a <strong>ascensão do nazismo</strong> e a 
-                        <strong>Segunda Guerra Mundial</strong>. Essa experiência o levou a perguntar: 
-                        <em>como a razão moderna pôde gerar o totalitarismo?</em>
-                    </p>
-                    <p>
-                        Sua resposta: a razão não deve ser abandonada, mas <strong>reconstruída</strong> 
-                        a partir da comunicação.
-                    </p>
-                </div>
-
-                <div class="contexto-box" style="background:#e8f5e9; border-color:#81c784;">
-                    <p><strong>📍 Influências principais:</strong></p>
-                    <ul>
-                        <li><strong>Kant:</strong> razão autônoma e universal</li>
-                        <li><strong>Hegel:</strong> reconhecimento intersubjetivo</li>
-                        <li><strong>Marx:</strong> crítica à dominação</li>
-                        <li><strong>Weber:</strong> racionalização moderna</li>
-                        <li><strong>Mead:</strong> interação social e self</li>
-                        <li><strong>Austin & Searle:</strong> atos de fala</li>
-                    </ul>
-                </div>
-
-                <div class="contexto-box" style="background:#e8f5e9; border-color:#81c784;">
-                    <p><strong>📍 Debate com a Escola de Frankfurt:</strong></p>
-                    <p>
-                        <strong>1ª geração</strong> (Horkheimer, Adorno): via a razão instrumental como 
-                        força de dominação. <strong>Habermas</strong> discordou: a razão pode ser 
-                        <strong>comunicativa</strong>, ou seja, base para a democracia.
-                    </p>
-                    <p>
-                        <strong>Virada comunicativa:</strong> substitui o paradigma da consciência 
-                        pelo paradigma da <strong>linguagem</strong>.
-                    </p>
-                </div>
-            </div>
-
-            <!-- QUIZ RESUMO -->
-            <div class="card resumo" style="border-left-color:#27ae60; background:#f0faf5;">
-                <h2><span class="icone">🧠</span> Quiz — Versão Resumo <span class="resumo-tag">RÁPIDO</span></h2>
-                <p>Teste seus conhecimentos com este resumo!</p>
-
-                <div class="quiz-box resumo-quiz" id="quizResumo">
-
-                    <div class="pergunta resumo-pergunta" data-pergunta="1">
-                        <div><span class="num">1.</span> <span class="texto">Qual é a principal inovação de Habermas em relação à primeira geração da Escola de Frankfurt?</span></div>
-                        <div class="alternativas">
-                            <label><input type="radio" name="res-q1" value="a" /> <span>Abandonar a razão como conceito filosófico</span></label>
-                            <label><input type="radio" name="res-q1" value="b" /> <span>Propor a razão comunicativa em vez da razão instrumental</span></label>
-                            <label><input type="radio" name="res-q1" value="c" /> <span>Defender o marxismo-leninismo</span></label>
-                            <label><input type="radio" name="res-q1" value="d" /> <span>Ignorar a linguagem como tema filosófico</span></label>
-                        </div>
-                    </div>
-
-                    <div class="pergunta resumo-pergunta" data-pergunta="2">
-                        <div><span class="num">2.</span> <span class="texto">O que a Teoria da Ação Comunicativa coloca como fundamento da sociedade?</span></div>
-                        <div class="alternativas">
-                            <label><input type="radio" name="res-q2" value="a" /> <span>O mercado e a propriedade privada</span></label>
-                            <label><input type="radio" name="res-q2" value="b" /> <span>A linguagem e o entendimento mútuo</span></label>
-                            <label><input type="radio" name="res-q2" value="c" /> <span>A luta de classes</span></label>
-                            <label><input type="radio" name="res-q2" value="d" /> <span>A vontade de Deus</span></label>
-                        </div>
-                    </div>
-
-                    <div class="pergunta resumo-pergunta" data-pergunta="3">
-                        <div><span class="num">3.</span> <span class="texto">Quais são as quatro pretensões de validade da ação comunicativa?</span></div>
-                        <div class="alternativas">
-                            <label><input type="radio" name="res-q3" value="a" /> <span>Poder, dinheiro, status e fama</span></label>
-                            <label><input type="radio" name="res-q3" value="b" /> <span>Inteligibilidade, verdade, correção normativa e sinceridade</span></label>
-                            <label><input type="radio" name="res-q3" value="c" /> <span>Força, autoridade, tradição e carisma</span></label>
-                            <label><input type="radio" name="res-q3" value="d" /> <span>Clareza, objetividade, emoção e subjetividade</span></label>
-                        </div>
-                    </div>
-
-                    <div class="pergunta resumo-pergunta" data-pergunta="4">
-                        <div><span class="num">4.</span> <span class="texto">O que Habermas entende por "Esfera Pública"?</span></div>
-                        <div class="alternativas">
-                            <label><input type="radio" name="res-q4" value="a" /> <span>O parlamento e os tribunais</span></label>
-                            <label><input type="radio" name="res-q4" value="b" /> <span>O espaço de discussão crítica dos cidadãos</span></label>
-                            <label><input type="radio" name="res-q4" value="c" /> <span>As igrejas e templos religiosos</span></label>
-                            <label><input type="radio" name="res-q4" value="d" /> <span>As empresas e o mercado financeiro</span></label>
-                        </div>
-                    </div>
-
-                    <div class="pergunta resumo-pergunta" data-pergunta="5">
-                        <div><span class="num">5.</span> <span class="texto">Qual experiência histórica motivou Habermas a desenvolver sua teoria?</span></div>
-                        <div class="alternativas">
-                            <label><input type="radio" name="res-q5" value="a" /> <span>A Revolução Francesa</span></label>
-                            <label><input type="radio" name="res-q5" value="b" /> <span>O nazismo e a Segunda Guerra Mundial</span></label>
-                            <label><input type="radio" name="res-q5" value="c" /> <span>A queda do Muro de Berlim</span></label>
-                            <label><input type="radio" name="res-q5" value="d" /> <span>A Revolução Industrial</span></label>
-                        </div>
-                    </div>
-
-                    <button class="btn-verificar resumo-btn" onclick="verificarQuiz('res')">✅ Verificar respostas</button>
-
-                    <div class="resultado" id="resultadoRes">
-                        <div class="nota" id="notaRes">⭐</div>
-                        <div class="mensagem" id="mensagemRes"></div>
-                    </div>
-
-                    <div class="gabarito" id="gabaritoRes">
-                        <p><strong>📖 Gabarito — Resumo:</strong></p>
-                        <p>1. <span class="certa">b</span> — Propor a razão comunicativa em vez da razão instrumental</p>
-                        <p>2. <span class="certa">b</span> — A linguagem e o entendimento mútuo</p>
-                        <p>3. <span class="certa">b</span> — Inteligibilidade, verdade, correção normativa e sinceridade</p>
-                        <p>4. <span class="certa">b</span> — O espaço de discussão crítica dos cidadãos</p>
-                        <p>5. <span class="certa">b</span> — O nazismo e a Segunda Guerra Mundial</p>
-                    </div>
-
-                </div>
-            </div>
-
-        </div>
-        <!-- FIM MODO RESUMO -->
-
-        <!-- RODAPÉ -->
-        <div class="footer">
-            <div class="icones">🧓 ✨ 💬 🌍 🤝</div>
-            <p>
-                <strong>Jürgen Habermas</strong> — Três versões para aprender de forma divertida, aprofundada ou resumida.
-            </p>
-            <p style="font-size:0.95rem; margin-top:6px; opacity:0.7;">
-                Infantil 🧒 • Ensino Médio 🧑 • Resumo 📝 • Quiz interativo incluso
-            </p>
-            <p style="font-size:0.9rem; margin-top:10px; color:#aab;">
-                Repositório: <strong>github.com/Manoel2313/habermas</strong>
-            </p>
-        </div>
-
     </div>
 
-    <script>
-        // ============================================================
-        // FUNÇÃO PARA TROCAR DE ABA
-        // ============================================================
-        function trocarAba(aba) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('ativo'));
-            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('ativo'));
+    <!-- Barra de Poluição -->
+    <div id="barra-poluicao-container">
+        <div id="barra-poluicao"></div>
+    </div>
+    <div id="barra-poluicao-label">🧹 Limpeza do Aquário</div>
 
-            if (aba === 'infantil') {
-                document.getElementById('conteudo-infantil').classList.add('ativo');
-                document.querySelector('.tab-btn.infantil').classList.add('ativo');
-            } else if (aba === 'medio') {
-                document.getElementById('conteudo-medio').classList.add('ativo');
-                document.querySelector('.tab-btn.medio').classList.add('ativo');
-            } else {
-                document.getElementById('conteudo-resumo').classList.add('ativo');
-                document.querySelector('.tab-btn.resumo').classList.add('ativo');
+    <!-- Diálogo -->
+    <div id="dialogo-container">
+        <div class="nome">🐟 Peixinho</div>
+        <div class="texto" id="dialogo-texto">Olá!</div>
+    </div>
+
+    <!-- Loja -->
+    <div id="loja-overlay">
+        <div id="loja-container">
+            <h2>🏪 Loja do Aquário</h2>
+            <div class="subtitle">Compre upgrades para limpar mais rápido!</div>
+            <div id="loja-moedas">🪙 <span id="loja-moedas-valor">0</span> moedas</div>
+            <div class="loja-grid" id="loja-grid">
+                <!-- Gerado via JS -->
+            </div>
+            <button class="loja-fechar" id="btn-fechar-loja">✕ Fechar Loja</button>
+        </div>
+    </div>
+
+    <!-- Vitória -->
+    <div id="vitoria-overlay">
+        <div id="vitoria-container">
+            <div class="titulo">🎉✨</div>
+            <div class="subtitulo">Aquário Limpo!</div>
+            <div class="stats">
+                <div>🪙 Moedas: <span id="vitoria-moedas">0</span></div>
+                <div>🔄 Limpezas: <span id="vitoria-limpezas">0</span></div>
+                <div>⏱️ Tempo: <span id="vitoria-tempo">00:00</span></div>
+                <div>🏎️ Velocidade: <span id="vitoria-velocidade">❌</span></div>
+                <div>💰 Ímã: <span id="vitoria-ima">❌</span></div>
+                <div>🔍 Detector: <span id="vitoria-detector">❌</span></div>
+                <div>✨ Sorte: <span id="vitoria-sorte">❌</span></div>
+            </div>
+            <button class="btn-reiniciar" id="btn-reiniciar">🔄 Jogar Novamente</button>
+        </div>
+    </div>
+
+    <!-- Controles Mobile -->
+    <div id="controles-mobile">
+        <div id="joystick-area">
+            <div id="joystick-knob"></div>
+        </div>
+        <button id="btn-coletar">🗑️</button>
+    </div>
+
+    <!-- THREE.JS CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js">
+    </script>
+
+    <script>
+        // =====================================================================
+        // 🐟 AQUÁRIO LIMPO - CÓDIGO COMPLETO
+        // =====================================================================
+
+        // ---------- CONFIGURAÇÕES ----------
+        const CONFIG = {
+            LIMPECAS_PARA_VENCER: 15,
+            LIXO_POR_LIMPECA: 20,
+            CAPACIDADE_MAX_LIXO: 50,
+            VELOCIDADE_BASE: 6,
+            RAIO_COLETA: 2.5,
+            INTERVALO_LIXO_INICIAL: 2.5,
+            INTERVALO_LIXO_MINIMO: 0.6,
+            TAMANHO_AQUARIO_X: 14,
+            TAMANHO_AQUARIO_Z: 10,
+            ALTURA_AGUA: 6,
+            PROFUNDIDADE_MIN: 1,
+            PROFUNDIDADE_MAX: 7,
+        };
+
+        // ---------- ESTADO DO JOGO ----------
+        const estado = {
+            moedas: 0,
+            limpezasCompletas: 0,
+            lixoColetadoAtual: 0,
+            poluicao: 0,
+            tempoJogado: 0,
+            jogoAtivo: true,
+            jogoVencido: false,
+            tutorialAtivo: true,
+            lixoAtivo: [],
+            upgradeVelocidade: false,
+            upgradeIma: false,
+            upgradeDetector: false,
+            upgradeSorte: false,
+            nivelDificuldade: 1,
+            intervaloAtual: CONFIG.INTERVALO_LIXO_INICIAL,
+            ultimoLixoTime: 0,
+            coletando: false,
+            dialogoAtivo: false,
+            lojaAberta: false,
+        };
+
+        // ---------- REFERÊNCIAS DOM ----------
+        const dom = {
+            moedas: document.getElementById('moedas-display'),
+            lixo: document.getElementById('lixo-display'),
+            limpezas: document.getElementById('limpezas-display'),
+            tempo: document.getElementById('tempo-display'),
+            barra: document.getElementById('barra-poluicao'),
+            dialogo: document.getElementById('dialogo-container'),
+            dialogoTexto: document.getElementById('dialogo-texto'),
+            lojaOverlay: document.getElementById('loja-overlay'),
+            lojaMoedas: document.getElementById('loja-moedas-valor'),
+            lojaGrid: document.getElementById('loja-grid'),
+            vitoriaOverlay: document.getElementById('vitoria-overlay'),
+            btnAbrirLoja: document.getElementById('btn-abrir-loja'),
+            btnFecharLoja: document.getElementById('btn-fechar-loja'),
+            btnReiniciar: document.getElementById('btn-reiniciar'),
+            btnColetar: document.getElementById('btn-coletar'),
+            joystickArea: document.getElementById('joystick-area'),
+            joystickKnob: document.getElementById('joystick-knob'),
+            vitoriaMoedas: document.getElementById('vitoria-moedas'),
+            vitoriaLimpezas: document.getElementById('vitoria-limpezas'),
+            vitoriaTempo: document.getElementById('vitoria-tempo'),
+            vitoriaVelocidade: document.getElementById('vitoria-velocidade'),
+            vitoriaIma: document.getElementById('vitoria-ima'),
+            vitoriaDetector: document.getElementById('vitoria-detector'),
+            vitoriaSorte: document.getElementById('vitoria-sorte'),
+        };
+
+        // ---------- THREE.JS CENA ----------
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x0a3d5e);
+        scene.fog = new THREE.Fog(0x0a3d5e, 20, 35);
+
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 50);
+        camera.position.set(0, 8, 12);
+        camera.lookAt(0, 3, 0);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.2;
+        document.body.prepend(renderer.domElement);
+
+        // ---------- LUZES ----------
+        const ambientLight = new THREE.AmbientLight(0x446688, 0.4);
+        scene.add(ambientLight);
+
+        const sunLight = new THREE.DirectionalLight(0xffeedd, 1.2);
+        sunLight.position.set(10, 15, 5);
+        sunLight.castShadow = true;
+        sunLight.shadow.mapSize.width = 1024;
+        sunLight.shadow.mapSize.height = 1024;
+        sunLight.shadow.camera.near = 0.1;
+        sunLight.shadow.camera.far = 30;
+        sunLight.shadow.camera.left = -15;
+        sunLight.shadow.camera.right = 15;
+        sunLight.shadow.camera.top = 15;
+        sunLight.shadow.camera.bottom = -15;
+        scene.add(sunLight);
+
+        const fillLight = new THREE.DirectionalLight(0x4488ff, 0.3);
+        fillLight.position.set(-5, 5, -10);
+        scene.add(fillLight);
+
+        const pointLight = new THREE.PointLight(0x00ddff, 0.2, 20);
+        pointLight.position.set(0, 8, 0);
+        scene.add(pointLight);
+
+        // ---------- AQUÁRIO ----------
+        function criarAquario() {
+            const grupo = new THREE.Group();
+
+            // Chão (areia)
+            const geoChao = new THREE.PlaneGeometry(CONFIG.TAMANHO_AQUARIO_X + 4, CONFIG.TAMANHO_AQUARIO_Z + 4);
+            const matChao = new THREE.MeshStandardMaterial({
+                color: 0xc2a67a,
+                roughness: 0.9,
+                metalness: 0.0,
+            });
+            const chao = new THREE.Mesh(geoChao, matChao);
+            chao.rotation.x = -Math.PI / 2;
+            chao.position.y = 0.1;
+            chao.receiveShadow = true;
+            grupo.add(chao);
+
+            // Fundo do aquário (vidro)
+            const geoFundo = new THREE.PlaneGeometry(CONFIG.TAMANHO_AQUARIO_X, CONFIG.TAMANHO_AQUARIO_Z);
+            const matFundo = new THREE.MeshStandardMaterial({
+                color: 0x8B7355,
+                roughness: 0.7,
+                metalness: 0.1,
+                transparent: true,
+                opacity: 0.3,
+            });
+            const fundo = new THREE.Mesh(geoFundo, matFundo);
+            fundo.rotation.x = -Math.PI / 2;
+            fundo.position.y = 0.2;
+            grupo.add(fundo);
+
+            // Paredes de vidro (invisíveis com bordas)
+            const vidroMat = new THREE.MeshPhysicalMaterial({
+                color: 0x88ccff,
+                transparent: true,
+                opacity: 0.08,
+                roughness: 0.0,
+                metalness: 0.0,
+                side: THREE.DoubleSide,
+                envMapIntensity: 0.5,
+            });
+
+            const altura = CONFIG.ALTURA_AGUA;
+            const largura = CONFIG.TAMANHO_AQUARIO_X;
+            const profundidade = CONFIG.TAMANHO_AQUARIO_Z;
+
+            // Paredes
+            const paredes = [
+                { w: largura, h: altura, x: 0, z: -profundidade / 2, ry: 0 },
+                { w: largura, h: altura, x: 0, z: profundidade / 2, ry: 0 },
+                { w: profundidade, h: altura, x: -largura / 2, z: 0, ry: Math.PI / 2 },
+                { w: profundidade, h: altura, x: largura / 2, z: 0, ry: Math.PI / 2 },
+            ];
+
+            paredes.forEach(p => {
+                const geo = new THREE.PlaneGeometry(p.w, p.h);
+                const mesh = new THREE.Mesh(geo, vidroMat);
+                mesh.position.set(p.x, altura / 2 + 0.5, p.z);
+                mesh.rotation.y = p.ry;
+                mesh.receiveShadow = true;
+                grupo.add(mesh);
+            });
+
+            // Bordas (molduras)
+            const bordaMat = new THREE.MeshStandardMaterial({
+                color: 0x4a6a8a,
+                roughness: 0.3,
+                metalness: 0.5,
+            });
+
+            // Cantos e bordas
+            const bordas = [
+                { x: -largura / 2, z: -profundidade / 2 },
+                { x: largura / 2, z: -profundidade / 2 },
+                { x: -largura / 2, z: profundidade / 2 },
+                { x: largura / 2, z: profundidade / 2 },
+            ];
+            bordas.forEach(b => {
+                const geo = new THREE.BoxGeometry(0.2, altura + 0.5, 0.2);
+                const mesh = new THREE.Mesh(geo, bordaMat);
+                mesh.position.set(b.x, altura / 2 + 0.5, b.z);
+                grupo.add(mesh);
+            });
+
+            // Decoração: plantas
+            const plantaMat = new THREE.MeshStandardMaterial({
+                color: 0x2d8a4e,
+                roughness: 0.8,
+            });
+            for (let i = 0; i < 12; i++) {
+                const geo = new THREE.CylinderGeometry(0.1, 0.2, 0.5 + Math.random() * 0.5);
+                const planta = new THREE.Mesh(geo, plantaMat);
+                const angulo = Math.random() * Math.PI * 2;
+                const raio = 2 + Math.random() * (CONFIG.TAMANHO_AQUARIO_X / 2 - 2);
+                planta.position.set(
+                    Math.cos(angulo) * raio,
+                    0.3,
+                    Math.sin(angulo) * raio * 0.7
+                );
+                planta.rotation.x = (Math.random() - 0.5) * 0.3;
+                planta.rotation.z = (Math.random() - 0.5) * 0.3;
+                grupo.add(planta);
             }
 
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            // Pedras
+            const pedraMat = new THREE.MeshStandardMaterial({
+                color: 0x7a7a7a,
+                roughness: 0.9,
+            });
+            for (let i = 0; i < 8; i++) {
+                const geo = new THREE.DodecahedronGeometry(0.3 + Math.random() * 0.4);
+                const pedra = new THREE.Mesh(geo, pedraMat);
+                const angulo = Math.random() * Math.PI * 2;
+                const raio = 1.5 + Math.random() * (CONFIG.TAMANHO_AQUARIO_X / 2 - 2);
+                pedra.position.set(
+                    Math.cos(angulo) * raio,
+                    0.2 + Math.random() * 0.2,
+                    Math.sin(angulo) * raio * 0.7
+                );
+                pedra.rotation.set(Math.random() * 6, Math.random() * 6, Math.random() * 6);
+                pedra.scale.set(1, 0.6 + Math.random() * 0.4, 0.8);
+                grupo.add(pedra);
+            }
+
+            return grupo;
         }
 
-        // ============================================================
-        // FUNÇÃO PARA VERIFICAR QUIZ (GENÉRICA)
-        // ============================================================
-        function verificarQuiz(tipo) {
-            const respostas = {
-                inf: { q1: 'b', q2: 'a', q3: 'a', q4: 'b', q5: 'c' },
-                med: { q1: 'b', q2: 'b', q3: 'b', q4: 'c', q5: 'b' },
-                res: { q1: 'b', q2: 'b', q3: 'b', q4: 'b', q5: 'b' }
-            };
+        const aquario = criarAquario();
+        scene.add(aquario);
 
-            const prefixo = tipo === 'inf' ? 'inf' : (tipo === 'med' ? 'med' : 'res');
-            const certas = respostas[tipo];
-            let acertos = 0;
-            const total = Object.keys(certas).length;
+        // ---------- ÁGUA (com cor dinâmica) ----------
+        const aguaMat = new THREE.MeshPhysicalMaterial({
+            color: 0x0088cc,
+            transparent: true,
+            opacity: 0.25,
+            roughness: 0.0,
+            metalness: 0.0,
+            envMapIntensity: 0.3,
+            clearcoat: 0.1,
+        });
+        const aguaGeo = new THREE.BoxGeometry(
+            CONFIG.TAMANHO_AQUARIO_X - 0.5,
+            CONFIG.ALTURA_AGUA - 0.5,
+            CONFIG.TAMANHO_AQUARIO_Z - 0.5
+        );
+        const aguaMesh = new THREE.Mesh(aguaGeo, aguaMat);
+        aguaMesh.position.set(0, CONFIG.ALTURA_AGUA / 2 + 0.5, 0);
+        scene.add(aguaMesh);
 
-            for (let i = 1; i <= total; i++) {
-                const nome = prefixo + '-q' + i;
-                const selecionado = document.querySelector(`input[name="${nome}"]:checked`);
-                if (selecionado && selecionado.value === certas['q' + i]) {
-                    acertos++;
+        // ---------- PEIXE (jogador) ----------
+        function criarPeixe() {
+            const grupo = new THREE.Group();
+
+            // Corpo (elipsoide)
+            const corpoMat = new THREE.MeshStandardMaterial({
+                color: 0xff6633,
+                roughness: 0.3,
+                metalness: 0.1,
+                emissive: 0xff4400,
+                emissiveIntensity: 0.05,
+            });
+            const corpoGeo = new THREE.SphereGeometry(0.7, 16, 16);
+            const corpo = new THREE.Mesh(corpoGeo, corpoMat);
+            corpo.scale.set(1.4, 0.8, 0.9);
+            corpo.position.z = -0.2;
+            grupo.add(corpo);
+
+            // Cauda
+            const caudaMat = new THREE.MeshStandardMaterial({
+                color: 0xff5533,
+                roughness: 0.4,
+                metalness: 0.05,
+            });
+            const caudaGeo = new THREE.ConeGeometry(0.7, 0.8, 6);
+            const cauda = new THREE.Mesh(caudaGeo, caudaMat);
+            cauda.position.set(0, 0, -0.9);
+            cauda.rotation.x = Math.PI / 2;
+            cauda.scale.set(1, 0.3, 0.4);
+            grupo.add(cauda);
+
+            // Olhos
+            const olhoMat = new THREE.MeshStandardMaterial({
+                color: 0xffffff,
+                roughness: 0.1,
+                metalness: 0.0,
+            });
+            const pupilaMat = new THREE.MeshStandardMaterial({
+                color: 0x111111,
+                roughness: 0.0,
+                metalness: 0.0,
+            });
+
+            for (let lado = -1; lado <= 1; lado += 2) {
+                const olho = new THREE.Mesh(new THREE.SphereGeometry(0.15, 8, 8), olhoMat);
+                olho.position.set(lado * 0.45, 0.2, 0.35);
+                grupo.add(olho);
+
+                const pupila = new THREE.Mesh(new THREE.SphereGeometry(0.07, 8, 8), pupilaMat);
+                pupila.position.set(lado * 0.5, 0.2, 0.42);
+                grupo.add(pupila);
+            }
+
+            // Barbatanas
+            const barbatanaMat = new THREE.MeshStandardMaterial({
+                color: 0xff6633,
+                roughness: 0.5,
+                metalness: 0.0,
+                transparent: true,
+                opacity: 0.8,
+            });
+
+            // Barbatana dorsal
+            const dorsalGeo = new THREE.ConeGeometry(0.3, 0.5, 4);
+            const dorsal = new THREE.Mesh(dorsalGeo, barbatanaMat);
+            dorsal.position.set(0, 0.55, -0.2);
+            dorsal.scale.set(1, 1, 0.3);
+            dorsal.rotation.x = 0.2;
+            grupo.add(dorsal);
+
+            // Barbatanas peitorais
+            for (let lado = -1; lado <= 1; lado += 2) {
+                const peitoral = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.3, 4), barbatanaMat);
+                peitoral.position.set(lado * 0.7, -0.1, -0.1);
+                peitoral.scale.set(1, 0.3, 0.5);
+                peitoral.rotation.z = lado * 0.4;
+                peitoral.rotation.x = 0.3;
+                grupo.add(peitoral);
+            }
+
+            // Brilho
+            const brilhoMat = new THREE.MeshStandardMaterial({
+                color: 0x88ddff,
+                emissive: 0x88ddff,
+                emissiveIntensity: 0.1,
+                transparent: true,
+                opacity: 0.2,
+            });
+            const brilho = new THREE.Mesh(new THREE.SphereGeometry(0.9, 8, 8), brilhoMat);
+            brilho.scale.set(1.5, 1, 1);
+            brilho.position.z = -0.2;
+            grupo.add(brilho);
+
+            grupo.scale.set(0.8, 0.8, 0.8);
+            return grupo;
+        }
+
+        const peixe = criarPeixe();
+        peixe.position.set(0, 3, 0);
+        scene.add(peixe);
+
+        // ---------- LIXO ----------
+        const lixos = [];
+
+        function criarLixo(tipo) {
+            const grupo = new THREE.Group();
+            let mat;
+
+            switch (tipo || Math.floor(Math.random() * 4)) {
+                case 0: // Garrafa PET
+                    mat = new THREE.MeshStandardMaterial({ color: 0x44aa88, roughness: 0.3, metalness: 0.1 });
+                    const corpo = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.25, 0.6, 8), mat);
+                    corpo.position.y = 0.3;
+                    grupo.add(corpo);
+                    const gargalo = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.12, 0.15, 8), mat);
+                    gargalo.position.y = 0.7;
+                    grupo.add(gargalo);
+                    const tampa = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.05, 8),
+                        new THREE.MeshStandardMaterial({ color: 0x00aa88, roughness: 0.5 }));
+                    tampa.position.y = 0.8;
+                    grupo.add(tampa);
+                    break;
+                case 1: // Lata
+                    mat = new THREE.MeshStandardMaterial({ color: 0xcc8844, roughness: 0.6, metalness: 0.4 });
+                    const lata = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.28, 0.5, 12), mat);
+                    lata.position.y = 0.25;
+                    grupo.add(lata);
+                    const lataTopo = new THREE.Mesh(new THREE.CircleGeometry(0.25, 12), mat);
+                    lataTopo.rotation.x = -Math.PI / 2;
+                    lataTopo.position.y = 0.5;
+                    grupo.add(lataTopo);
+                    break;
+                case 2: // Sacola plástica
+                    mat = new THREE.MeshStandardMaterial({
+                        color: 0x888888,
+                        roughness: 0.8,
+                        metalness: 0.0,
+                        transparent: true,
+                        opacity: 0.7,
+                        side: THREE.DoubleSide,
+                    });
+                    for (let i = 0; i < 3; i++) {
+                        const saco = new THREE.Mesh(new THREE.CircleGeometry(0.2 + Math.random() * 0.1, 5), mat);
+                        saco.position.set((Math.random() - 0.5) * 0.4, Math.random() * 0.2, (Math.random() - 0.5) * 0.4);
+                        saco.rotation.set(Math.random() * 6, Math.random() * 6, Math.random() * 6);
+                        grupo.add(saco);
+                    }
+                    break;
+                case 3: // Papelão
+                    mat = new THREE.MeshStandardMaterial({ color: 0xbb9966, roughness: 0.9, metalness: 0.0 });
+                    const caixa = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.3, 0.4), mat);
+                    caixa.position.y = 0.15;
+                    grupo.add(caixa);
+                    // Detalhes
+                    const detMat = new THREE.MeshStandardMaterial({ color: 0xaa8855, roughness: 0.8 });
+                    for (let i = 0; i < 2; i++) {
+                        const det = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.02, 0.02), detMat);
+                        det.position.set(0, 0.2, (i - 0.5) * 0.15);
+                        grupo.add(det);
+                    }
+                    break;
+            }
+
+            grupo.scale.set(0.6 + Math.random() * 0.4, 0.6 + Math.random() * 0.4, 0.6 + Math.random() * 0.4);
+            return grupo;
+        }
+
+        // ---------- SISTEMA DE POOL DE LIXO ----------
+        const poolLixo = [];
+
+        function pegarLixoDoPool() {
+            for (let i = 0; i < poolLixo.length; i++) {
+                if (!poolLixo[i].ativo) {
+                    poolLixo[i].ativo = true;
+                    poolLixo[i].mesh.visible = true;
+                    poolLixo[i].mesh.position.set(0, 0, 0);
+                    return poolLixo[i];
+                }
+            }
+            // Criar novo
+            const mesh = criarLixo();
+            scene.add(mesh);
+            mesh.visible = false;
+            const obj = { mesh, ativo: false, especial: false, rb: null };
+            poolLixo.push(obj);
+            return obj;
+        }
+
+        function retornarLixoAoPool(obj) {
+            obj.ativo = false;
+            obj.mesh.visible = false;
+            obj.mesh.position.set(0, -10, 0);
+            estado.lixoAtivo = estado.lixoAtivo.filter(l => l !== obj);
+        }
+
+        // ---------- GERADOR DE LIXO ----------
+        function gerarLixo() {
+            if (!estado.jogoAtivo || estado.jogoVencido) return;
+            if (estado.lixoAtivo.length >= CONFIG.CAPACIDADE_MAX_LIXO) return;
+
+            const obj = pegarLixoDoPool();
+            if (!obj) return;
+
+            const posX = (Math.random() - 0.5) * (CONFIG.TAMANHO_AQUARIO_X - 2);
+            const posZ = (Math.random() - 0.5) * (CONFIG.TAMANHO_AQUARIO_Z - 2);
+            obj.mesh.position.set(posX, CONFIG.ALTURA_AGUA + 0.5 + Math.random() * 1, posZ);
+            obj.mesh.rotation.set(Math.random() * 6, Math.random() * 6, Math.random() * 6);
+            obj.mesh.scale.set(
+                0.6 + Math.random() * 0.6,
+                0.6 + Math.random() * 0.6,
+                0.6 + Math.random() * 0.6
+            );
+            obj.mesh.visible = true;
+            obj.especial = Math.random() < (estado.upgradeSorte ? 0.3 : 0.08);
+
+            // Brilho especial
+            if (obj.especial) {
+                const brilho = obj.mesh.children.find(c => c.material && c.material.emissive);
+                if (brilho) {
+                    brilho.material = new THREE.MeshStandardMaterial({
+                        color: 0xffd700,
+                        emissive: 0xffd700,
+                        emissiveIntensity: 0.5,
+                    });
+                }
+                // Adicionar glow
+                const glow = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.5, 6, 6),
+                    new THREE.MeshBasicMaterial({
+                        color: 0xffd700,
+                        transparent: true,
+                        opacity: 0.15,
+                    })
+                );
+                obj.mesh.add(glow);
+            }
+
+            obj.velocidadeQueda = 0.5 + Math.random() * 0.5;
+            obj.rotacaoVel = (Math.random() - 0.5) * 2;
+
+            estado.lixoAtivo.push(obj);
+            atualizarContadorLixo();
+        }
+
+        // ---------- LOOP DE QUEDA DE LIXO ----------
+        function atualizarLixo() {
+            const delta = 1 / 60;
+            for (let i = estado.lixoAtivo.length - 1; i >= 0; i--) {
+                const obj = estado.lixoAtivo[i];
+                if (!obj || !obj.ativo) continue;
+
+                // Cair
+                obj.mesh.position.y -= obj.velocidadeQueda * delta * 2;
+
+                // Rotacionar
+                obj.mesh.rotation.x += obj.rotacaoVel * delta;
+                obj.mesh.rotation.z += obj.rotacaoVel * 0.5 * delta;
+
+                // Se chegou no chão
+                if (obj.mesh.position.y < 0.3) {
+                    obj.mesh.position.y = 0.3;
+                    obj.mesh.rotation.x = 0;
+                    obj.mesh.rotation.z = 0;
+                    obj.velocidadeQueda = 0;
+                }
+            }
+        }
+
+        // ---------- COLETA DE LIXO ----------
+        function coletarLixo() {
+            if (!estado.jogoAtivo || estado.jogoVencido) return;
+            if (estado.coletando) return;
+            estado.coletando = true;
+
+            const posPeixe = peixe.position;
+            let maisProximo = null;
+            let distMin = CONFIG.RAIO_COLETA;
+
+            for (const obj of estado.lixoAtivo) {
+                if (!obj || !obj.ativo) continue;
+                const dist = posPeixe.distanceTo(obj.mesh.position);
+                if (dist < distMin) {
+                    distMin = dist;
+                    maisProximo = obj;
                 }
             }
 
-            const resultadoId = tipo === 'inf' ? 'resultadoInf' : (tipo === 'med' ? 'resultadoMed' : 'resultadoRes');
-            const notaId = tipo === 'inf' ? 'notaInf' : (tipo === 'med' ? 'notaMed' : 'notaRes');
-            const mensagemId = tipo === 'inf' ? 'mensagemInf' : (tipo === 'med' ? 'mensagemMed' : 'mensagemRes');
-            const gabaritoId = tipo === 'inf' ? 'gabaritoInf' : (tipo === 'med' ? 'gabaritoMed' : 'gabaritoRes');
+            if (maisProximo) {
+                // Coletar!
+                const valor = maisProximo.especial ? 5 : 1;
+                let moedasGanhas = valor;
+                if (estado.upgradeIma) moedasGanhas = Math.floor(moedasGanhas * 1.5);
 
-            const resultadoDiv = document.getElementById(resultadoId);
-            const notaDiv = document.getElementById(notaId);
-            const mensagemDiv = document.getElementById(mensagemId);
-            const gabaritoDiv = document.getElementById(gabaritoId);
+                estado.moedas += moedasGanhas;
+                estado.lixoColetadoAtual++;
 
-            resultadoDiv.style.display = 'block';
-            gabaritoDiv.style.display = 'block';
+                // Efeito visual
+                const pos = maisProximo.mesh.position.clone();
+                criarEfeitoColeta(pos, moedasGanhas, maisProximo.especial);
 
-            notaDiv.textContent = `🎯 ${acertos} de ${total}`;
+                // Remover lixo
+                retornarLixoAoPool(maisProximo);
+                atualizarContadorLixo();
+                atualizarHUD();
 
-            let mensagem = '';
-            if (acertos === total) {
-                mensagem = '🌟 Excelente! Você domina o conteúdo sobre Habermas! Parabéns!';
-            } else if (acertos >= 3) {
-                mensagem = '😊 Muito bem! Você tem um bom entendimento. Continue estudando!';
-            } else if (acertos >= 1) {
-                mensagem = '🤗 Boa tentativa! Releia o conteúdo e tente novamente.';
+                // Verificar limpeza
+                if (estado.lixoColetadoAtual >= CONFIG.LIXO_POR_LIMPECA) {
+                    completarLimpeza();
+                }
+
+                // Atualizar poluição
+                atualizarPoluicao();
+
+                // Som (simulado com vibração)
+                if (navigator.vibrate) navigator.vibrate(30);
+
+                // Mensagem
+                if (maisProximo.especial) {
+                    mostrarDialogo('🐟', '✨ Lixo raro! +' + moedasGanhas + ' moedas!', 0.8);
+                }
             } else {
-                mensagem = '😅 Não desista! Releia com calma e depois tente de novo.';
+                mostrarMensagemSistema('Nenhum lixo por perto!', 0.5);
             }
-            mensagemDiv.textContent = mensagem;
 
-            resultadoDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setTimeout(() => { estado.coletando = false; }, 200);
         }
 
-        // Inicializa com a aba infantil ativa
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('ativo'));
-            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('ativo'));
-            document.getElementById('conteudo-infantil').classList.add('ativo');
-            document.querySelector('.tab-btn.infantil').classList.add('ativo');
+        // ---------- EFEITO DE COLETA ----------
+        function criarEfeitoColeta(pos, moedas, especial) {
+            // Partículas com sprites
+            const cores = especial ? [0xffd700, 0xffaa00] : [0x00ff88, 0x44ddff];
+            for (let i = 0; i < 12; i++) {
+                const size = 0.05 + Math.random() * 0.1;
+                const geo = new THREE.SphereGeometry(size, 4, 4);
+                const mat = new THREE.MeshBasicMaterial({
+                    color: cores[Math.floor(Math.random() * cores.length)],
+                    transparent: true,
+                    opacity: 0.8,
+                });
+                const particula = new THREE.Mesh(geo, mat);
+                particula.position.copy(pos);
+                particula.position.x += (Math.random() - 0.5) * 0.5;
+                particula.position.z += (Math.random() - 0.5) * 0.5;
+                particula.position.y += 0.3;
+                scene.add(particula);
+
+                const vel = new THREE.Vector3(
+                    (Math.random() - 0.5) * 3,
+                    Math.random() * 4 + 1,
+                    (Math.random() - 0.5) * 3
+                );
+                let vida = 0.5 + Math.random() * 0.5;
+
+                function animarParticula() {
+                    if (vida <= 0) {
+                        scene.remove(particula);
+                        return;
+                    }
+                    vida -= 0.02;
+                    particula.position.add(vel.clone().multiplyScalar(0.02));
+                    vel.y -= 0.05;
+                    particula.material.opacity = vida;
+                    particula.scale.multiplyScalar(0.99);
+                    requestAnimationFrame(animarParticula);
+                }
+                animarParticula();
+            }
+
+            // Texto flutuante
+            const canvas = document.createElement('canvas');
+            canvas.width = 128;
+            canvas.height = 64;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = especial ? '#ffd700' : '#00ff88';
+            ctx.font = 'bold 36px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.shadowColor = 'rgba(0,0,0,0.8)';
+            ctx.shadowBlur = 10;
+            ctx.fillText('+' + moedas, 64, 32);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            const spriteMat = new THREE.SpriteMaterial({
+                map: texture,
+                transparent: true,
+                depthWrite: false,
+            });
+            const sprite = new THREE.Sprite(spriteMat);
+            sprite.position.copy(pos);
+            sprite.position.y += 0.5;
+            sprite.scale.set(1, 0.5, 1);
+            scene.add(sprite);
+
+            let vida = 1;
+            function animarTexto() {
+                if (vida <= 0) {
+                    scene.remove(sprite);
+                    return;
+                }
+                vida -= 0.015;
+                sprite.position.y += 0.02;
+                sprite.material.opacity = vida;
+                sprite.scale.multiplyScalar(1.005);
+                requestAnimationFrame(animarTexto);
+            }
+            animarTexto();
+        }
+
+        // ---------- COMPLETAR LIMPEZA ----------
+        function completarLimpeza() {
+            estado.limpezasCompletas++;
+            estado.lixoColetadoAtual = 0;
+
+            mostrarDialogo('🐟', '🧹 Limpeza #' + estado.limpezasCompletas + ' concluída!', 2);
+
+            // Aumentar dificuldade
+            estado.nivelDificuldade++;
+            estado.intervaloAtual = Math.max(
+                CONFIG.INTERVALO_LIXO_MINIMO,
+                CONFIG.INTERVALO_LIXO_INICIAL - estado.nivelDificuldade * 0.12
+            );
+
+            // Verificar vitória
+            if (estado.limpezasCompletas >= CONFIG.LIMPECAS_PARA_VENCER) {
+                vitoria();
+                return;
+            }
+
+            // Mensagem especial
+            if (estado.limpezasCompletas === 10) {
+                mostrarDialogo('🐟', 'Já estou quase lá! Mais um pouco e o aquário fica limpo!', 2.5);
+            }
+
+            // Atualizar HUD
+            atualizarHUD();
+            atualizarPoluicao();
+        }
+
+        // ---------- POLUIÇÃO ----------
+        function atualizarPoluicao() {
+            const total = CONFIG.CAPACIDADE_MAX_LIXO;
+            const ativo = estado.lixoAtivo.length;
+            estado.poluicao = Math.min(100, (ativo / total) * 100);
+
+            // Atualizar barra
+            const barra = dom.barra;
+            barra.style.width = estado.poluicao + '%';
+
+            if (estado.poluicao < 30) {
+                barra.style.background = 'linear-gradient(90deg, #00d4ff, #00ff88)';
+            } else if (estado.poluicao < 60) {
+                barra.style.background = 'linear-gradient(90deg, #ffaa00, #ff6600)';
+            } else {
+                barra.style.background = 'linear-gradient(90deg, #ff4400, #cc0033)';
+            }
+
+            // Cor da água
+            const verde = Math.min(1, estado.poluicao / 50);
+            aguaMat.color.setHSL(0.55 - verde * 0.2, 0.6 + verde * 0.3, 0.4 - verde * 0.15);
+            aguaMat.opacity = 0.2 + verde * 0.25;
+
+            // Se poluição > 90%, alerta
+            if (estado.poluicao > 90 && estado.jogoAtivo) {
+                mostrarMensagemSistema('⚠️ O aquário está muito sujo! Limpe logo!', 1);
+            }
+
+            // Se poluição > 99%, game over suave
+            if (estado.poluicao > 99 && estado.jogoAtivo) {
+                mostrarDialogo('🐟', 'Aff... transbordou de lixo! Vamos tentar de novo?', 2);
+                estado.jogoAtivo = false;
+                setTimeout(() => {
+                    estado.jogoAtivo = true;
+                    estado.poluicao = 80;
+                    atualizarPoluicao();
+                    mostrarMensagemSistema('💪 Você consegue! Continue limpando!', 1.5);
+                }, 3000);
+            }
+        }
+
+        // ---------- MOVIMENTO DO PEIXE ----------
+        const teclas = { w: false, a: false, s: false, d: false };
+        let inputX = 0,
+            inputZ = 0;
+
+        function atualizarMovimentoPeixe() {
+            if (!estado.jogoAtivo || estado.jogoVencido) return;
+
+            let dx = inputX;
+            let dz = inputZ;
+
+            // Teclado
+            if (teclas.w) dz += 1;
+            if (teclas.s) dz -= 1;
+            if (teclas.a) dx -= 1;
+            if (teclas.d) dx += 1;
+
+            // Normalizar
+            const mag = Math.sqrt(dx * dx + dz * dz);
+            if (mag > 0) {
+                dx /= mag;
+                dz /= mag;
+            }
+
+            const velocidade = estado.upgradeVelocidade ? CONFIG.VELOCIDADE_BASE * 1.4 : CONFIG.VELOCIDADE_BASE;
+
+            // Movimento suave
+            const alvoX = peixe.position.x + dx * velocidade * 0.04;
+            const alvoZ = peixe.position.z + dz * velocidade * 0.04;
+
+            // Limites
+            const limiteX = CONFIG.TAMANHO_AQUARIO_X / 2 - 0.8;
+            const limiteZ = CONFIG.TAMANHO_AQUARIO_Z / 2 - 0.8;
+
+            peixe.position.x = Math.max(-limiteX, Math.min(limiteX, alvoX));
+            peixe.position.z = Math.max(-limiteZ, Math.min(limiteZ, alvoZ));
+
+            // Profundidade (flutuação)
+            peixe.position.y += Math.sin(Date.now() * 0.001 + peixe.position.x) * 0.003;
+
+            // Rotação para direção
+            if (dx !== 0 || dz !== 0) {
+                const angulo = Math.atan2(dx, dz);
+                peixe.rotation.y = angulo;
+                // Inclinação
+                peixe.rotation.z = -dx * 0.15;
+                peixe.rotation.x = dz * 0.1;
+            } else {
+                // Voltar à posição neutra
+                peixe.rotation.z *= 0.9;
+                peixe.rotation.x *= 0.9;
+            }
+
+            // Balanço da cauda (animação)
+            const cauda = peixe.children.find(c => c.geometry && c.geometry.type === 'ConeGeometry');
+            if (cauda) {
+                const velocidadeNado = Math.sqrt(dx * dx + dz * dz);
+                cauda.rotation.z = Math.sin(Date.now() * 0.01 + (dx + dz) * 2) * 0.15 * (velocidadeNado + 0.5);
+            }
+
+            // Bolhas
+            if (Math.random() < 0.01) {
+                criarBolha(peixe.position.clone());
+            }
+
+            // Camera segue
+            const camPos = camera.position;
+            const alvoCam = new THREE.Vector3(
+                peixe.position.x * 0.6,
+                6 + Math.sin(Date.now() * 0.0005) * 0.3,
+                peixe.position.z * 0.6 + 10
+            );
+            camPos.lerp(alvoCam, 0.03);
+            camera.lookAt(peixe.position);
+        }
+
+        // ---------- BOLHAS ----------
+        function criarBolha(pos) {
+            const geo = new THREE.SphereGeometry(0.03 + Math.random() * 0.04, 4, 4);
+            const mat = new THREE.MeshBasicMaterial({
+                color: 0x88ddff,
+                transparent: true,
+                opacity: 0.3 + Math.random() * 0.3,
+            });
+            const bolha = new THREE.Mesh(geo, mat);
+            bolha.position.copy(pos);
+            bolha.position.x += (Math.random() - 0.5) * 0.3;
+            bolha.position.z += (Math.random() - 0.5) * 0.3;
+            bolha.position.y += 0.2;
+            scene.add(bolha);
+
+            let vida = 0.8 + Math.random() * 0.6;
+
+            function animarBolha() {
+                if (vida <= 0) {
+                    scene.remove(bolha);
+                    return;
+                }
+                vida -= 0.01;
+                bolha.position.y += 0.02;
+                bolha.position.x += (Math.random() - 0.5) * 0.01;
+                bolha.scale.multiplyScalar(1.002);
+                bolha.material.opacity = vida;
+                requestAnimationFrame(animarBolha);
+            }
+            animarBolha();
+        }
+
+        // ---------- HUD ----------
+        function atualizarHUD() {
+            dom.moedas.textContent = estado.moedas;
+            dom.limpezas.textContent = estado.limpezasCompletas;
+
+            const seg = Math.floor(estado.tempoJogado);
+            const min = Math.floor(seg / 60);
+            dom.tempo.textContent = String(min).padStart(2, '0') + ':' + String(seg % 60).padStart(2, '0');
+
+            if (dom.lojaMoedas) dom.lojaMoedas.textContent = estado.moedas;
+        }
+
+        function atualizarContadorLixo() {
+            dom.lixo.textContent = estado.lixoAtivo.length;
+        }
+
+        // ---------- DIÁLOGO ----------
+        let dialogoTimeout = null;
+
+        function mostrarDialogo(nome, texto, duracao = 2) {
+            if (dialogoTimeout) {
+                clearTimeout(dialogoTimeout);
+                dom.dialogo.style.display = 'none';
+            }
+            const container = dom.dialogo;
+            const textoEl = dom.dialogoTexto;
+            document.querySelector('#dialogo-container .nome').textContent = nome;
+            textoEl.textContent = texto;
+            container.style.display = 'block';
+            estado.dialogoAtivo = true;
+
+            dialogoTimeout = setTimeout(() => {
+                container.style.display = 'none';
+                estado.dialogoAtivo = false;
+            }, duracao * 1000);
+        }
+
+        function mostrarMensagemSistema(texto, duracao = 1) {
+            mostrarDialogo('📢', texto, duracao);
+        }
+
+        // ---------- LOJA ----------
+        const upgrades = [{
+            id: 'velocidade',
+            emoji: '🏎️',
+            nome: 'Nadadeira Rápida',
+            desc: 'Aumenta velocidade em 40%',
+            preco: 50,
+            comprado: false,
+        }, {
+            id: 'ima',
+            emoji: '💰',
+            nome: 'Ímã de Moedas',
+            desc: '+50% de moedas por lixo',
+            preco: 75,
+            comprado: false,
+        }, {
+            id: 'detector',
+            emoji: '🔍',
+            nome: 'Detector de Lixo',
+            desc: 'Mostra setas para o lixo',
+            preco: 100,
+            comprado: false,
+        }, {
+            id: 'sorte',
+            emoji: '✨',
+            nome: 'Sorte de Peixe',
+            desc: '30% chance de lixo raro',
+            preco: 120,
+            comprado: false,
+        }, ];
+
+        function renderizarLoja() {
+            const grid = dom.lojaGrid;
+            grid.innerHTML = '';
+
+            upgrades.forEach((up, index) => {
+                const div = document.createElement('div');
+                div.className = 'loja-item';
+
+                const comprado = estado['upgrade' + up.id.charAt(0).toUpperCase() + up.id.slice(1)];
+
+                div.innerHTML = `
+                    <span class="emoji">${up.emoji}</span>
+                    <div class="nome">${up.nome}</div>
+                    <div class="desc">${up.desc}</div>
+                    <div class="preco">🪙 ${up.preco}</div>
+                    <button class="btn-comprar ${comprado ? 'comprado' : ''}" 
+                            ${comprado ? 'disabled' : ''}
+                            data-index="${index}">
+                        ${comprado ? '✅ Comprado' : 'Comprar'}
+                    </button>
+                `;
+
+                grid.appendChild(div);
+
+                const btn = div.querySelector('.btn-comprar');
+                btn.addEventListener('click', () => {
+                    if (comprado) return;
+                    comprarUpgrade(index);
+                });
+            });
+
+            dom.lojaMoedas.textContent = estado.moedas;
+        }
+
+        function comprarUpgrade(index) {
+            const up = upgrades[index];
+            const id = up.id;
+            const preco = up.preco;
+
+            if (estado.moedas < preco) {
+                mostrarMensagemSistema('Moedas insuficientes!', 1);
+                return;
+            }
+
+            estado.moedas -= preco;
+            const key = 'upgrade' + id.charAt(0).toUpperCase() + id.slice(1);
+            estado[key] = true;
+
+            mostrarDialogo('🐟', '✨ Comprei ' + up.nome + '!', 1.5);
+            atualizarHUD();
+            renderizarLoja();
+
+            // Efeito especial
+            if (id === 'sorte') {
+                mostrarMensagemSistema('🍀 Agora 30% de chance de lixo raro!', 1.5);
+            }
+        }
+
+        // ---------- VITÓRIA ----------
+        function vitoria() {
+            estado.jogoVencido = true;
+            estado.jogoAtivo = false;
+
+            dom.vitoriaMoedas.textContent = estado.moedas;
+            dom.vitoriaLimpezas.textContent = estado.limpezasCompletas;
+            dom.vitoriaTempo.textContent = dom.tempo.textContent;
+            dom.vitoriaVelocidade.textContent = estado.upgradeVelocidade ? '✅' : '❌';
+            dom.vitoriaIma.textContent = estado.upgradeIma ? '✅' : '❌';
+            dom.vitoriaDetector.textContent = estado.upgradeDetector ? '✅' : '❌';
+            dom.vitoriaSorte.textContent = estado.upgradeSorte ? '✅' : '❌';
+
+            dom.vitoriaOverlay.classList.add('aberta');
+
+            mostrarDialogo('🐟', '🎉 Finalmente! Meu aquário está limpo de novo!', 3);
+
+            // Efeito de confete
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const pos = new THREE.Vector3(
+                        (Math.random() - 0.5) * 10,
+                        Math.random() * 6 + 2,
+                        (Math.random() - 0.5) * 10
+                    );
+                    const cores = [0xffd700, 0xff4444, 0x44ff44, 0x4444ff, 0xff44ff];
+                    const geo = new THREE.BoxGeometry(0.05, 0.05, 0.1);
+                    const mat = new THREE.MeshBasicMaterial({
+                        color: cores[Math.floor(Math.random() * cores.length)],
+                    });
+                    const confete = new THREE.Mesh(geo, mat);
+                    confete.position.copy(pos);
+                    confete.rotation.set(Math.random() * 6, Math.random() * 6, Math.random() * 6);
+                    scene.add(confete);
+
+                    let vida = 3;
+                    const velY = 1 + Math.random() * 2;
+                    const velX = (Math.random() - 0.5) * 2;
+                    const velZ = (Math.random() - 0.5) * 2;
+
+                    function animarConfete() {
+                        if (vida <= 0) {
+                            scene.remove(confete);
+                            return;
+                        }
+                        vida -= 0.02;
+                        confete.position.y += velY * 0.02;
+                        confete.position.x += velX * 0.02;
+                        confete.position.z += velZ * 0.02;
+                        confete.rotation.x += 0.1;
+                        confete.rotation.z += 0.1;
+                        confete.scale.multiplyScalar(0.995);
+                        requestAnimationFrame(animarConfete);
+                    }
+                    animarConfete();
+                }, i * 50);
+            }
+        }
+
+        // ---------- GAME LOOP ----------
+        let ultimoTempoLixo = 0;
+
+        function gameLoop(time) {
+            requestAnimationFrame(gameLoop);
+
+            const delta = 0.016; // ~60fps
+
+            if (estado.jogoAtivo && !estado.jogoVencido) {
+                // Tempo
+                estado.tempoJogado += delta;
+                atualizarHUD();
+
+                // Gerar lixo
+                ultimoTempoLixo += delta;
+                if (ultimoTempoLixo > estado.intervaloAtual) {
+                    ultimoTempoLixo = 0;
+                    // Gerar múltiplos baseado na dificuldade
+                    const qtd = Math.min(4, 1 + Math.floor(estado.nivelDificuldade / 3));
+                    for (let i = 0; i < qtd; i++) {
+                        setTimeout(gerarLixo, i * 100);
+                    }
+                    // Quando perto de limpar (poluição < 20%), cair mais
+                    if (estado.poluicao < 20 && estado.lixoAtivo.length < 20) {
+                        setTimeout(gerarLixo, 200);
+                    }
+                }
+
+                // Atualizar lixo
+                atualizarLixo();
+
+                // Atualizar poluição
+                atualizarPoluicao();
+
+                // Atualizar peixe
+                atualizarMovimentoPeixe();
+
+                // Detector (seta para lixo mais próximo)
+                if (estado.upgradeDetector && estado.lixoAtivo.length > 0) {
+                    let maisProx = null;
+                    let distMin = Infinity;
+                    for (const obj of estado.lixoAtivo) {
+                        if (!obj || !obj.ativo) continue;
+                        const dist = peixe.position.distanceTo(obj.mesh.position);
+                        if (dist < distMin) {
+                            distMin = dist;
+                            maisProx = obj;
+                        }
+                    }
+                    if (maisProx) {
+                        // Mostrar indicador visual (sprite)
+                        // Simplificado: mostrar mensagem se muito próximo
+                        if (distMin < 3) {
+                            // Já aparece no HUD
+                        }
+                    }
+                }
+            }
+
+            // Renderizar
+            renderer.render(scene, camera);
+        }
+
+        // ---------- CONTROLES DE TECLADO ----------
+        document.addEventListener('keydown', (e) => {
+            const key = e.key.toLowerCase();
+            if (key === 'w') teclas.w = true;
+            if (key === 'a') teclas.a = true;
+            if (key === 's') teclas.s = true;
+            if (key === 'd') teclas.d = true;
+
+            if (key === 'e' || key === ' ') {
+                e.preventDefault();
+                coletarLixo();
+            }
+
+            if (key === 'tab') {
+                e.preventDefault();
+                toggleLoja();
+            }
+
+            if (key === 'escape') {
+                if (dom.lojaOverlay.classList.contains('aberta')) {
+                    toggleLoja();
+                }
+            }
         });
+
+        document.addEventListener('keyup', (e) => {
+            const key = e.key.toLowerCase();
+            if (key === 'w') teclas.w = false;
+            if (key === 'a') teclas.a = false;
+            if (key === 's') teclas.s = false;
+            if (key === 'd') teclas.d = false;
+        });
+
+        // ---------- CONTROLES MOBILE ----------
+        let joystickAtivo = false;
+        let joystickCentro = { x: 0, y: 0 };
+
+        dom.joystickArea.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const rect = dom.joystickArea.getBoundingClientRect();
+            joystickCentro.x = rect.left + rect.width / 2;
+            joystickCentro.y = rect.top + rect.height / 2;
+            joystickAtivo = true;
+            atualizarJoystick(touch.clientX, touch.clientY);
+        });
+
+        dom.joystickArea.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (!joystickAtivo) return;
+            const touch = e.touches[0];
+            atualizarJoystick(touch.clientX, touch.clientY);
+        });
+
+        dom.joystickArea.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            joystickAtivo = false;
+            inputX = 0;
+            inputZ = 0;
+            dom.joystickKnob.style.transform = 'translate(-50%, -50%)';
+        });
+
+        function atualizarJoystick(touchX, touchY) {
+            const dx = touchX - joystickCentro.x;
+            const dy = touchY - joystickCentro.y;
+            const maxDist = 40;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            const limitado = Math.min(dist, maxDist);
+
+            const angulo = Math.atan2(dy, dx);
+            const normX = Math.cos(angulo) * limitado / maxDist;
+            const normZ = Math.sin(angulo) * limitado / maxDist;
+
+            dom.joystickKnob.style.transform = `translate(calc(-50% + ${normX * maxDist}px), calc(-50% + ${normZ * maxDist}px))`;
+
+            inputX = normX;
+            inputZ = -normZ;
+        }
+
+        dom.btnColetar.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            coletarLixo();
+        });
+
+        dom.btnColetar.addEventListener('mousedown', () => {
+            coletarLixo();
+        });
+
+        // ---------- LOJA UI ----------
+        function toggleLoja() {
+            const overlay = dom.lojaOverlay;
+            if (overlay.classList.contains('aberta')) {
+                overlay.classList.remove('aberta');
+                estado.lojaAberta = false;
+            } else {
+                renderizarLoja();
+                overlay.classList.add('aberta');
+                estado.lojaAberta = true;
+            }
+        }
+
+        dom.btnAbrirLoja.addEventListener('click', toggleLoja);
+        dom.btnFecharLoja.addEventListener('click', toggleLoja);
+
+        // Fechar loja clicando fora
+        dom.lojaOverlay.addEventListener('click', (e) => {
+            if (e.target === dom.lojaOverlay) toggleLoja();
+        });
+
+        // ---------- REINICIAR ----------
+        dom.btnReiniciar.addEventListener('click', () => {
+            location.reload();
+        });
+
+        // ---------- RESIZE ----------
+        window.addEventListener('resize', () => {
+            const w = window.innerWidth;
+            const h = window.innerHeight;
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+            renderer.setSize(w, h);
+        });
+
+        // ---------- INICIALIZAR ----------
+        function iniciarJogo() {
+            // Mostrar tutorial
+            setTimeout(() => {
+                mostrarDialogo('🐟', 'Que dia tranquilo...', 2);
+            }, 500);
+
+            setTimeout(() => {
+                mostrarDialogo('🐟', 'O que é isso? Está caindo lixo!', 2.5);
+            }, 3000);
+
+            setTimeout(() => {
+                mostrarDialogo('🐟', 'Aff... que aquário sujo! Preciso limpar isso!', 3);
+            }, 6000);
+
+            setTimeout(() => {
+                mostrarMensagemSistema('Use WASD para nadar e E para coletar lixo!', 2);
+            }, 9500);
+
+            // Iniciar geração de lixo
+            estado.intervaloAtual = CONFIG.INTERVALO_LIXO_INICIAL;
+            ultimoTempoLixo = 0;
+
+            // Atualizar HUD
+            atualizarHUD();
+            atualizarContadorLixo();
+            atualizarPoluicao();
+
+            // Renderizar loja
+            renderizarLoja();
+
+            // Iniciar loop
+            gameLoop(0);
+        }
+
+        iniciarJogo();
+
+        // ---------- DEBUG (F1 = moedas, F2 = limpeza) ----------
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'F1') {
+                estado.moedas += 100;
+                atualizarHUD();
+                renderizarLoja();
+                mostrarMensagemSistema('🪙 +100 moedas (debug)', 1);
+            }
+            if (e.key === 'F2') {
+                for (let i = 0; i < 20; i++) {
+                    const obj = estado.lixoAtivo[0];
+                    if (obj) {
+                        retornarLixoAoPool(obj);
+                    }
+                }
+                estado.lixoColetadoAtual = CONFIG.LIXO_POR_LIMPECA;
+                completarLimpeza();
+                mostrarMensagemSistema('🔄 Limpeza forçada (debug)', 1);
+            }
+        });
+
+        // ---------- ANIMAÇÃO DA ÁGUA ----------
+        let tempoAgua = 0;
+
+        setInterval(() => {
+            tempoAgua += 0.01;
+            aguaMesh.position.y = CONFIG.ALTURA_AGUA / 2 + 0.5 + Math.sin(tempoAgua) * 0.03;
+        }, 50);
+
+        console.log('🐟 Aquário Limpo - Jogo Iniciado!');
+        console.log('🎮 Controles: WASD = Mover | E = Coletar | TAB = Loja');
+        console.log('🪙 F1 = +100 moedas (debug) | F2 = Completar limpeza (debug)');
     </script>
 
 </body>
-    </html>
+</html>
