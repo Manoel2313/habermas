@@ -92,6 +92,72 @@ canvas:active { cursor: grabbing; }
     text-align:center; max-width: 80%; pointer-events: none;
 }
 
+#barra-energia-container {
+    position: fixed; bottom: 30px; left: 30px;
+    width: 180px; z-index: 10; display: none;
+}
+#barra-energia-label {
+    color: rgba(255,255,255,0.6); font-size: 11px; margin-bottom: 4px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8); letter-spacing: 1px; text-transform: uppercase; font-weight: bold;
+}
+#barra-energia-bg {
+    width: 100%; height: 14px; background: rgba(0,0,0,0.7); border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.15); overflow: hidden;
+}
+#barra-energia { height: 100%; width: 100%; border-radius: 10px; transition: width .1s linear, background .3s ease; background: linear-gradient(90deg,#00ffcc,#00aaff); }
+#barra-energia-bg.ativa #barra-energia { background: linear-gradient(90deg,#ffd700,#ff8800); }
+
+#loja-overlay {
+    position: fixed; top:0; left:0; right:0; bottom:0;
+    background: rgba(0,0,0,0.88); backdrop-filter: blur(12px); z-index: 100;
+    display: none; justify-content: center; align-items: center;
+}
+#loja-overlay.aberta { display: flex; }
+#loja-container {
+    background: linear-gradient(145deg,#1a2a3a,#0d1a26);
+    border-radius: 30px; padding: 35px; max-width: 720px; width: 92%;
+    max-height: 90vh; overflow-y: auto; border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: 0 30px 80px rgba(0,0,0,0.9);
+}
+#loja-container h2 { color:#fff; font-size:32px; text-align:center; margin-bottom:5px; letter-spacing:1px; }
+#loja-container .subtitle { color: rgba(255,255,255,0.4); text-align:center; margin-bottom:20px; font-size:13px; letter-spacing:2px; }
+#loja-moedas { color:#ffd700; font-size:22px; text-align:center; margin-bottom:20px; background: rgba(255,215,0,0.08); padding:10px; border-radius:15px; border: 1px solid rgba(255,215,0,0.1); }
+.loja-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap:16px; }
+.loja-item {
+    background: rgba(255,255,255,0.04); border-radius: 18px; padding: 20px; text-align: center;
+    border: 1px solid rgba(255,255,255,0.04);
+}
+.loja-item .emoji { font-size: 42px; display:block; margin-bottom:6px; }
+.loja-item .nome { color:#fff; font-weight:bold; font-size:16px; }
+.loja-item .nivel-atual { color: rgba(0,212,255,0.9); font-size: 12px; margin: 4px 0 10px; letter-spacing: 1px; }
+.loja-item .niveis-lista { text-align:left; margin: 10px 0; display:flex; flex-direction:column; gap:6px; }
+.loja-item .nivel-linha {
+    display:flex; justify-content:space-between; align-items:center; font-size:12px;
+    padding: 6px 10px; border-radius: 10px; background: rgba(255,255,255,0.03);
+    color: rgba(255,255,255,0.5);
+}
+.loja-item .nivel-linha.comprado { color: #00ff88; background: rgba(0,255,136,0.06); }
+.loja-item .nivel-linha.disponivel { color: #fff; background: rgba(255,215,0,0.05); }
+.loja-item .desc { color: rgba(255,255,255,0.4); font-size: 12px; margin: 8px 0; min-height: 32px; }
+.loja-item .preco { color:#ffd700; font-size:18px; font-weight:bold; margin: 8px 0 12px; }
+.loja-item .btn-comprar {
+    background: linear-gradient(135deg,#00d4ff,#0088ff); border:none; color:#fff;
+    padding: 10px 16px; border-radius: 30px; font-size:14px; font-weight:bold; cursor:pointer;
+    transition: all .3s ease; width:100%; font-family: inherit;
+}
+.loja-item .btn-comprar:hover { transform: scale(1.03); box-shadow: 0 5px 25px rgba(0,136,255,0.4); }
+.loja-item .btn-comprar:disabled { opacity:.35; cursor:not-allowed; transform:none!important; }
+.loja-item .btn-comprar.maximo { background: linear-gradient(135deg,#00ff88,#00cc66); }
+.loja-fechar {
+    display:block; margin: 22px auto 0; padding: 12px 50px; border-radius: 30px;
+    border: 1px solid rgba(255,255,255,0.15); background: transparent; color:#fff; font-size:16px;
+    cursor:pointer; transition: all .3s ease; font-family: inherit;
+}
+.loja-fechar:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.3); }
+#loja-container::-webkit-scrollbar { width: 4px; }
+#loja-container::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); border-radius: 10px; }
+#loja-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+
 #loading-overlay {
     position: fixed; top:0; left:0; right:0; bottom:0;
     background: #010509; z-index: 300;
@@ -154,6 +220,10 @@ canvas:active { cursor: grabbing; }
     #vitoria-container .subtitulo { font-size: 20px; }
     #vitoria-container .stats { font-size: 14px; padding: 0 10px; }
     #coleta-container { bottom: 60px; width: 200px; }
+    #loja-container { padding: 20px; }
+    .loja-grid { grid-template-columns: 1fr; gap: 10px; }
+    #loja-container h2 { font-size:22px; }
+    #barra-energia-container { width: 130px; bottom: 20px; left: 20px; }
 }
 @media (max-width: 480px) {
     #hud { padding: 8px 12px; }
@@ -175,7 +245,15 @@ canvas:active { cursor: grabbing; }
     </div>
     <div id="hud-right">
         <div class="hud-item"><span class="icon">⏱️</span> <span id="tempo-display">00:00</span></div>
+        <div class="hud-item" style="cursor:pointer;pointer-events:auto;background:rgba(0,212,255,0.15);border-color:rgba(0,212,255,0.2);" id="btn-abrir-loja">
+            <span class="icon">🏪</span> Loja [TAB]
+        </div>
     </div>
+</div>
+
+<div id="barra-energia-container">
+    <div id="barra-energia-label">⚡ Energia do Boost</div>
+    <div id="barra-energia-bg"><div id="barra-energia"></div></div>
 </div>
 
 <div id="barra-poluicao-container"><div id="barra-poluicao"></div></div>
@@ -197,7 +275,19 @@ canvas:active { cursor: grabbing; }
 <div id="controles-info">
     <span class="key">W A S D</span> Nadar<br>
     <span class="key">Arraste o mouse</span> Câmera<br>
-    <span class="key">Segure E</span> Coletar
+    <span class="key">Segure E</span> Coletar<br>
+    <span class="key">ESPAÇO</span> Ativar boost<br>
+    <span class="key">TAB</span> Loja
+</div>
+
+<div id="loja-overlay">
+    <div id="loja-container">
+        <h2>🏪 Loja do Aquário</h2>
+        <div class="subtitle">✦ Melhorias permanentes para o peixinho ✦</div>
+        <div id="loja-moedas">🪙 <span id="loja-moedas-valor">0</span> moedas</div>
+        <div class="loja-grid" id="loja-grid"></div>
+        <button class="loja-fechar" id="btn-fechar-loja">✕ Fechar Loja</button>
+    </div>
 </div>
 
 <div id="loading-overlay">
@@ -256,6 +346,21 @@ const CONFIG = {
         RAIO_SPAWN: 150,
         MAX_LIXO_ATIVO: 45,
     },
+    LOJA: {
+        RECUPERACAO_ENERGIA: 10, // segundos para recarregar do zero ao cheio (vale para os 3 níveis)
+        VELOCIDADE: [
+            { nivel: 1, custo: 100, duracao: 10, mult: 2 },
+            { nivel: 2, custo: 300, duracao: 30, mult: 5 },
+            { nivel: 3, custo: 500, duracao: 60, mult: 10 },
+        ],
+        // Obs: o pedido não trouxe os preços do bônus de moedas — usei uma progressão
+        // coerente com a do boost (100/300/500 -> aqui um pouco maior por ser um bônus permanente).
+        MOEDA: [
+            { nivel: 1, custo: 150, bonus: 5 },
+            { nivel: 2, custo: 400, bonus: 15 },
+            { nivel: 3, custo: 700, bonus: 30 },
+        ],
+    },
 };
 
 const TIPOS_LIXO = [
@@ -290,6 +395,10 @@ const estado = {
     coletaAlvo: null,
     coletaProgresso: 0,
     coletaSegurando: false,
+    // loja
+    lojaAberta: false,
+    boost: { nivel: 0, ativo: false, energia: 1 },
+    bonusMoeda: { nivel: 0 },
 };
 
 const dom = {
@@ -312,6 +421,14 @@ const dom = {
     coletaLabel: document.getElementById('coleta-label'),
     coletaBarra: document.getElementById('coleta-barra'),
     promptColeta: document.getElementById('prompt-coleta'),
+    lojaOverlay: document.getElementById('loja-overlay'),
+    lojaMoedas: document.getElementById('loja-moedas-valor'),
+    lojaGrid: document.getElementById('loja-grid'),
+    btnAbrirLoja: document.getElementById('btn-abrir-loja'),
+    btnFecharLoja: document.getElementById('btn-fechar-loja'),
+    energiaContainer: document.getElementById('barra-energia-container'),
+    energiaBg: document.getElementById('barra-energia-bg'),
+    energiaBarra: document.getElementById('barra-energia'),
 };
 
 // ---------- THREE.JS núcleo ----------
@@ -602,7 +719,8 @@ function atualizarColeta(delta) {
 }
 
 function finalizarColeta(obj) {
-    const moedasGanhas = obj.valor;
+    const bonus = estado.bonusMoeda.nivel > 0 ? CONFIG.LOJA.MOEDA[estado.bonusMoeda.nivel - 1].bonus : 0;
+    const moedasGanhas = obj.valor + bonus;
     estado.moedas += moedasGanhas;
 
     const pos = obj.mesh.position.clone();
@@ -1245,7 +1363,11 @@ function atualizarMovimentoPeixe(delta) {
     const movendo = mov.lengthSq() > 0.0001;
     if (movendo) mov.normalize();
 
-    const velocidade = CONFIG.VELOCIDADE_BASE;
+    let multiplicador = 1;
+    if (estado.boost.nivel > 0 && estado.boost.ativo) {
+        multiplicador = CONFIG.LOJA.VELOCIDADE[estado.boost.nivel - 1].mult;
+    }
+    const velocidade = CONFIG.VELOCIDADE_BASE * multiplicador;
     peixe.position.addScaledVector(mov, velocidade * delta);
     aplicarLimites();
 
@@ -1308,6 +1430,124 @@ function atualizarContadorLixo() {
         dom.lixo.textContent = estado.lixoAtivo.length;
     }
 }
+
+// ---------- BOOST DE VELOCIDADE (energia/estamina) ----------
+function alternarBoost() {
+    if (estado.boost.nivel <= 0) {
+        mostrarMensagemSistema('🚀 Compre o Boost de Velocidade na loja primeiro!', 1.5);
+        return;
+    }
+    if (!estado.boost.ativo) {
+        if (estado.boost.energia < 1) {
+            mostrarMensagemSistema('⚡ Energia recarregando, aguarde!', 1);
+            return;
+        }
+        estado.boost.ativo = true;
+    } else {
+        estado.boost.ativo = false;
+    }
+}
+
+function atualizarBoost(delta) {
+    if (estado.boost.nivel <= 0) { dom.energiaContainer.style.display = 'none'; return; }
+    dom.energiaContainer.style.display = 'block';
+
+    const config = CONFIG.LOJA.VELOCIDADE[estado.boost.nivel - 1];
+    if (estado.boost.ativo) {
+        estado.boost.energia -= delta / config.duracao;
+        if (estado.boost.energia <= 0) {
+            estado.boost.energia = 0;
+            estado.boost.ativo = false;
+        }
+    } else if (estado.boost.energia < 1) {
+        estado.boost.energia += delta / CONFIG.LOJA.RECUPERACAO_ENERGIA;
+        if (estado.boost.energia > 1) estado.boost.energia = 1;
+    }
+
+    dom.energiaBarra.style.width = (estado.boost.energia * 100) + '%';
+    dom.energiaBg.classList.toggle('ativa', estado.boost.ativo);
+}
+
+// ---------- LOJA ----------
+const lojaItens = [
+    {
+        id: 'velocidade', emoji: '🚀', nome: 'Boost de Velocidade',
+        niveis: CONFIG.LOJA.VELOCIDADE,
+        nivelAtual: () => estado.boost.nivel,
+        comprar: (n) => { estado.boost.nivel = n.nivel; estado.boost.energia = 1; },
+        descNivel: (n) => `${n.mult}x velocidade por ${n.duracao}s (ESPAÇO para ativar)`,
+    },
+    {
+        id: 'moeda', emoji: '💰', nome: 'Bônus de Moedas',
+        niveis: CONFIG.LOJA.MOEDA,
+        nivelAtual: () => estado.bonusMoeda.nivel,
+        comprar: (n) => { estado.bonusMoeda.nivel = n.nivel; },
+        descNivel: (n) => `+${n.bonus} moedas por lixo coletado`,
+    },
+];
+
+function renderizarLoja() {
+    const grid = dom.lojaGrid;
+    grid.innerHTML = '';
+    lojaItens.forEach((item) => {
+        const nivelAtual = item.nivelAtual();
+        const proximo = item.niveis[nivelAtual]; // índice 0 = nível 1
+
+        const listaHtml = item.niveis.map((n) => {
+            const status = n.nivel <= nivelAtual ? 'comprado' : (n.nivel === nivelAtual + 1 ? 'disponivel' : '');
+            const marcador = n.nivel <= nivelAtual ? '✅' : (n.nivel === nivelAtual + 1 ? '🪙 ' + n.custo : '🔒');
+            return `<div class="nivel-linha ${status}"><span>Nível ${n.nivel}</span><span>${marcador}</span></div>`;
+        }).join('');
+
+        const div = document.createElement('div');
+        div.className = 'loja-item';
+
+        if (proximo) {
+            div.innerHTML = `
+                <span class="emoji">${item.emoji}</span>
+                <div class="nome">${item.nome}</div>
+                <div class="nivel-atual">Nível atual: ${nivelAtual}</div>
+                <div class="niveis-lista">${listaHtml}</div>
+                <div class="desc">Próximo: ${item.descNivel(proximo)}</div>
+                <div class="preco">🪙 ${proximo.custo}</div>
+                <button class="btn-comprar" data-id="${item.id}">Comprar Nível ${proximo.nivel}</button>`;
+            div.querySelector('.btn-comprar').addEventListener('click', () => comprarNivel(item, proximo));
+        } else {
+            div.innerHTML = `
+                <span class="emoji">${item.emoji}</span>
+                <div class="nome">${item.nome}</div>
+                <div class="nivel-atual">Nível atual: ${nivelAtual}</div>
+                <div class="niveis-lista">${listaHtml}</div>
+                <div class="desc">${item.descNivel(item.niveis[item.niveis.length - 1])}</div>
+                <button class="btn-comprar maximo" disabled>✅ Nível Máximo</button>`;
+        }
+        grid.appendChild(div);
+    });
+    dom.lojaMoedas.textContent = estado.moedas;
+}
+
+function comprarNivel(item, proximo) {
+    if (estado.moedas < proximo.custo) { mostrarMensagemSistema('Moedas insuficientes!', 1); return; }
+    estado.moedas -= proximo.custo;
+    item.comprar(proximo);
+    mostrarDialogo('🐟', '✨ ' + item.nome + ' nível ' + proximo.nivel + ' comprado!', 1.5);
+    atualizarHUD();
+    renderizarLoja();
+}
+
+function toggleLoja() {
+    if (estado.lojaAberta) {
+        dom.lojaOverlay.classList.remove('aberta');
+        estado.lojaAberta = false;
+    } else {
+        renderizarLoja();
+        dom.lojaOverlay.classList.add('aberta');
+        estado.lojaAberta = true;
+    }
+}
+dom.btnAbrirLoja.addEventListener('click', toggleLoja);
+dom.btnFecharLoja.addEventListener('click', toggleLoja);
+dom.lojaOverlay.addEventListener('click', (e) => { if (e.target === dom.lojaOverlay) toggleLoja(); });
 
 // ---------- DIÁLOGO / MENSAGENS ----------
 let dialogoTimeout = null, mensagemTimeout = null;
@@ -1428,6 +1668,7 @@ function gameLoop() {
 
         atualizarMovimentoPeixe(delta);
         atualizarColeta(delta);
+        atualizarBoost(delta);
         if (Math.random() < 0.02) criarBolha(peixe.position.clone());
     }
 
@@ -1443,6 +1684,9 @@ document.addEventListener('keydown', (e) => {
     if (key === 's') teclas.s = true;
     if (key === 'd') teclas.d = true;
     if (key === 'e') { teclas.e = true; estado.coletaSegurando = true; }
+    if (key === 'tab') { e.preventDefault(); toggleLoja(); }
+    if (key === ' ' || key === 'spacebar') { e.preventDefault(); alternarBoost(); }
+    if (key === 'escape' && estado.lojaAberta) toggleLoja();
 });
 document.addEventListener('keyup', (e) => {
     const key = e.key.toLowerCase();
