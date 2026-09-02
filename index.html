@@ -359,7 +359,7 @@ canvas:active { cursor: grabbing; }
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 // =====================================================================
-// 🐟 AQUÁRIO LIMPO — ALTA DENSIDADE + PEIXES PREMIUM
+// 🐟 AQUÁRIO LIMPO — ALTA DENSIDADE + PEIXES PREMIUM + HACK SECRETO
 // =====================================================================
 
 const CONFIG = {
@@ -591,7 +591,6 @@ function limparCena() {
 function criarPeixe() {
     const grupo = new THREE.Group();
 
-    // --- CORPO PRINCIPAL ---
     const corpoMat = new THREE.MeshPhysicalMaterial({
         color: 0xff6633,
         roughness: 0.25,
@@ -608,7 +607,6 @@ function criarPeixe() {
     corpo.castShadow = true;
     grupo.add(corpo);
 
-    // --- OMBRO ---
     const ombroMat = new THREE.MeshPhysicalMaterial({
         color: 0xff6633,
         roughness: 0.25,
@@ -620,7 +618,6 @@ function criarPeixe() {
     ombro.position.set(0, 0.05, 0.35);
     grupo.add(ombro);
 
-    // --- CABEÇA ---
     const cabecaMat = new THREE.MeshPhysicalMaterial({
         color: 0xff7733,
         roughness: 0.2,
@@ -632,7 +629,6 @@ function criarPeixe() {
     cabeca.position.set(0, 0.1, 0.75);
     grupo.add(cabeca);
 
-    // --- FOCINHO ---
     const focinhoMat = new THREE.MeshPhysicalMaterial({
         color: 0xff8855,
         roughness: 0.3,
@@ -643,7 +639,6 @@ function criarPeixe() {
     focinho.position.set(0, 0.05, 1.05);
     grupo.add(focinho);
 
-    // --- BOCA ---
     const bocaMat = new THREE.MeshPhysicalMaterial({
         color: 0xcc4433,
         roughness: 0.8,
@@ -656,7 +651,6 @@ function criarPeixe() {
     boca.scale.set(1, 0.4, 0.5);
     grupo.add(boca);
 
-    // --- OLHOS ---
     const olhoBrancoMat = new THREE.MeshPhysicalMaterial({
         color: 0xffffff,
         roughness: 0.05,
@@ -704,7 +698,6 @@ function criarPeixe() {
         grupo.add(brilho);
     }
 
-    // --- CAUDA ---
     const caudaMat = new THREE.MeshPhysicalMaterial({
         color: 0xff5533,
         roughness: 0.3,
@@ -731,7 +724,6 @@ function criarPeixe() {
     lobuloInferior.scale.set(0.6, 1, 0.2);
     grupo.add(lobuloInferior);
 
-    // --- BARBATANAS ---
     const dorsalMat = new THREE.MeshPhysicalMaterial({
         color: 0xff6633,
         roughness: 0.4,
@@ -802,7 +794,6 @@ function criarPeixe() {
         grupo.add(pelvica);
     }
 
-    // --- LISTRAS ---
     const listraMat = new THREE.MeshPhysicalMaterial({
         color: 0xff8844,
         roughness: 0.3,
@@ -818,7 +809,6 @@ function criarPeixe() {
         grupo.add(listra);
     }
 
-    // --- BRILHO ---
     const brilhoMatCorpo = new THREE.MeshPhysicalMaterial({
         color: 0x88ddff,
         emissive: 0x88ddff,
@@ -894,7 +884,6 @@ function criarTubarao() {
     barriga.scale.set(0.85, 0.45, 0.85);
     grupo.add(barriga);
 
-    // OLHOS
     const olhoMat = new THREE.MeshPhysicalMaterial({
         color: 0x222222,
         roughness: 0.0,
@@ -931,7 +920,6 @@ function criarTubarao() {
         grupo.add(brilho);
     }
 
-    // BOCA E DENTES
     const bocaMat = new THREE.MeshPhysicalMaterial({
         color: 0x441111,
         roughness: 0.9,
@@ -960,7 +948,6 @@ function criarTubarao() {
         grupo.add(dente);
     }
 
-    // BARBATANAS
     const dorsalMat = new THREE.MeshPhysicalMaterial({
         color: 0x5a6a78,
         roughness: 0.5,
@@ -1008,7 +995,6 @@ function criarTubarao() {
     anal.rotation.x = 0.1;
     grupo.add(anal);
 
-    // CAUDA
     const caudaMat = new THREE.MeshPhysicalMaterial({
         color: 0x5a6a78,
         roughness: 0.5,
@@ -1033,7 +1019,6 @@ function criarTubarao() {
     lobuloInf.scale.set(0.6, 1, 0.2);
     grupo.add(lobuloInf);
 
-    // LISTRAS
     const listraMat = new THREE.MeshPhysicalMaterial({
         color: 0x8a9aaa,
         roughness: 0.6,
@@ -1050,7 +1035,6 @@ function criarTubarao() {
         }
     }
 
-    // BRILHO
     const brilhoMat = new THREE.MeshPhysicalMaterial({
         color: 0x88ccff,
         emissive: 0x88ccff,
@@ -1110,7 +1094,6 @@ function criarPeixeDecorativo() {
     cabeca.position.set(0, 0.05, 0.5);
     grupo.add(cabeca);
 
-    // OLHOS
     const olhoBranco = new THREE.MeshPhysicalMaterial({
         color: 0xffffff,
         roughness: 0.05,
@@ -1144,7 +1127,6 @@ function criarPeixeDecorativo() {
         grupo.add(brilho);
     }
 
-    // CAUDA
     const caudaMat = new THREE.MeshPhysicalMaterial({
         color: corEscura,
         roughness: 0.3,
@@ -1170,7 +1152,6 @@ function criarPeixeDecorativo() {
     lobuloInf.scale.set(0.6, 1, 0.2);
     grupo.add(lobuloInf);
 
-    // BARBATANAS
     const dorsalMat = new THREE.MeshPhysicalMaterial({
         color: corEscura,
         roughness: 0.4,
@@ -1200,7 +1181,6 @@ function criarPeixeDecorativo() {
         grupo.add(peitoral);
     }
 
-    // LISTRA
     const listraMat = new THREE.MeshPhysicalMaterial({
         color: 0xffffff,
         transparent: true,
@@ -1219,7 +1199,7 @@ function criarPeixeDecorativo() {
 }
 
 // =====================================================================
-// LIXO (mantido igual)
+// LIXO
 // =====================================================================
 function criarLixo(tipoId) {
     const grupo = new THREE.Group();
@@ -1304,7 +1284,7 @@ function removerLixo(obj) {
 }
 
 // =====================================================================
-// FUNÇÕES DE COLETA (mantidas)
+// FUNÇÕES DE COLETA
 // =====================================================================
 function multiplicadorColeta() {
     if (estado.coletaRapida.nivel <= 0) return 1;
@@ -1691,7 +1671,7 @@ function atualizarSuperficieAquario() {
 }
 
 // =====================================================================
-// FASE 2: ESGOTO (mantida)
+// FASE 2: ESGOTO
 // =====================================================================
 function construirCenaEsgoto() {
     limparCena();
@@ -2203,7 +2183,7 @@ function desenharRadar() {
 }
 
 // =====================================================================
-// TUBARÃO (usando o novo modelo premium)
+// TUBARÃO
 // =====================================================================
 function spawnTubarao() {
     const ang = Math.random() * Math.PI * 2;
@@ -2878,6 +2858,73 @@ window.addEventListener('resize', () => {
 });
 
 // =====================================================================
+// 🕵️ HACK SECRETO: M + N + B em menos de 3 segundos = +100 moedas!
+// ⚠️ NÃO CONTE PARA NINGUÉM! É NOSSO SEGREDO! 🤫
+// =====================================================================
+const HACK_SEQUENCIA = ['m', 'n', 'b'];
+let hackPassos = 0;
+let hackTimer = null;
+
+document.addEventListener('keydown', (e) => {
+    const key = e.key.toLowerCase();
+    
+    if (key === HACK_SEQUENCIA[hackPassos]) {
+        hackPassos++;
+        
+        if (hackPassos === HACK_SEQUENCIA.length) {
+            estado.moedas += 100;
+            atualizarHUD();
+            renderizarLoja();
+            
+            mostrarMensagemSistema('🤑 +100 moedas! (shhhh...)', 1.5);
+            
+            // Confetes secretos
+            for (let i = 0; i < 30; i++) {
+                setTimeout(() => {
+                    const pos = new THREE.Vector3(
+                        peixe.position.x + (Math.random() - 0.5) * 8,
+                        peixe.position.y + Math.random() * 4 + 1,
+                        peixe.position.z + (Math.random() - 0.5) * 8
+                    );
+                    const cores = [0xffd700, 0xff6b00, 0xffaa00];
+                    const confete = new THREE.Mesh(
+                        new THREE.BoxGeometry(0.05, 0.05, 0.08),
+                        new THREE.MeshBasicMaterial({ color: cores[Math.floor(Math.random() * cores.length)] })
+                    );
+                    confete.position.copy(pos);
+                    confete.rotation.set(Math.random() * 6, Math.random() * 6, Math.random() * 6);
+                    scene.add(confete);
+                    let vida = 1.5;
+                    (function animarConfete() {
+                        if (vida <= 0) { scene.remove(confete); confete.geometry.dispose(); return; }
+                        vida -= 0.02;
+                        confete.position.y += 0.05;
+                        confete.rotation.x += 0.1;
+                        confete.rotation.z += 0.08;
+                        confete.scale.multiplyScalar(0.99);
+                        requestAnimationFrame(animarConfete);
+                    })();
+                }, i * 50);
+            }
+            
+            hackPassos = 0;
+            clearTimeout(hackTimer);
+            hackTimer = null;
+        } else {
+            clearTimeout(hackTimer);
+            hackTimer = setTimeout(() => {
+                hackPassos = 0;
+                hackTimer = null;
+            }, 3000);
+        }
+    } else {
+        hackPassos = 0;
+        clearTimeout(hackTimer);
+        hackTimer = null;
+    }
+});
+
+// =====================================================================
 // DEBUG
 // =====================================================================
 document.addEventListener('keydown', (e) => {
@@ -2907,6 +2954,7 @@ console.log('🐟 Aquário Limpo — PEIXES PREMIUM + ALTA DENSIDADE DE LIXO!');
 console.log('🗑️ Spawn a cada 0.08s, até 120 lixos ativos, 3 por vez');
 console.log('📡 Radar mostra TODOS os lixos próximos');
 console.log('🐠 Peixes e tubarão com modelos detalhados!');
+console.log('🕵️ HACK SECRETO: M + N + B = +100 moedas! (shhhh...)');
 </script>
 </body>
 </html>
