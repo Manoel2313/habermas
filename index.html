@@ -393,7 +393,7 @@ const CONFIG = {
         DIST_FOG: 300,        // 300m de visão nítida
         MUNDO_LIMITE: 2500,   // metade de ~5000m de mundo
         PROFUNDIDADE: 200,
-        LIXO_ALVO: 500,
+        LIXO_ALVO: 150,
         RAIO_SPAWN: 150,
         MAX_LIXO_ATIVO: 45,
     },
@@ -409,29 +409,25 @@ const CONFIG = {
     LOJA: {
         RECUPERACAO_ENERGIA: 10, // segundos para recarregar do zero ao cheio (vale para os 3 níveis)
         VELOCIDADE: [
-            { nivel: 1, custo: 100, duracao: 10, mult: 2 },
-            { nivel: 2, custo: 300, duracao: 30, mult: 5 },
-            { nivel: 3, custo: 500, duracao: 60, mult: 10 },
+            { nivel: 1, custo: 40, duracao: 10, mult: 2 },
+            { nivel: 2, custo: 120, duracao: 30, mult: 5 },
+            { nivel: 3, custo: 200, duracao: 60, mult: 10 },
         ],
-        // Obs: o pedido não trouxe os preços do bônus de moedas — usei uma progressão
-        // coerente com a do boost (100/300/500 -> aqui um pouco maior por ser um bônus permanente).
         MOEDA: [
-            { nivel: 1, custo: 150, bonus: 5 },
-            { nivel: 2, custo: 400, bonus: 15 },
-            { nivel: 3, custo: 700, bonus: 30 },
+            { nivel: 1, custo: 60, bonus: 5 },
+            { nivel: 2, custo: 160, bonus: 15 },
+            { nivel: 3, custo: 280, bonus: 30 },
         ],
         BOIA: [
-            { nivel: 1, custo: 250 },
+            { nivel: 1, custo: 100 },
         ],
         RADAR: [
-            { nivel: 1, custo: 60 },
+            { nivel: 1, custo: 25 },
         ],
-        // Obs: o pedido só trouxe o preço do nível 1 (120) — usei uma progressão
-        // parecida com a do boost de velocidade para os níveis 2 e 3.
         COLETA: [
-            { nivel: 1, custo: 120, mult: 2 },
-            { nivel: 2, custo: 350, mult: 4 },
-            { nivel: 3, custo: 600, mult: 6 },
+            { nivel: 1, custo: 50, mult: 2 },
+            { nivel: 2, custo: 140, mult: 4 },
+            { nivel: 3, custo: 240, mult: 6 },
         ],
     },
 };
@@ -1039,6 +1035,7 @@ function criarAquarioPremium() {
 
     grupo.userData.plantas = plantas;
     grupo.userData.superficie = superficie;
+    grupo.userData.aguaMat = aguaMat;
     return grupo;
 }
 
@@ -1054,7 +1051,9 @@ function construirCenaAquario() {
 
     const aquario = criarAquarioPremium();
     grupoCena.add(aquario);
-    refsAquario = { superficie: aquario.userData.superficie, plantas: aquario.userData.plantas };
+    refsAquario = { superficie: aquario.userData.superficie, plantas: aquario.userData.plantas, aguaMat: aquario.userData.aguaMat };
+    // o aquário sempre volta limpo e azul (sem poluição acumulada entre visitas)
+    aplicarCorAguaLimpa(refsAquario.aguaMat);
 
     dom.barraContainer.style.display = 'none';
     dom.barraLabel.style.display = 'none';
@@ -1080,6 +1079,11 @@ function construirCenaAquarioPosVitoria() {
     construirCenaAquario();
     dom.dialogo.style.display = 'none';
     setTimeout(() => mostrarDialogo('🐟', 'Ufa.... que dia cansativo.... finalmente terminei minha tarefa...', 4), 600);
+}
+
+// Água azul e límpida — usada tanto no aquário quanto no oceano quando quase limpo
+function aplicarCorAguaLimpa(aguaMat) {
+    if (aguaMat) aguaMat.color.setHex(0x0066aa);
 }
 
 function gerarLixoAquario() {
@@ -1501,6 +1505,9 @@ function construirCenaOceano() {
     mostrarDialogo('🐟', 'Preciso limpar isso tudo... vou nadar em busca de lixo!', 3);
 }
 
+// Quando restam menos de 30 peças de lixo no oceano, a água já é considerada limpa e vira azul
+const LIMITE_OCEANO_LIMPO = 30;
+
 function atualizarPoluicaoOceano() {
     const restante = Math.max(0, CONFIG.OCEANO.LIXO_ALVO - estado.oceanoColetados);
     const pct = (restante / CONFIG.OCEANO.LIXO_ALVO) * 100;
@@ -1510,9 +1517,17 @@ function atualizarPoluicaoOceano() {
     else if (pct > 25) dom.barra.style.background = 'linear-gradient(90deg,#ffaa00,#ff8800)';
     else dom.barra.style.background = 'linear-gradient(90deg,#00d4ff,#00ff88)';
 
-    const p = pct / 100;
-    materialFundoOceano.color.setHSL(0.33 - p * 0.08, 0.35 + p * 0.25, 0.22 + (1 - p) * 0.12);
-    scene.fog.color.setHSL(0.52 - p * 0.1, 0.5, 0.16 + (1 - p) * 0.08);
+    const quaseLimpo = restante < LIMITE_OCEANO_LIMPO;
+
+    if (quaseLimpo) {
+        // Água claramente azul — o oceano já está praticamente limpo
+        materialFundoOceano.color.setHSL(0.56, 0.4, 0.26);
+        scene.fog.color.setHSL(0.55, 0.55, 0.22);
+    } else {
+        const p = pct / 100;
+        materialFundoOceano.color.setHSL(0.33 - p * 0.08, 0.35 + p * 0.25, 0.22 + (1 - p) * 0.12);
+        scene.fog.color.setHSL(0.52 - p * 0.1, 0.5, 0.16 + (1 - p) * 0.08);
+    }
     scene.background.copy(scene.fog.color);
 }
 
