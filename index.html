@@ -359,7 +359,7 @@ canvas:active { cursor: grabbing; }
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 // =====================================================================
-// 🐟 AQUÁRIO LIMPO — ALTA DENSIDADE DE LIXO NO OCEANO
+// 🐟 AQUÁRIO LIMPO — ALTA DENSIDADE + PEIXES PREMIUM
 // =====================================================================
 
 const CONFIG = {
@@ -585,86 +585,642 @@ function limparCena() {
     dom.coletaContainer.style.display = 'none';
 }
 
+// =====================================================================
+// 🐠 PEIXE DO JOGADOR (VERSÃO PREMIUM)
+// =====================================================================
 function criarPeixe() {
     const grupo = new THREE.Group();
+
+    // --- CORPO PRINCIPAL ---
     const corpoMat = new THREE.MeshPhysicalMaterial({
-        color: 0xff6633, roughness: 0.2, metalness: 0.05, emissive: 0xff4400,
-        emissiveIntensity: 0.06, clearcoat: 0.35, clearcoatRoughness: 0.2,
+        color: 0xff6633,
+        roughness: 0.25,
+        metalness: 0.05,
+        emissive: 0xff4400,
+        emissiveIntensity: 0.04,
+        clearcoat: 0.4,
+        clearcoatRoughness: 0.2,
     });
-    const corpo = new THREE.Mesh(new THREE.SphereGeometry(0.8, 22, 22), corpoMat);
-    corpo.scale.set(1.5, 0.85, 0.95);
-    corpo.position.z = -0.2;
+    const corpoGeo = new THREE.SphereGeometry(0.85, 28, 20);
+    const corpo = new THREE.Mesh(corpoGeo, corpoMat);
+    corpo.scale.set(1.6, 0.8, 0.9);
+    corpo.position.z = -0.1;
     corpo.castShadow = true;
     grupo.add(corpo);
 
-    const faixaMat = new THREE.MeshPhysicalMaterial({ color: 0xffaa33, roughness: 0.3, clearcoat: 0.2 });
-    for (let i = 0; i < 3; i++) {
-        const faixa = new THREE.Mesh(new THREE.TorusGeometry(0.55, 0.05, 6, 16), faixaMat);
-        faixa.rotation.y = Math.PI / 2;
-        faixa.position.set(0.1 - i * 0.35, 0, -0.2);
-        faixa.scale.set(1, 0.7, 0.6);
-        grupo.add(faixa);
-    }
-
-    const caudaMat = new THREE.MeshPhysicalMaterial({ color: 0xff5533, roughness: 0.3, metalness: 0.05, clearcoat: 0.2 });
-    const cauda = new THREE.Mesh(new THREE.ConeGeometry(0.8, 0.9, 6), caudaMat);
-    cauda.position.set(0, 0, -1.0);
-    cauda.rotation.x = Math.PI / 2;
-    cauda.scale.set(1, 0.25, 0.4);
-    grupo.add(cauda);
-
-    const barbatanaMat = new THREE.MeshPhysicalMaterial({
-        color: 0xff6633, roughness: 0.4, transparent: true, opacity: 0.75, clearcoat: 0.1,
+    // --- OMBRO ---
+    const ombroMat = new THREE.MeshPhysicalMaterial({
+        color: 0xff6633,
+        roughness: 0.25,
+        metalness: 0.05,
+        clearcoat: 0.3,
     });
-    const dorsal = new THREE.Mesh(new THREE.ConeGeometry(0.35, 0.6, 4), barbatanaMat);
-    dorsal.position.set(0, 0.6, -0.2);
-    dorsal.scale.set(1, 1, 0.3);
-    dorsal.rotation.x = 0.2;
-    grupo.add(dorsal);
+    const ombro = new THREE.Mesh(new THREE.SphereGeometry(0.65, 20, 16), ombroMat);
+    ombro.scale.set(1.1, 0.8, 0.7);
+    ombro.position.set(0, 0.05, 0.35);
+    grupo.add(ombro);
+
+    // --- CABEÇA ---
+    const cabecaMat = new THREE.MeshPhysicalMaterial({
+        color: 0xff7733,
+        roughness: 0.2,
+        metalness: 0.03,
+        clearcoat: 0.5,
+    });
+    const cabeca = new THREE.Mesh(new THREE.SphereGeometry(0.5, 24, 18), cabecaMat);
+    cabeca.scale.set(0.9, 0.7, 0.8);
+    cabeca.position.set(0, 0.1, 0.75);
+    grupo.add(cabeca);
+
+    // --- FOCINHO ---
+    const focinhoMat = new THREE.MeshPhysicalMaterial({
+        color: 0xff8855,
+        roughness: 0.3,
+        metalness: 0.0,
+    });
+    const focinho = new THREE.Mesh(new THREE.SphereGeometry(0.25, 16, 12), focinhoMat);
+    focinho.scale.set(0.8, 0.6, 0.9);
+    focinho.position.set(0, 0.05, 1.05);
+    grupo.add(focinho);
+
+    // --- BOCA ---
+    const bocaMat = new THREE.MeshPhysicalMaterial({
+        color: 0xcc4433,
+        roughness: 0.8,
+        metalness: 0.0,
+    });
+    const boca = new THREE.Mesh(new THREE.TorusGeometry(0.12, 0.03, 6, 12), bocaMat);
+    boca.rotation.x = Math.PI * 0.15;
+    boca.rotation.z = Math.PI * 0.5;
+    boca.position.set(0, -0.05, 1.15);
+    boca.scale.set(1, 0.4, 0.5);
+    grupo.add(boca);
+
+    // --- OLHOS ---
+    const olhoBrancoMat = new THREE.MeshPhysicalMaterial({
+        color: 0xffffff,
+        roughness: 0.05,
+        metalness: 0.0,
+        clearcoat: 0.8,
+    });
+    const pupilaMat = new THREE.MeshPhysicalMaterial({
+        color: 0x111111,
+        roughness: 0.0,
+        metalness: 0.0,
+        clearcoat: 0.9,
+    });
+    const brilhoOlhoMat = new THREE.MeshPhysicalMaterial({
+        color: 0xffffff,
+        roughness: 0.0,
+        metalness: 0.0,
+        emissive: 0xffffff,
+        emissiveIntensity: 0.3,
+    });
 
     for (let lado = -1; lado <= 1; lado += 2) {
-        const peitoral = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.35, 4), barbatanaMat);
-        peitoral.position.set(lado * 0.75, -0.1, -0.1);
-        peitoral.scale.set(1, 0.25, 0.5);
-        peitoral.rotation.z = lado * 0.5;
+        const olho = new THREE.Mesh(new THREE.SphereGeometry(0.16, 16, 16), olhoBrancoMat);
+        olho.position.set(lado * 0.48, 0.22, 0.7);
+        olho.scale.set(0.7, 0.9, 0.6);
+        grupo.add(olho);
+
+        const iris = new THREE.Mesh(new THREE.SphereGeometry(0.12, 16, 16), new THREE.MeshPhysicalMaterial({
+            color: 0x44aaff,
+            roughness: 0.1,
+            metalness: 0.0,
+            clearcoat: 0.5,
+        }));
+        iris.position.set(lado * 0.52, 0.22, 0.78);
+        iris.scale.set(0.7, 0.9, 0.3);
+        grupo.add(iris);
+
+        const pupila = new THREE.Mesh(new THREE.SphereGeometry(0.06, 12, 12), pupilaMat);
+        pupila.position.set(lado * 0.54, 0.22, 0.82);
+        pupila.scale.set(0.7, 0.9, 0.3);
+        grupo.add(pupila);
+
+        const brilho = new THREE.Mesh(new THREE.SphereGeometry(0.035, 8, 8), brilhoOlhoMat);
+        brilho.position.set(lado * 0.5, 0.27, 0.82);
+        brilho.scale.set(0.5, 0.5, 0.3);
+        grupo.add(brilho);
+    }
+
+    // --- CAUDA ---
+    const caudaMat = new THREE.MeshPhysicalMaterial({
+        color: 0xff5533,
+        roughness: 0.3,
+        metalness: 0.05,
+        clearcoat: 0.2,
+        side: THREE.DoubleSide,
+    });
+
+    const baseCauda = new THREE.Mesh(new THREE.ConeGeometry(0.5, 0.6, 12), caudaMat);
+    baseCauda.rotation.x = Math.PI / 2;
+    baseCauda.position.set(0, 0, -0.65);
+    baseCauda.scale.set(1, 0.3, 0.7);
+    grupo.add(baseCauda);
+
+    const lobuloSuperior = new THREE.Mesh(new THREE.ConeGeometry(0.55, 0.8, 10), caudaMat);
+    lobuloSuperior.rotation.x = -0.4;
+    lobuloSuperior.position.set(0, 0.3, -0.9);
+    lobuloSuperior.scale.set(0.7, 1, 0.2);
+    grupo.add(lobuloSuperior);
+
+    const lobuloInferior = new THREE.Mesh(new THREE.ConeGeometry(0.45, 0.7, 10), caudaMat);
+    lobuloInferior.rotation.x = 0.4;
+    lobuloInferior.position.set(0, -0.25, -0.85);
+    lobuloInferior.scale.set(0.6, 1, 0.2);
+    grupo.add(lobuloInferior);
+
+    // --- BARBATANAS ---
+    const dorsalMat = new THREE.MeshPhysicalMaterial({
+        color: 0xff6633,
+        roughness: 0.4,
+        metalness: 0.0,
+        transparent: true,
+        opacity: 0.75,
+        clearcoat: 0.1,
+        side: THREE.DoubleSide,
+    });
+    const dorsal = new THREE.Mesh(new THREE.ConeGeometry(0.4, 0.7, 6), dorsalMat);
+    dorsal.position.set(0, 0.6, -0.1);
+    dorsal.scale.set(0.8, 1, 0.2);
+    dorsal.rotation.x = 0.15;
+    grupo.add(dorsal);
+
+    const dorsal2 = new THREE.Mesh(new THREE.ConeGeometry(0.25, 0.35, 6), dorsalMat);
+    dorsal2.position.set(0, 0.45, -0.5);
+    dorsal2.scale.set(0.6, 1, 0.2);
+    dorsal2.rotation.x = 0.1;
+    grupo.add(dorsal2);
+
+    const analMat = new THREE.MeshPhysicalMaterial({
+        color: 0xff6633,
+        roughness: 0.4,
+        metalness: 0.0,
+        transparent: true,
+        opacity: 0.6,
+        side: THREE.DoubleSide,
+    });
+    const anal = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.3, 6), analMat);
+    anal.position.set(0, -0.45, -0.4);
+    anal.scale.set(0.7, 1, 0.2);
+    anal.rotation.x = -0.1;
+    grupo.add(anal);
+
+    const peitoralMat = new THREE.MeshPhysicalMaterial({
+        color: 0xff6633,
+        roughness: 0.4,
+        metalness: 0.0,
+        transparent: true,
+        opacity: 0.7,
+        side: THREE.DoubleSide,
+        clearcoat: 0.1,
+    });
+    for (let lado = -1; lado <= 1; lado += 2) {
+        const peitoral = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.5, 6), peitoralMat);
+        peitoral.position.set(lado * 0.7, -0.1, 0.1);
+        peitoral.scale.set(1, 0.2, 0.5);
+        peitoral.rotation.z = lado * 0.6;
         peitoral.rotation.x = 0.3;
         grupo.add(peitoral);
     }
 
-    const anal = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.25, 4), barbatanaMat);
-    anal.position.set(0, -0.5, -0.4);
-    anal.scale.set(1, 0.3, 0.5);
-    anal.rotation.x = -0.2;
-    grupo.add(anal);
-
-    const olhoMat = new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.05, clearcoat: 0.5 });
-    const pupilaMat = new THREE.MeshPhysicalMaterial({ color: 0x111111, roughness: 0.0, clearcoat: 0.8 });
+    const pelvicaMat = new THREE.MeshPhysicalMaterial({
+        color: 0xff5533,
+        roughness: 0.4,
+        metalness: 0.0,
+        transparent: true,
+        opacity: 0.5,
+        side: THREE.DoubleSide,
+    });
     for (let lado = -1; lado <= 1; lado += 2) {
-        const olho = new THREE.Mesh(new THREE.SphereGeometry(0.16, 10, 10), olhoMat);
-        olho.position.set(lado * 0.5, 0.2, 0.4);
-        grupo.add(olho);
-        const pupila = new THREE.Mesh(new THREE.SphereGeometry(0.07, 10, 10), pupilaMat);
-        pupila.position.set(lado * 0.55, 0.2, 0.48);
-        grupo.add(pupila);
-        const brilho = new THREE.Mesh(new THREE.SphereGeometry(0.03, 6, 6), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.6 }));
-        brilho.position.set(lado * 0.52, 0.24, 0.5);
-        grupo.add(brilho);
+        const pelvica = new THREE.Mesh(new THREE.ConeGeometry(0.15, 0.3, 6), pelvicaMat);
+        pelvica.position.set(lado * 0.3, -0.45, -0.2);
+        pelvica.scale.set(1, 0.2, 0.5);
+        pelvica.rotation.z = lado * 0.3;
+        pelvica.rotation.x = -0.2;
+        grupo.add(pelvica);
     }
 
-    const brilhoCorpo = new THREE.Mesh(new THREE.SphereGeometry(0.95, 10, 10), new THREE.MeshPhysicalMaterial({
-        color: 0x88ddff, emissive: 0x88ddff, emissiveIntensity: 0.06, transparent: true, opacity: 0.12, clearcoat: 0.5,
-    }));
-    brilhoCorpo.scale.set(1.6, 1.1, 1.1);
-    brilhoCorpo.position.z = -0.2;
-    grupo.add(brilhoCorpo);
+    // --- LISTRAS ---
+    const listraMat = new THREE.MeshPhysicalMaterial({
+        color: 0xff8844,
+        roughness: 0.3,
+        metalness: 0.0,
+        transparent: true,
+        opacity: 0.3,
+    });
+    for (let i = 0; i < 4; i++) {
+        const listra = new THREE.Mesh(new THREE.TorusGeometry(0.55, 0.04, 6, 16), listraMat);
+        listra.rotation.y = Math.PI / 2;
+        listra.position.set(0.1 - i * 0.3, 0.05, -0.2);
+        listra.scale.set(1, 0.5, 0.6);
+        grupo.add(listra);
+    }
+
+    // --- BRILHO ---
+    const brilhoMatCorpo = new THREE.MeshPhysicalMaterial({
+        color: 0x88ddff,
+        emissive: 0x88ddff,
+        emissiveIntensity: 0.05,
+        transparent: true,
+        opacity: 0.1,
+        clearcoat: 0.5,
+        roughness: 0.0,
+    });
+    const brilho = new THREE.Mesh(new THREE.SphereGeometry(0.9, 14, 14), brilhoMatCorpo);
+    brilho.scale.set(1.7, 1.0, 1.0);
+    brilho.position.z = -0.1;
+    grupo.add(brilho);
 
     grupo.scale.set(0.7, 0.7, 0.7);
-    grupo.userData.cauda = cauda;
+    grupo.userData.cauda = lobuloSuperior;
+    grupo.userData.caudaInf = lobuloInferior;
     return grupo;
 }
+
 const peixe = criarPeixe();
 scene.add(peixe);
 
+// =====================================================================
+// 🦈 TUBARÃO (VERSÃO PREMIUM)
+// =====================================================================
+function criarTubarao() {
+    const grupo = new THREE.Group();
+
+    const corpoMat = new THREE.MeshPhysicalMaterial({
+        color: 0x6a7a88,
+        roughness: 0.5,
+        metalness: 0.1,
+        clearcoat: 0.2,
+    });
+    const corpo = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 1.4, 5.0, 16, 8), corpoMat);
+    corpo.rotation.x = Math.PI / 2;
+    corpo.position.z = 0.2;
+    corpo.scale.set(1, 0.75, 1);
+    corpo.castShadow = true;
+    grupo.add(corpo);
+
+    const cabecaMat = new THREE.MeshPhysicalMaterial({
+        color: 0x6a7a88,
+        roughness: 0.5,
+        metalness: 0.1,
+        clearcoat: 0.2,
+    });
+    const cabeca = new THREE.Mesh(new THREE.ConeGeometry(1.0, 1.6, 14), cabecaMat);
+    cabeca.rotation.x = -Math.PI / 2;
+    cabeca.position.set(0, 0, 2.6);
+    cabeca.scale.set(0.85, 0.7, 1);
+    grupo.add(cabeca);
+
+    const focinhoMat = new THREE.MeshPhysicalMaterial({
+        color: 0x7a8a98,
+        roughness: 0.4,
+        metalness: 0.05,
+    });
+    const focinho = new THREE.Mesh(new THREE.SphereGeometry(0.5, 14, 10), focinhoMat);
+    focinho.scale.set(0.9, 0.6, 1.2);
+    focinho.position.set(0, 0.05, 3.2);
+    grupo.add(focinho);
+
+    const barrigaMat = new THREE.MeshPhysicalMaterial({
+        color: 0xc8d0d8,
+        roughness: 0.6,
+        metalness: 0.0,
+    });
+    const barriga = new THREE.Mesh(new THREE.CylinderGeometry(0.75, 0.95, 4.8, 12, 4), barrigaMat);
+    barriga.rotation.x = Math.PI / 2;
+    barriga.position.set(0, -0.35, 0.2);
+    barriga.scale.set(0.85, 0.45, 0.85);
+    grupo.add(barriga);
+
+    // OLHOS
+    const olhoMat = new THREE.MeshPhysicalMaterial({
+        color: 0x222222,
+        roughness: 0.0,
+        metalness: 0.0,
+        clearcoat: 0.9,
+    });
+    const olhoBrancoMat = new THREE.MeshPhysicalMaterial({
+        color: 0x333333,
+        roughness: 0.1,
+        metalness: 0.0,
+        clearcoat: 0.5,
+    });
+    const olhoBrilhoMat = new THREE.MeshPhysicalMaterial({
+        color: 0xffffff,
+        emissive: 0xffffff,
+        emissiveIntensity: 0.2,
+        roughness: 0.0,
+    });
+
+    for (let lado = -1; lado <= 1; lado += 2) {
+        const orbita = new THREE.Mesh(new THREE.SphereGeometry(0.25, 12, 12), olhoBrancoMat);
+        orbita.position.set(lado * 0.5, 0.3, 2.1);
+        orbita.scale.set(0.8, 0.7, 0.5);
+        grupo.add(orbita);
+
+        const olho = new THREE.Mesh(new THREE.SphereGeometry(0.18, 12, 12), olhoMat);
+        olho.position.set(lado * 0.55, 0.3, 2.25);
+        olho.scale.set(0.8, 0.7, 0.5);
+        grupo.add(olho);
+
+        const brilho = new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 8), olhoBrilhoMat);
+        brilho.position.set(lado * 0.52, 0.35, 2.35);
+        brilho.scale.set(0.5, 0.5, 0.3);
+        grupo.add(brilho);
+    }
+
+    // BOCA E DENTES
+    const bocaMat = new THREE.MeshPhysicalMaterial({
+        color: 0x441111,
+        roughness: 0.9,
+        metalness: 0.0,
+    });
+    const boca = new THREE.Mesh(new THREE.TorusGeometry(0.25, 0.05, 6, 12), bocaMat);
+    boca.rotation.x = 0.2;
+    boca.rotation.y = Math.PI / 2;
+    boca.position.set(0, -0.15, 2.9);
+    boca.scale.set(1, 0.4, 0.4);
+    grupo.add(boca);
+
+    const denteMat = new THREE.MeshPhysicalMaterial({
+        color: 0xeeeeee,
+        roughness: 0.2,
+        metalness: 0.0,
+        clearcoat: 0.3,
+    });
+    for (let i = 0; i < 8; i++) {
+        const angulo = (i / 8) * Math.PI * 2 - Math.PI / 2;
+        const dente = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.15, 4), denteMat);
+        dente.position.set(Math.cos(angulo) * 0.2, Math.sin(angulo) * 0.15 - 0.15, 2.95);
+        dente.rotation.x = 0.3;
+        dente.rotation.z = angulo * 0.5;
+        dente.scale.set(0.5 + Math.random() * 0.5, 1, 0.5);
+        grupo.add(dente);
+    }
+
+    // BARBATANAS
+    const dorsalMat = new THREE.MeshPhysicalMaterial({
+        color: 0x5a6a78,
+        roughness: 0.5,
+        metalness: 0.0,
+        side: THREE.DoubleSide,
+    });
+    const dorsal = new THREE.Mesh(new THREE.ConeGeometry(0.8, 1.6, 6), dorsalMat);
+    dorsal.position.set(0, 1.15, 0.3);
+    dorsal.scale.set(1, 1, 0.2);
+    dorsal.rotation.x = -0.05;
+    grupo.add(dorsal);
+
+    const dorsal2 = new THREE.Mesh(new THREE.ConeGeometry(0.4, 0.6, 6), dorsalMat);
+    dorsal2.position.set(0, 0.8, -1.2);
+    dorsal2.scale.set(0.8, 1, 0.2);
+    dorsal2.rotation.x = -0.05;
+    grupo.add(dorsal2);
+
+    const peitoralMat = new THREE.MeshPhysicalMaterial({
+        color: 0x5a6a78,
+        roughness: 0.5,
+        metalness: 0.0,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.8,
+    });
+    for (let lado = -1; lado <= 1; lado += 2) {
+        const peitoral = new THREE.Mesh(new THREE.ConeGeometry(0.5, 1.2, 6), peitoralMat);
+        peitoral.position.set(lado * 0.8, -0.1, 1.0);
+        peitoral.scale.set(0.6, 0.15, 1);
+        peitoral.rotation.z = lado * 0.8;
+        peitoral.rotation.x = -0.2;
+        grupo.add(peitoral);
+    }
+
+    const analMat = new THREE.MeshPhysicalMaterial({
+        color: 0x5a6a78,
+        roughness: 0.5,
+        metalness: 0.0,
+        side: THREE.DoubleSide,
+    });
+    const anal = new THREE.Mesh(new THREE.ConeGeometry(0.3, 0.5, 6), analMat);
+    anal.position.set(0, -0.7, -1.0);
+    anal.scale.set(0.8, 0.2, 0.8);
+    anal.rotation.x = 0.1;
+    grupo.add(anal);
+
+    // CAUDA
+    const caudaMat = new THREE.MeshPhysicalMaterial({
+        color: 0x5a6a78,
+        roughness: 0.5,
+        metalness: 0.0,
+        side: THREE.DoubleSide,
+    });
+    const baseCauda = new THREE.Mesh(new THREE.ConeGeometry(0.8, 0.8, 10), caudaMat);
+    baseCauda.rotation.x = Math.PI / 2;
+    baseCauda.position.set(0, 0, -2.6);
+    baseCauda.scale.set(0.8, 0.3, 0.8);
+    grupo.add(baseCauda);
+
+    const lobuloSup = new THREE.Mesh(new THREE.ConeGeometry(1.0, 1.4, 8), caudaMat);
+    lobuloSup.rotation.x = -0.4;
+    lobuloSup.position.set(0, 0.4, -3.0);
+    lobuloSup.scale.set(0.7, 1, 0.2);
+    grupo.add(lobuloSup);
+
+    const lobuloInf = new THREE.Mesh(new THREE.ConeGeometry(0.7, 1.0, 8), caudaMat);
+    lobuloInf.rotation.x = 0.4;
+    lobuloInf.position.set(0, -0.35, -2.9);
+    lobuloInf.scale.set(0.6, 1, 0.2);
+    grupo.add(lobuloInf);
+
+    // LISTRAS
+    const listraMat = new THREE.MeshPhysicalMaterial({
+        color: 0x8a9aaa,
+        roughness: 0.6,
+        metalness: 0.0,
+        transparent: true,
+        opacity: 0.15,
+    });
+    for (let lado = -1; lado <= 1; lado += 2) {
+        for (let i = 0; i < 3; i++) {
+            const listra = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.02, 0.6), listraMat);
+            listra.position.set(lado * 0.8, 0.1 + i * 0.15, 0.5 + i * 0.4);
+            listra.rotation.z = lado * 0.1;
+            grupo.add(listra);
+        }
+    }
+
+    // BRILHO
+    const brilhoMat = new THREE.MeshPhysicalMaterial({
+        color: 0x88ccff,
+        emissive: 0x88ccff,
+        emissiveIntensity: 0.03,
+        transparent: true,
+        opacity: 0.06,
+        clearcoat: 0.3,
+        roughness: 0.0,
+    });
+    const brilho = new THREE.Mesh(new THREE.SphereGeometry(1.2, 12, 12), brilhoMat);
+    brilho.scale.set(1.8, 0.9, 3.0);
+    brilho.position.set(0, 0, 0.2);
+    grupo.add(brilho);
+
+    grupo.userData.cauda = lobuloSup;
+    grupo.userData.caudaInf = lobuloInf;
+    return grupo;
+}
+
+// =====================================================================
+// 🐟 PEIXE DECORATIVO (VERSÃO PREMIUM)
+// =====================================================================
+function criarPeixeDecorativo() {
+    const grupo = new THREE.Group();
+    
+    const coresPeixe = [
+        0xff5533, 0x44aaff, 0xff5577, 0xffee44, 
+        0x66ddaa, 0xcc77ff, 0xff8844, 0x44ffaa,
+        0xff44aa, 0x88ddff
+    ];
+    const cor = coresPeixe[Math.floor(Math.random() * coresPeixe.length)];
+    const corClara = new THREE.Color(cor).offsetHSL(0.05, 0.1, 0.2);
+    const corEscura = new THREE.Color(cor).offsetHSL(0, 0.1, -0.2);
+
+    const matCorpo = new THREE.MeshPhysicalMaterial({
+        color: cor,
+        roughness: 0.3,
+        metalness: 0.05,
+        clearcoat: 0.3,
+        clearcoatRoughness: 0.2,
+    });
+
+    const corpo = new THREE.Mesh(new THREE.SphereGeometry(0.4, 20, 16), matCorpo);
+    corpo.scale.set(1.6, 0.7, 0.8);
+    corpo.position.z = -0.05;
+    corpo.castShadow = true;
+    grupo.add(corpo);
+
+    const cabecaMat = new THREE.MeshPhysicalMaterial({
+        color: corClara,
+        roughness: 0.3,
+        metalness: 0.03,
+        clearcoat: 0.4,
+    });
+    const cabeca = new THREE.Mesh(new THREE.SphereGeometry(0.3, 16, 12), cabecaMat);
+    cabeca.scale.set(0.9, 0.7, 0.9);
+    cabeca.position.set(0, 0.05, 0.5);
+    grupo.add(cabeca);
+
+    // OLHOS
+    const olhoBranco = new THREE.MeshPhysicalMaterial({
+        color: 0xffffff,
+        roughness: 0.05,
+        clearcoat: 0.5,
+    });
+    const olhoPreto = new THREE.MeshPhysicalMaterial({
+        color: 0x111111,
+        roughness: 0.0,
+        clearcoat: 0.9,
+    });
+    const olhoBrilho = new THREE.MeshPhysicalMaterial({
+        color: 0xffffff,
+        emissive: 0xffffff,
+        emissiveIntensity: 0.3,
+    });
+
+    for (let lado = -1; lado <= 1; lado += 2) {
+        const olho = new THREE.Mesh(new THREE.SphereGeometry(0.08, 12, 12), olhoBranco);
+        olho.position.set(lado * 0.25, 0.15, 0.55);
+        olho.scale.set(0.7, 0.9, 0.5);
+        grupo.add(olho);
+
+        const pupila = new THREE.Mesh(new THREE.SphereGeometry(0.05, 10, 10), olhoPreto);
+        pupila.position.set(lado * 0.28, 0.15, 0.6);
+        pupila.scale.set(0.7, 0.9, 0.3);
+        grupo.add(pupila);
+
+        const brilho = new THREE.Mesh(new THREE.SphereGeometry(0.02, 6, 6), olhoBrilho);
+        brilho.position.set(lado * 0.26, 0.18, 0.63);
+        brilho.scale.set(0.5, 0.5, 0.3);
+        grupo.add(brilho);
+    }
+
+    // CAUDA
+    const caudaMat = new THREE.MeshPhysicalMaterial({
+        color: corEscura,
+        roughness: 0.3,
+        metalness: 0.05,
+        side: THREE.DoubleSide,
+    });
+
+    const baseCauda = new THREE.Mesh(new THREE.ConeGeometry(0.3, 0.4, 8), caudaMat);
+    baseCauda.rotation.x = Math.PI / 2;
+    baseCauda.position.set(0, 0, -0.5);
+    baseCauda.scale.set(1, 0.3, 0.6);
+    grupo.add(baseCauda);
+
+    const lobuloSup = new THREE.Mesh(new THREE.ConeGeometry(0.35, 0.5, 6), caudaMat);
+    lobuloSup.rotation.x = -0.3;
+    lobuloSup.position.set(0, 0.2, -0.65);
+    lobuloSup.scale.set(0.7, 1, 0.2);
+    grupo.add(lobuloSup);
+
+    const lobuloInf = new THREE.Mesh(new THREE.ConeGeometry(0.3, 0.4, 6), caudaMat);
+    lobuloInf.rotation.x = 0.3;
+    lobuloInf.position.set(0, -0.15, -0.6);
+    lobuloInf.scale.set(0.6, 1, 0.2);
+    grupo.add(lobuloInf);
+
+    // BARBATANAS
+    const dorsalMat = new THREE.MeshPhysicalMaterial({
+        color: corEscura,
+        roughness: 0.4,
+        transparent: true,
+        opacity: 0.7,
+        side: THREE.DoubleSide,
+    });
+    const dorsal = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.35, 5), dorsalMat);
+    dorsal.position.set(0, 0.3, 0.0);
+    dorsal.scale.set(0.8, 1, 0.2);
+    dorsal.rotation.x = 0.1;
+    grupo.add(dorsal);
+
+    const peitoralMat = new THREE.MeshPhysicalMaterial({
+        color: corClara,
+        roughness: 0.4,
+        transparent: true,
+        opacity: 0.6,
+        side: THREE.DoubleSide,
+    });
+    for (let lado = -1; lado <= 1; lado += 2) {
+        const peitoral = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.3, 5), peitoralMat);
+        peitoral.position.set(lado * 0.4, -0.05, 0.1);
+        peitoral.scale.set(1, 0.2, 0.5);
+        peitoral.rotation.z = lado * 0.5;
+        peitoral.rotation.x = 0.2;
+        grupo.add(peitoral);
+    }
+
+    // LISTRA
+    const listraMat = new THREE.MeshPhysicalMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.1,
+        emissive: 0xffffff,
+        emissiveIntensity: 0.05,
+    });
+    const listra = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.6, 0.02), listraMat);
+    listra.position.set(0, 0.05, -0.1);
+    listra.rotation.y = Math.PI / 2;
+    grupo.add(listra);
+
+    grupo.userData.cauda = lobuloSup;
+    grupo.userData.caudaInf = lobuloInf;
+    return grupo;
+}
+
+// =====================================================================
+// LIXO (mantido igual)
+// =====================================================================
 function criarLixo(tipoId) {
     const grupo = new THREE.Group();
     let mat;
@@ -747,6 +1303,9 @@ function removerLixo(obj) {
     atualizarContadorLixo();
 }
 
+// =====================================================================
+// FUNÇÕES DE COLETA (mantidas)
+// =====================================================================
 function multiplicadorColeta() {
     if (estado.coletaRapida.nivel <= 0) return 1;
     return CONFIG.LOJA.COLETA[estado.coletaRapida.nivel - 1].mult;
@@ -1132,7 +1691,7 @@ function atualizarSuperficieAquario() {
 }
 
 // =====================================================================
-// FASE 2: ESGOTO
+// FASE 2: ESGOTO (mantida)
 // =====================================================================
 function construirCenaEsgoto() {
     limparCena();
@@ -1224,7 +1783,7 @@ function aplicarLimitesEsgoto() {
 }
 
 // =====================================================================
-// FASE 3: OCEANO (ALTA DENSIDADE DE LIXO)
+// FASE 3: OCEANO (ALTA DENSIDADE)
 // =====================================================================
 function seedRandom(seed) {
     return function () {
@@ -1298,23 +1857,6 @@ function criarCoral() {
         }
     }
     grupo.userData.isCoral = true;
-    return grupo;
-}
-
-function criarPeixeDecorativo() {
-    const grupo = new THREE.Group();
-    const coresPeixe = [0xffaa33, 0x44aaff, 0xff5577, 0xffee44, 0x66ddaa, 0xcc77ff];
-    const cor = coresPeixe[Math.floor(Math.random() * coresPeixe.length)];
-    const mat = new THREE.MeshStandardMaterial({ color: cor, roughness: 0.4 });
-    const corpo = new THREE.Mesh(new THREE.SphereGeometry(0.35, 10, 10), mat);
-    corpo.scale.set(1.4, 0.75, 0.55);
-    grupo.add(corpo);
-    const cauda = new THREE.Mesh(new THREE.ConeGeometry(0.3, 0.4, 5), mat);
-    cauda.rotation.x = Math.PI / 2;
-    cauda.position.set(0, 0, -0.42);
-    cauda.scale.set(1, 0.2, 0.5);
-    grupo.add(cauda);
-    grupo.userData.cauda = cauda;
     return grupo;
 }
 
@@ -1504,21 +2046,17 @@ function atualizarPoluicaoOceano() {
     scene.background.copy(scene.fog.color);
 }
 
-// ═══════════════════════════════════════════════════════════════════
-// 🗑️ FUNÇÕES MODIFICADAS PARA ALTA DENSIDADE DE LIXO
-// ═══════════════════════════════════════════════════════════════════
-
+// =====================================================================
+// 🗑️ GERENCIAMENTO DE LIXO NO OCEANO (ALTA DENSIDADE)
+// =====================================================================
 function gerenciarLixoOceano(delta) {
     if (estado.oceanoColetados >= CONFIG.OCEANO.LIXO_ALVO) return;
     if (estado.lixoAtivo.length >= CONFIG.OCEANO.MAX_LIXO_ATIVO) return;
     
     estado.oceanoSpawnTimer += delta;
     
-    // Spawn MUITO mais frequente (0.08s)
     if (estado.oceanoSpawnTimer > CONFIG.OCEANO.SPAWN_INTERVALO) {
         estado.oceanoSpawnTimer = 0;
-        
-        // Spawnar MÚLTIPLOS lixos por vez
         const qtd = CONFIG.OCEANO.LIXOS_POR_SPAWN;
         for (let i = 0; i < qtd; i++) {
             spawnLixoOceano();
@@ -1528,13 +2066,8 @@ function gerenciarLixoOceano(delta) {
 
 function spawnLixoOceano() {
     const raio = CONFIG.OCEANO.RAIO_SPAWN;
-    
-    // Distribuição uniforme em todas as direções
     const ang = Math.random() * Math.PI * 2;
-    
-    // Distância BEM MAIS PRÓXIMA: entre 5 e 55 metros
     const dist = 5 + Math.random() * 50;
-    
     const x = peixe.position.x + Math.cos(ang) * dist;
     const z = peixe.position.z + Math.sin(ang) * dist;
     const fundo = alturaOceano(x, z);
@@ -1563,9 +2096,18 @@ function spawnLixoOceano() {
     atualizarContadorLixo();
 }
 
-// ═══════════════════════════════════════════════════════════════════
-// 📡 RADAR MELHORADO (mostra TODOS os lixos próximos)
-// ═══════════════════════════════════════════════════════════════════
+function atualizarFlutuacaoOceano(time) {
+    for (const obj of estado.lixoAtivo) {
+        if (!obj.flutuando) continue;
+        obj.mesh.position.y += Math.sin(time * 1.3 + obj.mesh.position.x) * 0.003;
+        obj.mesh.rotation.y += 0.003;
+    }
+}
+
+// =====================================================================
+// 📡 RADAR (mostra todos os lixos)
+// =====================================================================
+const radarCtx = dom.radarCanvas.getContext('2d');
 
 function desenharRadar() {
     if (!estado.radar.comprado || estado.fase !== 'oceano') return;
@@ -1624,7 +2166,7 @@ function desenharRadar() {
     radarCtx.fillStyle = '#00d4ff';
     radarCtx.fill();
 
-    // TODOS OS LIXOS no radar (não só o mais próximo)
+    // TODOS os lixos
     let lixosProximos = 0;
     for (const obj of estado.lixoAtivo) {
         if (!obj.ativo) continue;
@@ -1661,53 +2203,8 @@ function desenharRadar() {
 }
 
 // =====================================================================
-// TUBARÃO
+// TUBARÃO (usando o novo modelo premium)
 // =====================================================================
-function criarTubarao() {
-    const grupo = new THREE.Group();
-    const mat = new THREE.MeshStandardMaterial({ color: 0x6a7a88, roughness: 0.55 });
-    const matBarriga = new THREE.MeshStandardMaterial({ color: 0xd8dde0, roughness: 0.6 });
-
-    const corpo = new THREE.Mesh(new THREE.ConeGeometry(1.1, 5, 10), mat);
-    corpo.rotation.x = Math.PI / 2;
-    corpo.scale.set(1, 0.75, 1);
-    grupo.add(corpo);
-
-    const barriga = new THREE.Mesh(new THREE.ConeGeometry(0.75, 4.6, 8), matBarriga);
-    barriga.rotation.x = Math.PI / 2;
-    barriga.position.y = -0.35;
-    barriga.scale.set(0.85, 0.5, 0.85);
-    grupo.add(barriga);
-
-    const dorsal = new THREE.Mesh(new THREE.ConeGeometry(0.65, 1.3, 4), mat);
-    dorsal.position.set(0, 1.05, 0.3);
-    dorsal.scale.set(1, 1, 0.3);
-    grupo.add(dorsal);
-
-    const cauda = new THREE.Mesh(new THREE.ConeGeometry(1.1, 1.7, 4), mat);
-    cauda.rotation.x = -Math.PI / 2;
-    cauda.position.set(0, 0.3, -2.6);
-    cauda.scale.set(1, 0.18, 0.85);
-    grupo.add(cauda);
-
-    for (let lado = -1; lado <= 1; lado += 2) {
-        const peit = new THREE.Mesh(new THREE.ConeGeometry(0.35, 1.3, 4), mat);
-        peit.position.set(lado * 0.7, -0.2, 1.0);
-        peit.rotation.z = lado * 1.1;
-        peit.scale.set(1, 0.22, 0.55);
-        grupo.add(peit);
-    }
-
-    const focinho = new THREE.Mesh(new THREE.ConeGeometry(0.35, 0.9, 8), mat);
-    focinho.rotation.x = Math.PI / 2;
-    focinho.position.set(0, 0, 2.6);
-    grupo.add(focinho);
-
-    grupo.userData.cauda = cauda;
-    grupo.castShadow = true;
-    return grupo;
-}
-
 function spawnTubarao() {
     const ang = Math.random() * Math.PI * 2;
     const dist = 70 + Math.random() * 40;
@@ -1896,11 +2393,6 @@ function limparProjeteis() {
 }
 
 // =====================================================================
-// RADAR (inicialização)
-// =====================================================================
-const radarCtx = dom.radarCanvas.getContext('2d');
-
-// =====================================================================
 // LIMITES
 // =====================================================================
 function aplicarLimites() {
@@ -1997,6 +2489,9 @@ function atualizarMovimentoPeixe(delta) {
     if (peixe.userData.cauda) {
         const velocidadeNado = mov.length();
         peixe.userData.cauda.rotation.z = Math.sin(Date.now() * 0.012) * 0.2 * (velocidadeNado + 0.5);
+        if (peixe.userData.caudaInf) {
+            peixe.userData.caudaInf.rotation.z = -Math.sin(Date.now() * 0.012) * 0.15 * (velocidadeNado + 0.5);
+        }
     }
 
     luzPeixe.position.copy(peixe.position);
@@ -2343,14 +2838,6 @@ function gameLoop() {
     renderer.render(scene, camera);
 }
 
-function atualizarFlutuacaoOceano(time) {
-    for (const obj of estado.lixoAtivo) {
-        if (!obj.flutuando) continue;
-        obj.mesh.position.y += Math.sin(time * 1.3 + obj.mesh.position.x) * 0.003;
-        obj.mesh.rotation.y += 0.003;
-    }
-}
-
 // =====================================================================
 // CONTROLES
 // =====================================================================
@@ -2416,9 +2903,10 @@ document.addEventListener('keydown', (e) => {
 // =====================================================================
 construirCenaAquario();
 gameLoop();
-console.log('🐟 Aquário Limpo — ALTA DENSIDADE DE LIXO ativada!');
+console.log('🐟 Aquário Limpo — PEIXES PREMIUM + ALTA DENSIDADE DE LIXO!');
 console.log('🗑️ Spawn a cada 0.08s, até 120 lixos ativos, 3 por vez');
 console.log('📡 Radar mostra TODOS os lixos próximos');
+console.log('🐠 Peixes e tubarão com modelos detalhados!');
 </script>
 </body>
 </html>
