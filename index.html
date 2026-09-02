@@ -359,8 +359,7 @@ canvas:active { cursor: grabbing; }
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 // =====================================================================
-// 🐟 AQUÁRIO LIMPO — A JORNADA ATÉ O OCEANO
-// Fases: Aquário -> Esgoto (canos) -> Oceano aberto (chunks proceduais)
+// 🐟 AQUÁRIO LIMPO — ALTA DENSIDADE DE LIXO NO OCEANO
 // =====================================================================
 
 const CONFIG = {
@@ -371,7 +370,7 @@ const CONFIG = {
     CAM_LADO: 2.0,
 
     AQUARIO: {
-        TEMPO_LIMITE: 60, // 1 minuto até a transição
+        TEMPO_LIMITE: 60,
         TAMANHO_X: 30,
         TAMANHO_Z: 22,
         ALTURA_AGUA: 11,
@@ -389,25 +388,27 @@ const CONFIG = {
     },
     OCEANO: {
         CHUNK_SIZE: 100,
-        RAIO_CHUNKS: 4,       // 4 chunks * 100m = 400m de "mundo construído"
-        DIST_FOG: 300,        // 300m de visão nítida
-        MUNDO_LIMITE: 2500,   // metade de ~5000m de mundo
+        RAIO_CHUNKS: 4,
+        DIST_FOG: 300,
+        MUNDO_LIMITE: 2500,
         PROFUNDIDADE: 200,
         LIXO_ALVO: 150,
-        RAIO_SPAWN: 150,
-        MAX_LIXO_ATIVO: 45,
+        RAIO_SPAWN: 200,
+        MAX_LIXO_ATIVO: 120,
+        SPAWN_INTERVALO: 0.08,
+        LIXOS_POR_SPAWN: 3,
     },
     TUBARAO: {
-        TEMPO_PRIMEIRO_SPAWN: 180, // 3 minutos depois de entrar no oceano
-        TEMPO_RESPAWN: 120,        // 2 minutos após ser derrotado
-        VELOCIDADE_MULT: 0.7,      // 30% mais lento que o jogador
+        TEMPO_PRIMEIRO_SPAWN: 180,
+        TEMPO_RESPAWN: 120,
+        VELOCIDADE_MULT: 0.7,
         DANO: 10,
-        HP: 7,                     // tiros de boia necessários
+        HP: 7,
         RAIO_COLISAO: 2.6,
         INVULNERABILIDADE: 1.2,
     },
     LOJA: {
-        RECUPERACAO_ENERGIA: 10, // segundos para recarregar do zero ao cheio (vale para os 3 níveis)
+        RECUPERACAO_ENERGIA: 10,
         VELOCIDADE: [
             { nivel: 1, custo: 40, duracao: 10, mult: 2 },
             { nivel: 2, custo: 120, duracao: 30, mult: 5 },
@@ -440,7 +441,7 @@ const TIPOS_LIXO = [
 ];
 
 const estado = {
-    fase: 'aquario', // aquario | esgoto | oceano
+    fase: 'aquario',
     transicaoAtiva: false,
     moedas: 0,
     tempoJogado: 0,
@@ -449,32 +450,26 @@ const estado = {
     jogoVencido: false,
     lixoAtivo: [],
     intervaloAtual: CONFIG.AQUARIO.INTERVALO_LIXO,
-    // esgoto
     esgotoBarreiras: [],
     ultimoAvisoBarreira: -999,
-    // oceano
     oceanoColetados: 0,
     oceanoSpawnTimer: 0,
     chunkTimer: 0,
     chunksOceano: new Map(),
     oceanoTimer: 0,
     peixesDecorativos: new Map(),
-    // câmera
     camAzimuth: Math.PI + 0.35,
     camPitch: 0.28,
     camPosAtual: new THREE.Vector3(),
-    // coleta
     coletaAlvo: null,
     coletaProgresso: 0,
     coletaSegurando: false,
-    // loja
     lojaAberta: false,
     boost: { nivel: 0, ativo: false, energia: 1 },
     bonusMoeda: { nivel: 0 },
     tiroBoia: { comprado: false },
     radar: { comprado: false },
     coletaRapida: { nivel: 0 },
-    // tubarão / combate
     jogador: { hp: 100, regenTimer: 0, invulneravel: 0 },
     tubarao: { ativo: false, mesh: null, hp: 0, proximoSpawn: CONFIG.TUBARAO.TEMPO_PRIMEIRO_SPAWN },
     projeteis: [],
@@ -517,9 +512,9 @@ const dom = {
     telaVermelha: document.getElementById('tela-vermelha'),
 };
 
-// ---------- THREE.JS núcleo ----------
+// ---------- THREE.JS ----------
 const scene = new THREE.Scene();
-const grupoCena = new THREE.Group(); // tudo específico da fase atual vive aqui
+const grupoCena = new THREE.Group();
 scene.add(grupoCena);
 
 const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 500);
@@ -534,7 +529,7 @@ renderer.toneMappingExposure = 1.15;
 renderer.outputEncoding = THREE.sRGBEncoding;
 document.body.prepend(renderer.domElement);
 
-// ---------- LUZES (persistem entre fases, só mudamos cor/intensidade) ----------
+// ---------- LUZES ----------
 const ambientLight = new THREE.AmbientLight(0x4488bb, 0.55);
 scene.add(ambientLight);
 const sunLight = new THREE.DirectionalLight(0xffeedd, 1.5);
@@ -574,7 +569,6 @@ function configurarLuzes(fase) {
     }
 }
 
-// ---------- limpeza de cena entre fases ----------
 function limparCena() {
     while (grupoCena.children.length) {
         const obj = grupoCena.children[0];
@@ -591,7 +585,6 @@ function limparCena() {
     dom.coletaContainer.style.display = 'none';
 }
 
-// ---------- PEIXE (persiste entre fases) ----------
 function criarPeixe() {
     const grupo = new THREE.Group();
     const corpoMat = new THREE.MeshPhysicalMaterial({
@@ -672,12 +665,11 @@ function criarPeixe() {
 const peixe = criarPeixe();
 scene.add(peixe);
 
-// ---------- LIXO (geometria reutilizável em qualquer fase) ----------
 function criarLixo(tipoId) {
     const grupo = new THREE.Group();
     let mat;
     switch (tipoId) {
-        case 0: // Garrafa PET
+        case 0:
             mat = new THREE.MeshPhysicalMaterial({ color: 0x44aa88, roughness: 0.3, metalness: 0.1, clearcoat: 0.2 });
             const corpo = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.28, 0.7, 8), mat);
             corpo.position.y = 0.35;
@@ -692,7 +684,7 @@ function criarLixo(tipoId) {
             rotulo.position.y = 0.45;
             grupo.add(rotulo);
             break;
-        case 1: // Lata
+        case 1:
             mat = new THREE.MeshPhysicalMaterial({ color: 0xcc8844, roughness: 0.5, metalness: 0.5, clearcoat: 0.1 });
             const lata = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.32, 0.6, 12), mat);
             lata.position.y = 0.3;
@@ -709,7 +701,7 @@ function criarLixo(tipoId) {
             anel.rotation.x = Math.PI / 2;
             grupo.add(anel);
             break;
-        case 2: // Sacola
+        case 2:
             mat = new THREE.MeshPhysicalMaterial({
                 color: 0x999999, roughness: 0.7, transparent: true, opacity: 0.5, side: THREE.DoubleSide, clearcoat: 0.1,
             });
@@ -728,7 +720,7 @@ function criarLixo(tipoId) {
                 grupo.add(alca);
             }
             break;
-        case 3: // Papelão
+        case 3:
             mat = new THREE.MeshPhysicalMaterial({ color: 0xbb9966, roughness: 0.95 });
             const caixa = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.35, 0.5), mat);
             caixa.position.y = 0.18;
@@ -755,13 +747,11 @@ function removerLixo(obj) {
     atualizarContadorLixo();
 }
 
-// ---------- multiplicador de coleta (loja) ----------
 function multiplicadorColeta() {
     if (estado.coletaRapida.nivel <= 0) return 1;
     return CONFIG.LOJA.COLETA[estado.coletaRapida.nivel - 1].mult;
 }
 
-// ---------- COLETA (segurar E) — genérica para qualquer fase ----------
 function acharLixoMaisProximo() {
     const raioAtual = CONFIG.RAIO_COLETA * multiplicadorColeta();
     let maisProximo = null, distMin = raioAtual;
@@ -846,7 +836,6 @@ function finalizarColeta(obj) {
     atualizarHUD();
 }
 
-// ---------- EFEITO COLETA ----------
 function criarEfeitoColeta(pos, moedas, especial) {
     const cores = especial ? [0xffd700, 0xffaa00] : [0x00ff88, 0x44ddff];
     for (let i = 0; i < 16; i++) {
@@ -895,7 +884,6 @@ function criarEfeitoColeta(pos, moedas, especial) {
     })();
 }
 
-// ---------- BOLHAS ----------
 function criarBolha(pos) {
     const bolha = new THREE.Mesh(new THREE.SphereGeometry(0.03 + Math.random() * 0.06, 4, 4), new THREE.MeshBasicMaterial({ color: 0x88ddff, transparent: true, opacity: 0.15 + Math.random() * 0.25 }));
     bolha.position.copy(pos);
@@ -918,7 +906,7 @@ function criarBolha(pos) {
 // =====================================================================
 // FASE 1: AQUÁRIO
 // =====================================================================
-let refsAquario = null; // { superficie, plantas }
+let refsAquario = null;
 
 function criarAquarioPremium() {
     const grupo = new THREE.Group();
@@ -1052,8 +1040,6 @@ function construirCenaAquario() {
     const aquario = criarAquarioPremium();
     grupoCena.add(aquario);
     refsAquario = { superficie: aquario.userData.superficie, plantas: aquario.userData.plantas, aguaMat: aquario.userData.aguaMat };
-    // o aquário sempre volta limpo e azul (sem poluição acumulada entre visitas)
-    aplicarCorAguaLimpa(refsAquario.aguaMat);
 
     dom.barraContainer.style.display = 'none';
     dom.barraLabel.style.display = 'none';
@@ -1074,16 +1060,10 @@ function construirCenaAquario() {
     setTimeout(() => mostrarMensagemSistema('🎮 WASD = Nadar | Arraste o mouse = Câmera | Segure E = Coletar', 3.5), 9500);
 }
 
-// Reconstrói o aquário após a vitória final, com uma fala diferente
 function construirCenaAquarioPosVitoria() {
     construirCenaAquario();
     dom.dialogo.style.display = 'none';
     setTimeout(() => mostrarDialogo('🐟', 'Ufa.... que dia cansativo.... finalmente terminei minha tarefa...', 4), 600);
-}
-
-// Água azul e límpida — usada tanto no aquário quanto no oceano quando quase limpo
-function aplicarCorAguaLimpa(aguaMat) {
-    if (aguaMat) aguaMat.color.setHex(0x0066aa);
 }
 
 function gerarLixoAquario() {
@@ -1152,7 +1132,7 @@ function atualizarSuperficieAquario() {
 }
 
 // =====================================================================
-// FASE 2: ESGOTO (canos)
+// FASE 2: ESGOTO
 // =====================================================================
 function construirCenaEsgoto() {
     limparCena();
@@ -1171,7 +1151,6 @@ function construirCenaEsgoto() {
     tubo.position.set(0, raio, -comprimento / 2 + 3);
     grupoCena.add(tubo);
 
-    // aneis estruturais para dar noção de profundidade
     for (let z = 4; z >= -comprimento - 4; z -= 4) {
         const anel = new THREE.Mesh(new THREE.TorusGeometry(raio + 0.05, 0.06, 8, 16), new THREE.MeshStandardMaterial({ color: 0x2a2015, roughness: 0.8 }));
         anel.rotation.y = Math.PI / 2;
@@ -1179,7 +1158,6 @@ function construirCenaEsgoto() {
         grupoCena.add(anel);
     }
 
-    // barreiras de lixo
     estado.esgotoBarreiras = [];
     const numB = CONFIG.ESGOTO.NUM_BARREIRAS;
     for (let i = 1; i <= numB; i++) {
@@ -1246,7 +1224,7 @@ function aplicarLimitesEsgoto() {
 }
 
 // =====================================================================
-// FASE 3: OCEANO (mundo aberto por chunks)
+// FASE 3: OCEANO (ALTA DENSIDADE DE LIXO)
 // =====================================================================
 function seedRandom(seed) {
     return function () {
@@ -1256,11 +1234,13 @@ function seedRandom(seed) {
         return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
     };
 }
+
 function ruidoOceano(x, z) {
     return Math.sin(x * 0.015) * Math.cos(z * 0.02) * 10 +
            Math.sin(x * 0.05 + z * 0.03) * 4 +
            Math.sin(x * 0.002 + z * 0.004) * 22;
 }
+
 function alturaOceano(x, z) {
     return -CONFIG.OCEANO.PROFUNDIDADE + 30 + ruidoOceano(x, z);
 }
@@ -1293,7 +1273,6 @@ function criarCoral() {
     const mat = new THREE.MeshStandardMaterial({ color: cor, roughness: 0.75 });
     const tipo = Math.floor(Math.random() * 3);
     if (tipo === 0) {
-        // coral ramificado (galhos)
         const numGalhos = 5 + Math.floor(Math.random() * 5);
         for (let i = 0; i < numGalhos; i++) {
             const altura = 0.5 + Math.random() * 1.3;
@@ -1306,11 +1285,9 @@ function criarCoral() {
             grupo.add(galho);
         }
     } else if (tipo === 1) {
-        // coral em cúpula
         const cupula = new THREE.Mesh(new THREE.SphereGeometry(0.5 + Math.random() * 0.5, 10, 8, 0, Math.PI * 2, 0, Math.PI / 2), mat);
         grupo.add(cupula);
     } else {
-        // coral em leque
         for (let i = 0; i < 3; i++) {
             const leque = new THREE.Mesh(new THREE.ConeGeometry(0.5 + Math.random() * 0.3, 0.9 + Math.random() * 0.6, 6, 1, true), mat);
             leque.position.y = 0.45;
@@ -1377,12 +1354,11 @@ function construirChunkOceano(cx, cz) {
         objetos.push(rocha);
     }
 
-    // Algas e corais no fundo — aproximadamente um a cada 30m (grade com jitter, sem exagero)
     const passoDecoracao = 30;
     const celulas = Math.max(1, Math.round(size / passoDecoracao));
     for (let gx = 0; gx < celulas; gx++) {
         for (let gz = 0; gz < celulas; gz++) {
-            if (rng() > 0.6) continue; // nem toda célula recebe algo, pra não ficar em grade perfeita
+            if (rng() > 0.6) continue;
             const wx = cx * size + (gx + 0.3 + rng() * 0.4) * (size / celulas);
             const wz = cz * size + (gz + 0.3 + rng() * 0.4) * (size / celulas);
             const wy = alturaOceano(wx, wz);
@@ -1396,13 +1372,12 @@ function construirChunkOceano(cx, cz) {
         }
     }
 
-    // Peixinhos decorativos nadando — aproximadamente 1-2 a cada 25m
     const passoPeixe = 25;
     const celulasPeixe = Math.max(1, Math.round(size / passoPeixe));
     for (let gx = 0; gx < celulasPeixe; gx++) {
         for (let gz = 0; gz < celulasPeixe; gz++) {
             if (rng() > 0.55) continue;
-            const numCardume = 1 + (rng() < 0.35 ? 1 : 0); // as vezes 2 juntos
+            const numCardume = 1 + (rng() < 0.35 ? 1 : 0);
             const baseX = cx * size + (gx + 0.5) * (size / celulasPeixe) + (rng() - 0.5) * 10;
             const baseZ = cz * size + (gz + 0.5) * (size / celulasPeixe) + (rng() - 0.5) * 10;
             const baseY = Math.min(-4, alturaOceano(baseX, baseZ) + 6 + rng() * 20);
@@ -1505,7 +1480,6 @@ function construirCenaOceano() {
     mostrarDialogo('🐟', 'Preciso limpar isso tudo... vou nadar em busca de lixo!', 3);
 }
 
-// Quando restam menos de 30 peças de lixo no oceano, a água já é considerada limpa e vira azul
 const LIMITE_OCEANO_LIMPO = 30;
 
 function atualizarPoluicaoOceano() {
@@ -1520,7 +1494,6 @@ function atualizarPoluicaoOceano() {
     const quaseLimpo = restante < LIMITE_OCEANO_LIMPO;
 
     if (quaseLimpo) {
-        // Água claramente azul — o oceano já está praticamente limpo
         materialFundoOceano.color.setHSL(0.56, 0.4, 0.26);
         scene.fog.color.setHSL(0.55, 0.55, 0.22);
     } else {
@@ -1531,20 +1504,37 @@ function atualizarPoluicaoOceano() {
     scene.background.copy(scene.fog.color);
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// 🗑️ FUNÇÕES MODIFICADAS PARA ALTA DENSIDADE DE LIXO
+// ═══════════════════════════════════════════════════════════════════
+
 function gerenciarLixoOceano(delta) {
     if (estado.oceanoColetados >= CONFIG.OCEANO.LIXO_ALVO) return;
     if (estado.lixoAtivo.length >= CONFIG.OCEANO.MAX_LIXO_ATIVO) return;
+    
     estado.oceanoSpawnTimer += delta;
-    if (estado.oceanoSpawnTimer > 0.3) {
+    
+    // Spawn MUITO mais frequente (0.08s)
+    if (estado.oceanoSpawnTimer > CONFIG.OCEANO.SPAWN_INTERVALO) {
         estado.oceanoSpawnTimer = 0;
-        spawnLixoOceano();
+        
+        // Spawnar MÚLTIPLOS lixos por vez
+        const qtd = CONFIG.OCEANO.LIXOS_POR_SPAWN;
+        for (let i = 0; i < qtd; i++) {
+            spawnLixoOceano();
+        }
     }
 }
 
 function spawnLixoOceano() {
     const raio = CONFIG.OCEANO.RAIO_SPAWN;
+    
+    // Distribuição uniforme em todas as direções
     const ang = Math.random() * Math.PI * 2;
-    const dist = 15 + Math.random() * raio;
+    
+    // Distância BEM MAIS PRÓXIMA: entre 5 e 55 metros
+    const dist = 5 + Math.random() * 50;
+    
     const x = peixe.position.x + Math.cos(ang) * dist;
     const z = peixe.position.z + Math.sin(ang) * dist;
     const fundo = alturaOceano(x, z);
@@ -1559,21 +1549,119 @@ function spawnLixoOceano() {
     grupoCena.add(mesh);
 
     const valor = tipo.valorMin + Math.floor(Math.random() * (tipo.valorMax - tipo.valorMin + 1));
-    const obj = { mesh, tipoId: tipo.id, valor, tempoColeta: tipo.tempoColeta, nome: tipo.nome, ativo: true, assentado: true, flutuando: true };
+    const obj = { 
+        mesh, 
+        tipoId: tipo.id, 
+        valor, 
+        tempoColeta: tipo.tempoColeta, 
+        nome: tipo.nome, 
+        ativo: true, 
+        assentado: true, 
+        flutuando: true 
+    };
     estado.lixoAtivo.push(obj);
     atualizarContadorLixo();
 }
 
-function atualizarFlutuacaoOceano(time) {
-    for (const obj of estado.lixoAtivo) {
-        if (!obj.flutuando) continue;
-        obj.mesh.position.y += Math.sin(time * 1.3 + obj.mesh.position.x) * 0.003;
-        obj.mesh.rotation.y += 0.003;
+// ═══════════════════════════════════════════════════════════════════
+// 📡 RADAR MELHORADO (mostra TODOS os lixos próximos)
+// ═══════════════════════════════════════════════════════════════════
+
+function desenharRadar() {
+    if (!estado.radar.comprado || estado.fase !== 'oceano') return;
+    const w = dom.radarCanvas.width, h = dom.radarCanvas.height;
+    const cx = w / 2, cy = h / 2;
+    const alcance = 60;
+    const raioTela = w / 2 - 8;
+
+    radarCtx.clearRect(0, 0, w, h);
+    
+    const grad = radarCtx.createRadialGradient(cx, cy, 0, cx, cy, raioTela);
+    grad.addColorStop(0, 'rgba(0,30,50,0.3)');
+    grad.addColorStop(1, 'rgba(0,10,20,0.5)');
+    radarCtx.fillStyle = grad;
+    radarCtx.beginPath();
+    radarCtx.arc(cx, cy, raioTela, 0, Math.PI * 2);
+    radarCtx.fill();
+    
+    radarCtx.beginPath();
+    radarCtx.arc(cx, cy, raioTela, 0, Math.PI * 2);
+    radarCtx.strokeStyle = 'rgba(0,212,255,0.25)';
+    radarCtx.lineWidth = 1;
+    radarCtx.stroke();
+
+    for (let r = 0.25; r <= 1; r += 0.25) {
+        radarCtx.beginPath();
+        radarCtx.arc(cx, cy, raioTela * r, 0, Math.PI * 2);
+        radarCtx.strokeStyle = 'rgba(255,255,255,0.05)';
+        radarCtx.lineWidth = 0.5;
+        radarCtx.stroke();
     }
+
+    function posicaoRelativa(alvoPos) {
+        const dx = alvoPos.x - peixe.position.x;
+        const dz = alvoPos.z - peixe.position.z;
+        const ang = -estado.camAzimuth;
+        const rx = dx * Math.cos(ang) - dz * Math.sin(ang);
+        const rz = dx * Math.sin(ang) + dz * Math.cos(ang);
+        let dist = Math.sqrt(rx * rx + rz * rz);
+        const fator = (Math.min(dist, alcance) / alcance) * raioTela;
+        const distClamp = Math.max(dist, 0.001);
+        return { x: cx + (rx / distClamp) * fator, y: cy + (rz / distClamp) * fator, dist };
+    }
+
+    // Jogador
+    const glow = radarCtx.createRadialGradient(cx, cy, 0, cx, cy, 8);
+    glow.addColorStop(0, 'rgba(0,212,255,0.8)');
+    glow.addColorStop(1, 'rgba(0,212,255,0)');
+    radarCtx.fillStyle = glow;
+    radarCtx.beginPath();
+    radarCtx.arc(cx, cy, 8, 0, Math.PI * 2);
+    radarCtx.fill();
+    
+    radarCtx.beginPath();
+    radarCtx.arc(cx, cy, 3.5, 0, Math.PI * 2);
+    radarCtx.fillStyle = '#00d4ff';
+    radarCtx.fill();
+
+    // TODOS OS LIXOS no radar (não só o mais próximo)
+    let lixosProximos = 0;
+    for (const obj of estado.lixoAtivo) {
+        if (!obj.ativo) continue;
+        const p = posicaoRelativa(obj.mesh.position);
+        if (p.dist > alcance) continue;
+        radarCtx.beginPath();
+        radarCtx.arc(p.x, p.y, 2.5, 0, Math.PI * 2);
+        radarCtx.fillStyle = '#ffd700';
+        radarCtx.fill();
+        lixosProximos++;
+    }
+
+    // Tubarão
+    if (estado.tubarao.ativo && estado.tubarao.mesh) {
+        const p = posicaoRelativa(estado.tubarao.mesh.position);
+        if (p.dist < alcance) {
+            const pulse = Math.sin(Date.now() * 0.003) * 0.3 + 0.7;
+            radarCtx.beginPath();
+            radarCtx.arc(p.x, p.y, 5 * pulse, 0, Math.PI * 2);
+            radarCtx.fillStyle = `rgba(255,50,50,${0.3 * pulse})`;
+            radarCtx.fill();
+            
+            radarCtx.beginPath();
+            radarCtx.arc(p.x, p.y, 3.5, 0, Math.PI * 2);
+            radarCtx.fillStyle = '#ff3344';
+            radarCtx.fill();
+        }
+    }
+
+    radarCtx.fillStyle = 'rgba(255,255,255,0.2)';
+    radarCtx.font = '8px Arial';
+    radarCtx.textAlign = 'center';
+    radarCtx.fillText(`${lixosProximos} lixos`, cx, h - 6);
 }
 
 // =====================================================================
-// TUBARÃO (predador do oceano)
+// TUBARÃO
 // =====================================================================
 function criarTubarao() {
     const grupo = new THREE.Group();
@@ -1764,7 +1852,7 @@ function atirarBoia() {
         return;
     }
     if (estado.fase !== 'oceano' || !estado.jogoAtivo) return;
-    if (estado.tempoJogado - estado.ultimoTiro < 0.35) return; // limite de taxa de tiro
+    if (estado.tempoJogado - estado.ultimoTiro < 0.35) return;
     estado.ultimoTiro = estado.tempoJogado;
 
     const dir = new THREE.Vector3(Math.sin(peixe.rotation.y), 0, Math.cos(peixe.rotation.y)).normalize();
@@ -1808,69 +1896,13 @@ function limparProjeteis() {
 }
 
 // =====================================================================
-// RADAR
+// RADAR (inicialização)
 // =====================================================================
 const radarCtx = dom.radarCanvas.getContext('2d');
-function desenharRadar() {
-    if (!estado.radar.comprado || estado.fase !== 'oceano') return;
-    const w = dom.radarCanvas.width, h = dom.radarCanvas.height;
-    const cx = w / 2, cy = h / 2;
-    const alcance = 120; // metros representados até a borda do radar
-    const raioTela = w / 2 - 8;
 
-    radarCtx.clearRect(0, 0, w, h);
-    radarCtx.beginPath();
-    radarCtx.arc(cx, cy, raioTela, 0, Math.PI * 2);
-    radarCtx.strokeStyle = 'rgba(0,212,255,0.25)';
-    radarCtx.lineWidth = 1;
-    radarCtx.stroke();
-
-    // jogador no centro
-    radarCtx.beginPath();
-    radarCtx.arc(cx, cy, 4, 0, Math.PI * 2);
-    radarCtx.fillStyle = '#00d4ff';
-    radarCtx.fill();
-
-    function posicaoRelativa(alvoPos) {
-        const dx = alvoPos.x - peixe.position.x;
-        const dz = alvoPos.z - peixe.position.z;
-        // gira conforme a direção da câmera para o radar acompanhar a visão
-        const ang = -estado.camAzimuth;
-        const rx = dx * Math.cos(ang) - dz * Math.sin(ang);
-        const rz = dx * Math.sin(ang) + dz * Math.cos(ang);
-        let dist = Math.sqrt(rx * rx + rz * rz);
-        const escala = Math.min(1, alcance / Math.max(1, dist)) * Math.min(dist, alcance) / alcance;
-        const fator = (Math.min(dist, alcance) / alcance) * raioTela;
-        const distClamp = Math.max(dist, 0.001);
-        return { x: cx + (rx / distClamp) * fator, y: cy + (rz / distClamp) * fator, dist };
-    }
-
-    // lixo mais próximo
-    let lixoProximo = null, distMin = Infinity;
-    for (const obj of estado.lixoAtivo) {
-        if (!obj.ativo) continue;
-        const d = peixe.position.distanceTo(obj.mesh.position);
-        if (d < distMin) { distMin = d; lixoProximo = obj; }
-    }
-    if (lixoProximo) {
-        const p = posicaoRelativa(lixoProximo.mesh.position);
-        radarCtx.beginPath();
-        radarCtx.arc(p.x, p.y, 3.5, 0, Math.PI * 2);
-        radarCtx.fillStyle = '#ffd700';
-        radarCtx.fill();
-    }
-
-    // tubarão
-    if (estado.tubarao.ativo && estado.tubarao.mesh) {
-        const p = posicaoRelativa(estado.tubarao.mesh.position);
-        radarCtx.beginPath();
-        radarCtx.arc(p.x, p.y, 4.5, 0, Math.PI * 2);
-        radarCtx.fillStyle = '#ff3344';
-        radarCtx.fill();
-    }
-}
-
-// ---------- LIMITES por fase ----------
+// =====================================================================
+// LIMITES
+// =====================================================================
 function aplicarLimites() {
     if (estado.fase === 'aquario') {
         const W = CONFIG.AQUARIO.TAMANHO_X, D = CONFIG.AQUARIO.TAMANHO_Z;
@@ -1889,7 +1921,9 @@ function aplicarLimites() {
     }
 }
 
-// ---------- CÂMERA / MOVIMENTO ----------
+// =====================================================================
+// CÂMERA E MOVIMENTO
+// =====================================================================
 const teclas = { w: false, a: false, s: false, d: false, e: false };
 let arrastando = false;
 let ultimoMouseX = 0, ultimoMouseY = 0;
@@ -1991,13 +2025,16 @@ function resetCameraSnap() {
     camera.position.copy(desejada);
 }
 
-// ---------- HUD ----------
+// =====================================================================
+// HUD
+// =====================================================================
 function atualizarHUD() {
     dom.moedas.textContent = estado.moedas;
     const seg = Math.floor(estado.tempoJogado);
     const min = Math.floor(seg / 60);
     dom.tempo.textContent = String(min).padStart(2, '0') + ':' + String(seg % 60).padStart(2, '0');
 }
+
 function atualizarContadorLixo() {
     if (estado.fase === 'oceano') {
         dom.lixo.textContent = estado.oceanoColetados + '/' + CONFIG.OCEANO.LIXO_ALVO;
@@ -2006,7 +2043,9 @@ function atualizarContadorLixo() {
     }
 }
 
-// ---------- BOOST DE VELOCIDADE (energia/estamina) ----------
+// =====================================================================
+// BOOST
+// =====================================================================
 function alternarBoost() {
     if (estado.boost.nivel <= 0) {
         mostrarMensagemSistema('🚀 Compre o Boost de Velocidade na loja primeiro!', 1.5);
@@ -2043,7 +2082,9 @@ function atualizarBoost(delta) {
     dom.energiaBg.classList.toggle('ativa', estado.boost.ativo);
 }
 
-// ---------- LOJA ----------
+// =====================================================================
+// LOJA
+// =====================================================================
 const lojaItens = [
     {
         id: 'velocidade', emoji: '🚀', nome: 'Boost de Velocidade',
@@ -2087,7 +2128,7 @@ function renderizarLoja() {
     grid.innerHTML = '';
     lojaItens.forEach((item) => {
         const nivelAtual = item.nivelAtual();
-        const proximo = item.niveis[nivelAtual]; // índice 0 = nível 1
+        const proximo = item.niveis[nivelAtual];
 
         const listaHtml = item.niveis.map((n) => {
             const status = n.nivel <= nivelAtual ? 'comprado' : (n.nivel === nivelAtual + 1 ? 'disponivel' : '');
@@ -2145,8 +2186,11 @@ dom.btnAbrirLoja.addEventListener('click', toggleLoja);
 dom.btnFecharLoja.addEventListener('click', toggleLoja);
 dom.lojaOverlay.addEventListener('click', (e) => { if (e.target === dom.lojaOverlay) toggleLoja(); });
 
-// ---------- DIÁLOGO / MENSAGENS ----------
+// =====================================================================
+// DIÁLOGO
+// =====================================================================
 let dialogoTimeout = null, mensagemTimeout = null;
+
 function mostrarDialogo(nome, texto, duracao = 2) {
     if (dialogoTimeout) { clearTimeout(dialogoTimeout); dom.dialogo.style.display = 'none'; }
     document.querySelector('#dialogo-container .nome').textContent = nome;
@@ -2155,6 +2199,7 @@ function mostrarDialogo(nome, texto, duracao = 2) {
     dialogoTimeout = setTimeout(() => { dom.dialogo.style.display = 'none'; }, duracao * 1000);
     return duracao;
 }
+
 function mostrarMensagemSistema(texto, duracao = 1) {
     if (mensagemTimeout) { clearTimeout(mensagemTimeout); dom.mensagem.style.display = 'none'; }
     dom.mensagem.textContent = texto;
@@ -2162,7 +2207,9 @@ function mostrarMensagemSistema(texto, duracao = 1) {
     mensagemTimeout = setTimeout(() => { dom.mensagem.style.display = 'none'; }, duracao * 1000);
 }
 
-// ---------- TRANSIÇÕES / TELA DE CARREGAMENTO ----------
+// =====================================================================
+// TRANSIÇÕES
+// =====================================================================
 function mostrarCarregamento(duracaoMs, callback, textoSub) {
     dom.loadingTexto.textContent = textoSub || 'Carregando...';
     dom.loadingOverlay.style.display = 'flex';
@@ -2205,7 +2252,9 @@ function iniciarTransicaoAquarioPosVitoria() {
     }, 400);
 }
 
-// ---------- VITÓRIA ----------
+// =====================================================================
+// VITÓRIA
+// =====================================================================
 function vitoriaFinal() {
     estado.jogoVencido = true;
     estado.jogoAtivo = false;
@@ -2244,8 +2293,11 @@ function vitoriaFinal() {
     }
 }
 
-// ---------- GAME LOOP ----------
+// =====================================================================
+// GAME LOOP
+// =====================================================================
 let ultimoTempoLixo = 0;
+
 function gameLoop() {
     requestAnimationFrame(gameLoop);
     const delta = 0.016;
@@ -2291,7 +2343,17 @@ function gameLoop() {
     renderer.render(scene, camera);
 }
 
-// ---------- CONTROLES ----------
+function atualizarFlutuacaoOceano(time) {
+    for (const obj of estado.lixoAtivo) {
+        if (!obj.flutuando) continue;
+        obj.mesh.position.y += Math.sin(time * 1.3 + obj.mesh.position.x) * 0.003;
+        obj.mesh.rotation.y += 0.003;
+    }
+}
+
+// =====================================================================
+// CONTROLES
+// =====================================================================
 document.addEventListener('keydown', (e) => {
     const key = e.key.toLowerCase();
     if (key === 'w') teclas.w = true;
@@ -2304,6 +2366,7 @@ document.addEventListener('keydown', (e) => {
     if (key === 'r') { atirarBoia(); }
     if (key === 'escape' && estado.lojaAberta) toggleLoja();
 });
+
 document.addEventListener('keyup', (e) => {
     const key = e.key.toLowerCase();
     if (key === 'w') teclas.w = false;
@@ -2327,9 +2390,11 @@ window.addEventListener('resize', () => {
     renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-// ---------- DEBUG (não documentado) ----------
+// =====================================================================
+// DEBUG
+// =====================================================================
 document.addEventListener('keydown', (e) => {
-    if (e.key === 'F1') { estado.moedas += 100; atualizarHUD(); mostrarMensagemSistema('🪙 +100 moedas (debug)', 1); }
+    if (e.key === 'F1') { estado.moedas += 100; atualizarHUD(); renderizarLoja(); mostrarMensagemSistema('🪙 +100 moedas (debug)', 1); }
     if (e.key === 'F2') {
         if (estado.fase === 'aquario') { estado.faseTimer = CONFIG.AQUARIO.TEMPO_LIMITE; }
         else if (estado.fase === 'esgoto') {
@@ -2346,10 +2411,14 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'F3' && estado.fase === 'oceano') { spawnTubarao(); mostrarMensagemSistema('🦈 Tubarão forçado (debug)', 1); }
 });
 
-// ---------- INICIALIZAR ----------
+// =====================================================================
+// INICIALIZAR
+// =====================================================================
 construirCenaAquario();
 gameLoop();
-console.log('🐟 Aquário Limpo — Jornada até o Oceano iniciada!');
+console.log('🐟 Aquário Limpo — ALTA DENSIDADE DE LIXO ativada!');
+console.log('🗑️ Spawn a cada 0.08s, até 120 lixos ativos, 3 por vez');
+console.log('📡 Radar mostra TODOS os lixos próximos');
 </script>
 </body>
 </html>
