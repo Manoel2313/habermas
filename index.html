@@ -388,15 +388,17 @@ const CONFIG = {
     },
     OCEANO: {
         CHUNK_SIZE: 100,
-        RAIO_CHUNKS: 4,
-        DIST_FOG: 300,
+        RAIO_CHUNKS: 3,
+        DIST_FOG: 230,
         MUNDO_LIMITE: 2500,
         PROFUNDIDADE: 200,
         LIXO_ALVO: 150,
         RAIO_SPAWN: 200,
-        MAX_LIXO_ATIVO: 120,
+        MAX_LIXO_ATIVO: 110,
         SPAWN_INTERVALO: 0.08,
         LIXOS_POR_SPAWN: 3,
+        RAIO_DESPAWN: 190,
+        CHUNKS_POR_CICLO: 2,
     },
     TUBARAO: {
         TEMPO_PRIMEIRO_SPAWN: 180,
@@ -519,9 +521,9 @@ scene.add(grupoCena);
 
 const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 500);
 
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -535,8 +537,8 @@ scene.add(ambientLight);
 const sunLight = new THREE.DirectionalLight(0xffeedd, 1.5);
 sunLight.position.set(16, 24, 10);
 sunLight.castShadow = true;
-sunLight.shadow.mapSize.width = 1024;
-sunLight.shadow.mapSize.height = 1024;
+sunLight.shadow.mapSize.width = 512;
+sunLight.shadow.mapSize.height = 512;
 sunLight.shadow.camera.near = 0.1;
 sunLight.shadow.camera.far = 55;
 sunLight.shadow.camera.left = -26;
@@ -1055,8 +1057,24 @@ function criarTubarao() {
 }
 
 // =====================================================================
-// 🐟 PEIXE DECORATIVO (VERSÃO PREMIUM)
+// 🐟 PEIXE DECORATIVO (VERSÃO OTIMIZADA)
 // =====================================================================
+const geoCorpoDecor = new THREE.SphereGeometry(0.4, 10, 8);
+const geoCabecaDecor = new THREE.SphereGeometry(0.3, 8, 6);
+const geoOlhoBrancoDecor = new THREE.SphereGeometry(0.08, 8, 8);
+const geoPupilaDecor = new THREE.SphereGeometry(0.05, 6, 6);
+const geoBrilhoDecor = new THREE.SphereGeometry(0.02, 5, 5);
+const geoBaseCaudaDecor = new THREE.ConeGeometry(0.3, 0.4, 6);
+const geoLobuloSupDecor = new THREE.ConeGeometry(0.35, 0.5, 5);
+const geoLobuloInfDecor = new THREE.ConeGeometry(0.3, 0.4, 5);
+const geoDorsalDecor = new THREE.ConeGeometry(0.2, 0.35, 5);
+const geoPeitoralDecor = new THREE.ConeGeometry(0.12, 0.3, 5);
+const geoListraDecor = new THREE.BoxGeometry(0.02, 0.6, 0.02);
+const matOlhoBrancoDecor = new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.05, clearcoat: 0.5 });
+const matOlhoPretoDecor = new THREE.MeshPhysicalMaterial({ color: 0x111111, roughness: 0.0, clearcoat: 0.9 });
+const matOlhoBrilhoDecor = new THREE.MeshPhysicalMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 0.3 });
+const matListraDecor = new THREE.MeshPhysicalMaterial({ color: 0xffffff, transparent: true, opacity: 0.1, emissive: 0xffffff, emissiveIntensity: 0.05 });
+
 function criarPeixeDecorativo() {
     const grupo = new THREE.Group();
     
@@ -1069,111 +1087,66 @@ function criarPeixeDecorativo() {
     const corClara = new THREE.Color(cor).offsetHSL(0.05, 0.1, 0.2);
     const corEscura = new THREE.Color(cor).offsetHSL(0, 0.1, -0.2);
 
-    const matCorpo = new THREE.MeshPhysicalMaterial({
-        color: cor,
-        roughness: 0.3,
-        metalness: 0.05,
-        clearcoat: 0.3,
-        clearcoatRoughness: 0.2,
-    });
+    const matCorpo = new THREE.MeshLambertMaterial({ color: cor });
 
-    const corpo = new THREE.Mesh(new THREE.SphereGeometry(0.4, 20, 16), matCorpo);
+    const corpo = new THREE.Mesh(geoCorpoDecor, matCorpo);
     corpo.scale.set(1.6, 0.7, 0.8);
     corpo.position.z = -0.05;
-    corpo.castShadow = true;
     grupo.add(corpo);
 
-    const cabecaMat = new THREE.MeshPhysicalMaterial({
-        color: corClara,
-        roughness: 0.3,
-        metalness: 0.03,
-        clearcoat: 0.4,
-    });
-    const cabeca = new THREE.Mesh(new THREE.SphereGeometry(0.3, 16, 12), cabecaMat);
+    const cabecaMat = new THREE.MeshLambertMaterial({ color: corClara });
+    const cabeca = new THREE.Mesh(geoCabecaDecor, cabecaMat);
     cabeca.scale.set(0.9, 0.7, 0.9);
     cabeca.position.set(0, 0.05, 0.5);
     grupo.add(cabeca);
 
-    const olhoBranco = new THREE.MeshPhysicalMaterial({
-        color: 0xffffff,
-        roughness: 0.05,
-        clearcoat: 0.5,
-    });
-    const olhoPreto = new THREE.MeshPhysicalMaterial({
-        color: 0x111111,
-        roughness: 0.0,
-        clearcoat: 0.9,
-    });
-    const olhoBrilho = new THREE.MeshPhysicalMaterial({
-        color: 0xffffff,
-        emissive: 0xffffff,
-        emissiveIntensity: 0.3,
-    });
-
     for (let lado = -1; lado <= 1; lado += 2) {
-        const olho = new THREE.Mesh(new THREE.SphereGeometry(0.08, 12, 12), olhoBranco);
+        const olho = new THREE.Mesh(geoOlhoBrancoDecor, matOlhoBrancoDecor);
         olho.position.set(lado * 0.25, 0.15, 0.55);
         olho.scale.set(0.7, 0.9, 0.5);
         grupo.add(olho);
 
-        const pupila = new THREE.Mesh(new THREE.SphereGeometry(0.05, 10, 10), olhoPreto);
+        const pupila = new THREE.Mesh(geoPupilaDecor, matOlhoPretoDecor);
         pupila.position.set(lado * 0.28, 0.15, 0.6);
         pupila.scale.set(0.7, 0.9, 0.3);
         grupo.add(pupila);
 
-        const brilho = new THREE.Mesh(new THREE.SphereGeometry(0.02, 6, 6), olhoBrilho);
+        const brilho = new THREE.Mesh(geoBrilhoDecor, matOlhoBrilhoDecor);
         brilho.position.set(lado * 0.26, 0.18, 0.63);
         brilho.scale.set(0.5, 0.5, 0.3);
         grupo.add(brilho);
     }
 
-    const caudaMat = new THREE.MeshPhysicalMaterial({
-        color: corEscura,
-        roughness: 0.3,
-        metalness: 0.05,
-        side: THREE.DoubleSide,
-    });
+    const caudaMat = new THREE.MeshLambertMaterial({ color: corEscura, side: THREE.DoubleSide });
 
-    const baseCauda = new THREE.Mesh(new THREE.ConeGeometry(0.3, 0.4, 8), caudaMat);
+    const baseCauda = new THREE.Mesh(geoBaseCaudaDecor, caudaMat);
     baseCauda.rotation.x = Math.PI / 2;
     baseCauda.position.set(0, 0, -0.5);
     baseCauda.scale.set(1, 0.3, 0.6);
     grupo.add(baseCauda);
 
-    const lobuloSup = new THREE.Mesh(new THREE.ConeGeometry(0.35, 0.5, 6), caudaMat);
+    const lobuloSup = new THREE.Mesh(geoLobuloSupDecor, caudaMat);
     lobuloSup.rotation.x = -0.3;
     lobuloSup.position.set(0, 0.2, -0.65);
     lobuloSup.scale.set(0.7, 1, 0.2);
     grupo.add(lobuloSup);
 
-    const lobuloInf = new THREE.Mesh(new THREE.ConeGeometry(0.3, 0.4, 6), caudaMat);
+    const lobuloInf = new THREE.Mesh(geoLobuloInfDecor, caudaMat);
     lobuloInf.rotation.x = 0.3;
     lobuloInf.position.set(0, -0.15, -0.6);
     lobuloInf.scale.set(0.6, 1, 0.2);
     grupo.add(lobuloInf);
 
-    const dorsalMat = new THREE.MeshPhysicalMaterial({
-        color: corEscura,
-        roughness: 0.4,
-        transparent: true,
-        opacity: 0.7,
-        side: THREE.DoubleSide,
-    });
-    const dorsal = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.35, 5), dorsalMat);
+    const dorsalMat = new THREE.MeshLambertMaterial({ color: corEscura, transparent: true, opacity: 0.7, side: THREE.DoubleSide });
+    const dorsal = new THREE.Mesh(geoDorsalDecor, dorsalMat);
     dorsal.position.set(0, 0.3, 0.0);
     dorsal.scale.set(0.8, 1, 0.2);
     dorsal.rotation.x = 0.1;
     grupo.add(dorsal);
 
-    const peitoralMat = new THREE.MeshPhysicalMaterial({
-        color: corClara,
-        roughness: 0.4,
-        transparent: true,
-        opacity: 0.6,
-        side: THREE.DoubleSide,
-    });
+    const peitoralMat = new THREE.MeshLambertMaterial({ color: corClara, transparent: true, opacity: 0.6, side: THREE.DoubleSide });
     for (let lado = -1; lado <= 1; lado += 2) {
-        const peitoral = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.3, 5), peitoralMat);
+        const peitoral = new THREE.Mesh(geoPeitoralDecor, peitoralMat);
         peitoral.position.set(lado * 0.4, -0.05, 0.1);
         peitoral.scale.set(1, 0.2, 0.5);
         peitoral.rotation.z = lado * 0.5;
@@ -1181,14 +1154,7 @@ function criarPeixeDecorativo() {
         grupo.add(peitoral);
     }
 
-    const listraMat = new THREE.MeshPhysicalMaterial({
-        color: 0xffffff,
-        transparent: true,
-        opacity: 0.1,
-        emissive: 0xffffff,
-        emissiveIntensity: 0.05,
-    });
-    const listra = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.6, 0.02), listraMat);
+    const listra = new THREE.Mesh(geoListraDecor, matListraDecor);
     listra.position.set(0, 0.05, -0.1);
     listra.rotation.y = Math.PI / 2;
     grupo.add(listra);
@@ -1377,7 +1343,7 @@ function finalizarColeta(obj) {
 
 function criarEfeitoColeta(pos, moedas, especial) {
     const cores = especial ? [0xffd700, 0xffaa00] : [0x00ff88, 0x44ddff];
-    for (let i = 0; i < 16; i++) {
+    for (let i = 0; i < 12; i++) {
         const size = 0.04 + Math.random() * 0.1;
         const mat = new THREE.MeshBasicMaterial({ color: cores[Math.floor(Math.random() * cores.length)], transparent: true, opacity: 0.9 });
         const particula = new THREE.Mesh(new THREE.SphereGeometry(size, 4, 4), mat);
@@ -1763,7 +1729,7 @@ function aplicarLimitesEsgoto() {
 }
 
 // =====================================================================
-// FASE 3: OCEANO (ALTA DENSIDADE)
+// FASE 3: OCEANO (DENSIDADE OTIMIZADA)
 // =====================================================================
 function seedRandom(seed) {
     return function () {
@@ -1791,7 +1757,7 @@ const coresCoral = [0xff5566, 0xff8844, 0xffaa33, 0xdd44aa, 0x44ccaa, 0xff6699];
 
 function criarAlga() {
     const grupo = new THREE.Group();
-    const numFolhas = 4 + Math.floor(Math.random() * 4);
+    const numFolhas = 3 + Math.floor(Math.random() * 3);
     for (let i = 0; i < numFolhas; i++) {
         const altura = 1.2 + Math.random() * 2.2;
         const folha = new THREE.Mesh(new THREE.PlaneGeometry(0.35, altura), materialAlga);
@@ -1812,7 +1778,7 @@ function criarCoral() {
     const mat = new THREE.MeshStandardMaterial({ color: cor, roughness: 0.75 });
     const tipo = Math.floor(Math.random() * 3);
     if (tipo === 0) {
-        const numGalhos = 5 + Math.floor(Math.random() * 5);
+        const numGalhos = 3 + Math.floor(Math.random() * 3);
         for (let i = 0; i < numGalhos; i++) {
             const altura = 0.5 + Math.random() * 1.3;
             const galho = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.09, altura, 5), mat);
@@ -1824,7 +1790,7 @@ function criarCoral() {
             grupo.add(galho);
         }
     } else if (tipo === 1) {
-        const cupula = new THREE.Mesh(new THREE.SphereGeometry(0.5 + Math.random() * 0.5, 10, 8, 0, Math.PI * 2, 0, Math.PI / 2), mat);
+        const cupula = new THREE.Mesh(new THREE.SphereGeometry(0.5 + Math.random() * 0.5, 8, 6, 0, Math.PI * 2, 0, Math.PI / 2), mat);
         grupo.add(cupula);
     } else {
         for (let i = 0; i < 3; i++) {
@@ -1871,7 +1837,6 @@ function construirChunkOceano(cx, cz) {
         const rocha = new THREE.Mesh(new THREE.DodecahedronGeometry(1 + rng() * 2, 0), materialRochaOceano);
         rocha.position.set(rx, ry + 0.6, rz);
         rocha.rotation.set(rng() * 6, rng() * 6, rng() * 6);
-        rocha.castShadow = true;
         grupoCena.add(rocha);
         objetos.push(rocha);
     }
@@ -1880,7 +1845,7 @@ function construirChunkOceano(cx, cz) {
     const celulas = Math.max(1, Math.round(size / passoDecoracao));
     for (let gx = 0; gx < celulas; gx++) {
         for (let gz = 0; gz < celulas; gz++) {
-            if (rng() > 0.6) continue;
+            if (rng() > 0.38) continue;
             const wx = cx * size + (gx + 0.3 + rng() * 0.4) * (size / celulas);
             const wz = cz * size + (gz + 0.3 + rng() * 0.4) * (size / celulas);
             const wy = alturaOceano(wx, wz);
@@ -1898,8 +1863,8 @@ function construirChunkOceano(cx, cz) {
     const celulasPeixe = Math.max(1, Math.round(size / passoPeixe));
     for (let gx = 0; gx < celulasPeixe; gx++) {
         for (let gz = 0; gz < celulasPeixe; gz++) {
-            if (rng() > 0.55) continue;
-            const numCardume = 1 + (rng() < 0.35 ? 1 : 0);
+            if (rng() > 0.32) continue;
+            const numCardume = 1 + (rng() < 0.15 ? 1 : 0);
             const baseX = cx * size + (gx + 0.5) * (size / celulasPeixe) + (rng() - 0.5) * 10;
             const baseZ = cz * size + (gz + 0.5) * (size / celulasPeixe) + (rng() - 0.5) * 10;
             const baseY = Math.min(-4, alturaOceano(baseX, baseZ) + 6 + rng() * 20);
@@ -1924,22 +1889,33 @@ function construirChunkOceano(cx, cz) {
     return objetos;
 }
 
-function atualizarChunksOceano() {
+function atualizarChunksOceano(limiteConstrucao) {
     const size = CONFIG.OCEANO.CHUNK_SIZE;
     const cx = Math.floor(peixe.position.x / size);
     const cz = Math.floor(peixe.position.z / size);
     const raio = CONFIG.OCEANO.RAIO_CHUNKS;
     const necessarios = new Set();
+    const paraConstruir = [];
 
     for (let dx = -raio; dx <= raio; dx++) {
         for (let dz = -raio; dz <= raio; dz++) {
             const key = chunkKey(cx + dx, cz + dz);
             necessarios.add(key);
             if (!estado.chunksOceano.has(key)) {
-                estado.chunksOceano.set(key, construirChunkOceano(cx + dx, cz + dz));
+                paraConstruir.push({ key, ccx: cx + dx, ccz: cz + dz, distSq: dx * dx + dz * dz });
             }
         }
     }
+
+    if (paraConstruir.length) {
+        paraConstruir.sort((a, b) => a.distSq - b.distSq);
+        const limite = limiteConstrucao || paraConstruir.length;
+        for (let i = 0; i < Math.min(limite, paraConstruir.length); i++) {
+            const c = paraConstruir[i];
+            estado.chunksOceano.set(c.key, construirChunkOceano(c.ccx, c.ccz));
+        }
+    }
+
     for (const [key, objs] of estado.chunksOceano) {
         if (!necessarios.has(key)) {
             objs.forEach(o => {
@@ -2027,25 +2003,39 @@ function atualizarPoluicaoOceano() {
 }
 
 // =====================================================================
-// 🗑️ GERENCIAMENTO DE LIXO NO OCEANO (ALTA DENSIDADE)
+// 🗑️ GERENCIAMENTO DE LIXO NO OCEANO
 // =====================================================================
+function despawnLixoDistante() {
+    const raioMax = CONFIG.OCEANO.RAIO_DESPAWN;
+    const paraRemover = [];
+    for (const obj of estado.lixoAtivo) {
+        if (!obj.flutuando) continue;
+        if (peixe.position.distanceTo(obj.mesh.position) > raioMax) {
+            paraRemover.push(obj);
+        }
+    }
+    paraRemover.forEach(removerLixo);
+}
+
 function gerenciarLixoOceano(delta) {
     if (estado.oceanoColetados >= CONFIG.OCEANO.LIXO_ALVO) return;
-    if (estado.lixoAtivo.length >= CONFIG.OCEANO.MAX_LIXO_ATIVO) return;
-    
+
     estado.oceanoSpawnTimer += delta;
-    
+
     if (estado.oceanoSpawnTimer > CONFIG.OCEANO.SPAWN_INTERVALO) {
         estado.oceanoSpawnTimer = 0;
-        const qtd = CONFIG.OCEANO.LIXOS_POR_SPAWN;
-        for (let i = 0; i < qtd; i++) {
-            spawnLixoOceano();
+        // Remove lixo que ficou muito longe do jogador para não travar o spawn de lixo novo por perto
+        despawnLixoDistante();
+        if (estado.lixoAtivo.length < CONFIG.OCEANO.MAX_LIXO_ATIVO) {
+            const qtd = CONFIG.OCEANO.LIXOS_POR_SPAWN;
+            for (let i = 0; i < qtd; i++) {
+                spawnLixoOceano();
+            }
         }
     }
 }
 
 function spawnLixoOceano() {
-    const raio = CONFIG.OCEANO.RAIO_SPAWN;
     const ang = Math.random() * Math.PI * 2;
     const dist = 5 + Math.random() * 50;
     const x = peixe.position.x + Math.cos(ang) * dist;
@@ -2772,10 +2762,16 @@ function vitoriaFinal() {
 // GAME LOOP
 // =====================================================================
 let ultimoTempoLixo = 0;
+let ultimoTimestamp = null;
 
-function gameLoop() {
+function gameLoop(timestampAtual) {
     requestAnimationFrame(gameLoop);
-    const delta = 0.016;
+
+    if (ultimoTimestamp === null) ultimoTimestamp = timestampAtual;
+    let deltaReal = (timestampAtual - ultimoTimestamp) / 1000;
+    ultimoTimestamp = timestampAtual;
+    // Limita o delta para evitar saltos grandes após uma pausa/lag (aba em segundo plano etc)
+    const delta = Math.min(Math.max(deltaReal, 0), 0.05) || 0.016;
     const time = Date.now() * 0.001;
 
     if (estado.jogoAtivo && !estado.jogoVencido) {
@@ -2805,7 +2801,7 @@ function gameLoop() {
             atualizarRegenHP(delta);
             desenharRadar();
             estado.chunkTimer += delta;
-            if (estado.chunkTimer > 0.4) { estado.chunkTimer = 0; atualizarChunksOceano(); }
+            if (estado.chunkTimer > 0.4) { estado.chunkTimer = 0; atualizarChunksOceano(CONFIG.OCEANO.CHUNKS_POR_CICLO); }
         }
 
         atualizarMovimentoPeixe(delta);
@@ -2949,9 +2945,10 @@ document.addEventListener('keydown', (e) => {
 // INICIALIZAR
 // =====================================================================
 construirCenaAquario();
-gameLoop();
-console.log('🐟 Aquário Limpo — PEIXES PREMIUM + ALTA DENSIDADE DE LIXO!');
-console.log('🗑️ Spawn a cada 0.08s, até 120 lixos ativos, 3 por vez');
+requestAnimationFrame(gameLoop);
+console.log('🐟 Aquário Limpo — OTIMIZADO para melhor performance no oceano!');
+console.log('🗺️ Raio de renderização do oceano reduzido em 100m (de 400m para 300m)');
+console.log('🗑️ Lixo distante agora é removido para nunca travar o spawn de lixo novo');
 console.log('📡 Radar mostra TODOS os lixos próximos');
 console.log('🐠 Peixes e tubarão com modelos detalhados!');
 console.log('🕵️ HACK SECRETO: M + N + B = +100 moedas! (shhhh...)');
