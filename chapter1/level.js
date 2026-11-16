@@ -1,111 +1,109 @@
-const Chapter1 = (() => {
-  // Mapa: 0 = chão, 1 = parede
-  const TILE = 40;
-  const map = [
-    "1111111111111111111111111111",
-    "1000000000000000000000000001",
-    "1000000000000000000000000001",
-    "1000000000000000000000000001",
-    "1000000000000000000000000001",
-    "1000000000000000000000000001",
-    "1000000000000000000000000001",
-    "1000000000000000000000000001",
-    "1000000000000000000000000001",
-    "1000000000000000000000000001",
-    "1000000000000000000000000001",
-    "1000000000000000000000000001",
-    "1000000000000000000000000001",
-    "1000000000000000000000000001",
-    "1111111111111111111111111111"
-  ];
+import * as THREE from 'three';
 
-  const width  = map[0].length * TILE;
-  const height = map.length    * TILE;
+export const Chapter1 = (() => {
+  // Dimensões do escritório (em metros)
+  const ROOM_W = 12;
+  const ROOM_D = 10;
+  const ROOM_H = 3.2;
 
-  // Solidos derivados do mapa
-  const solids = [];
-  for (let y = 0; y < map.length; y++) {
-    for (let x = 0; x < map[y].length; x++) {
-      if (map[y][x] === '1') {
-        solids.push({ x: x * TILE, y: y * TILE, w: TILE, h: TILE });
-      }
+  // Spawn: centro do escritório (onde o elevador "para")
+  const spawn = { x: 0, z: 0 };
+  const eyeHeight = 1.65;
+
+  // Colisores simples (caixas) para paredes e móveis
+  const solids = []; // { minX, maxX, minZ, maxZ }
+
+  function addBox(scene, w, h, d, x, y, z, color, solid = true) {
+    const geo = new THREE.BoxGeometry(w, h, d);
+    const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.9 });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(x, y, z);
+    scene.add(mesh);
+    if (solid) {
+      solids.push({
+        minX: x - w / 2, maxX: x + w / 2,
+        minZ: z - d / 2, maxZ: z + d / 2
+      });
     }
+    return mesh;
   }
 
-  // Spawn: centro do mapa (é onde o elevador "para")
-  const spawn = { x: width / 2, y: height / 2 };
+  function build(scene) {
+    solids.length = 0;
 
-  // Móveis do escritório (apenas visuais, sem colisão por enquanto)
-  const furniture = [
-    { x: width/2 - 220, y: height/2 - 140, w: 160, h: 70, type: 'desk' },
-    { x: width/2 + 80,  y: height/2 - 140, w: 160, h: 70, type: 'desk' },
-    { x: width/2 - 260, y: height/2 + 60,  w: 70,  h: 70, type: 'cabinet' },
-    { x: width/2 + 200, y: height/2 + 60,  w: 70,  h: 70, type: 'cabinet' },
-  ];
+    // Luzes
+    scene.add(new THREE.AmbientLight(0x404050, 1.2));
 
-  function draw(ctx, cam, player) {
-    // Chão do escritório
-    ctx.fillStyle = '#1a1a1f';
-    ctx.fillRect(-cam.x, -cam.y, width, height);
+    const ceilingLight = new THREE.PointLight(0xfff0d0, 40, 20, 2);
+    ceilingLight.position.set(0, ROOM_H - 0.3, 0);
+    scene.add(ceilingLight);
 
-    // Grade sutil no chão (piso)
-    ctx.strokeStyle = '#22222a';
-    ctx.lineWidth = 1;
-    for (let x = 0; x <= width; x += TILE) {
-      ctx.beginPath(); ctx.moveTo(x - cam.x, -cam.y); ctx.lineTo(x - cam.x, height - cam.y); ctx.stroke();
-    }
-    for (let y = 0; y <= height; y += TILE) {
-      ctx.beginPath(); ctx.moveTo(-cam.x, y - cam.y); ctx.lineTo(width - cam.x, y - cam.y); ctx.stroke();
-    }
+    const fill = new THREE.PointLight(0x88aaff, 10, 15, 2);
+    fill.position.set(-3, 2.4, 3);
+    scene.add(fill);
 
-    // Paredes
-    for (const r of solids) {
-      ctx.fillStyle = '#2b2b33';
-      ctx.fillRect(r.x - cam.x, r.y - cam.y, r.w, r.h);
-      ctx.strokeStyle = '#3a3a44';
-      ctx.strokeRect(r.x - cam.x, r.y - cam.y, r.w, r.h);
-    }
+    // Chão
+    const floorGeo = new THREE.PlaneGeometry(ROOM_W, ROOM_D);
+    const floorMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1f, roughness: 1 });
+    const floor = new THREE.Mesh(floorGeo, floorMat);
+    floor.rotation.x = -Math.PI / 2;
+    scene.add(floor);
 
-    // Móveis
-    for (const f of furniture) {
-      if (f.type === 'desk') {
-        ctx.fillStyle = '#3a2a1a';
-        ctx.fillRect(f.x - cam.x, f.y - cam.y, f.w, f.h);
-        ctx.fillStyle = '#5a3a2a';
-        ctx.fillRect(f.x - cam.x + 6, f.y - cam.y + 6, f.w - 12, f.h - 12);
-      } else if (f.type === 'cabinet') {
-        ctx.fillStyle = '#2a3a2a';
-        ctx.fillRect(f.x - cam.x, f.y - cam.y, f.w, f.h);
-        ctx.strokeStyle = '#4a5a4a';
-        ctx.strokeRect(f.x - cam.x, f.y - cam.y, f.w, f.h);
-      }
-    }
+    // Teto
+    const ceil = new THREE.Mesh(
+      new THREE.PlaneGeometry(ROOM_W, ROOM_D),
+      new THREE.MeshStandardMaterial({ color: 0x222230, roughness: 1 })
+    );
+    ceil.rotation.x = Math.PI / 2;
+    ceil.position.y = ROOM_H;
+    scene.add(ceil);
 
-    // Marcador do elevador (onde o jogador "chegou")
-    ctx.fillStyle = '#ffb300';
-    ctx.beginPath();
-    ctx.arc(spawn.x - cam.x, spawn.y - cam.y, 22, 0, Math.PI * 2);
-    ctx.strokeStyle = '#ffb300';
-    ctx.lineWidth = 2;
-    ctx.stroke();
+    // Paredes (4 lados)
+    const wallColor = 0x2b2b33;
+    addBox(scene, ROOM_W, ROOM_H, 0.3, 0, ROOM_H / 2, -ROOM_D / 2, wallColor); // norte
+    addBox(scene, ROOM_W, ROOM_H, 0.3, 0, ROOM_H / 2,  ROOM_D / 2, wallColor); // sul
+    addBox(scene, 0.3, ROOM_H, ROOM_D, -ROOM_W / 2, ROOM_H / 2, 0, wallColor); // oeste
+    addBox(scene, 0.3, ROOM_H, ROOM_D,  ROOM_W / 2, ROOM_H / 2, 0, wallColor); // leste
 
-    // Jogador (Gordon, sem traje — só uma figura simples)
-    const px = player.x - cam.x;
-    const py = player.y - cam.y;
-    ctx.fillStyle = '#d8d8d8'; // jaleco/roupa clara
-    ctx.beginPath(); ctx.arc(px, py, player.r, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = '#888';
-    ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(px, py, player.r, 0, Math.PI * 2); ctx.stroke();
+    // Móveis: duas mesas e dois armários (sólidos)
+    addBox(scene, 2.4, 0.75, 1.0, -3.0, 0.375, -2.5, 0x3a2a1a); // mesa 1
+    addBox(scene, 2.4, 0.75, 1.0,  3.0, 0.375, -2.5, 0x3a2a1a); // mesa 2
+    addBox(scene, 0.9, 1.8, 0.6, -4.6, 0.9,  2.4, 0x2a3a2a);    // armário 1
+    addBox(scene, 0.9, 1.8, 0.6,  4.6, 0.9,  2.4, 0x2a3a2a);    // armário 2
 
-    // Indicador de direção
-    const dirs = { up: [0,-1], down: [0,1], left: [-1,0], right: [1,0] };
-    const [fx, fy] = dirs[player.facing] || [0,1];
-    ctx.fillStyle = '#333';
-    ctx.beginPath();
-    ctx.arc(px + fx * (player.r - 4), py + fy * (player.r - 4), 3, 0, Math.PI * 2);
-    ctx.fill();
+    // Marcador do elevador: um disco no chão sob o spawn
+    const padGeo = new THREE.CircleGeometry(1.1, 32);
+    const padMat = new THREE.MeshStandardMaterial({ color: 0xffb300, emissive: 0x553300 });
+    const pad = new THREE.Mesh(padGeo, padMat);
+    pad.rotation.x = -Math.PI / 2;
+    pad.position.y = 0.01;
+    scene.add(pad);
   }
 
-  return { width, height, solids, spawn, draw };
+  // Resolve colisão 2D (XZ) empurrando o jogador para fora dos sólidos
+  function resolveCollision(nx, nz, r) {
+    let x = nx, z = nz;
+    for (const s of solids) {
+      const cx = Math.max(s.minX, Math.min(x, s.maxX));
+      const cz = Math.max(s.minZ, Math.min(z, s.maxZ));
+      const dx = x - cx, dz = z - cz;
+      const dist = Math.hypot(dx, dz);
+      if (dist < r) {
+        if (dist === 0) { z = s.minZ - r; }
+        else {
+          const push = r - dist;
+          x += (dx / dist) * push;
+          z += (dz / dist) * push;
+        }
+      }
+    }
+    // Limites da sala (segurança extra)
+    const halfW = ROOM_W / 2 - r - 0.15;
+    const halfD = ROOM_D / 2 - r - 0.15;
+    x = Math.max(-halfW, Math.min(halfW, x));
+    z = Math.max(-halfD, Math.min(halfD, z));
+    return { x, z };
+  }
+
+  return { spawn, eyeHeight, build, resolveCollision };
 })();
