@@ -8,18 +8,35 @@
   canvas { display: block; }
   #hint { position: fixed; bottom: 12px; width: 100%; text-align: center;
           color: #556; font-size: 13px; pointer-events: none; user-select: none; }
+  #overlay { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+             background: rgba(0,0,0,0.85); color: #cfc; font-size: 18px; text-align: center;
+             cursor: pointer; user-select: none; }
 </style>
 </head>
 <body>
-<canvas id="c"></canvas>
-<div id="hint">Setas / WASD para andar</div>
+<div id="overlay">Clique para entrar no elevador</div>
+<div id="hint">WASD / setas para andar • Mouse para olhar</div>
 
-<script src="common/engine.js"></script>
-<script src="chapter1/level.js"></script>
-<script>
-  Engine.init(document.getElementById('c'));
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { Engine } from './common/engine.js';
+import { Chapter1 } from './chapter1/level.js';
+
+const overlay = document.getElementById('overlay');
+overlay.addEventListener('click', () => {
+  overlay.style.display = 'none';
+  Engine.init(document.getElementById('app') || document.body);
   Engine.loadLevel(Chapter1);
   Engine.start();
+});
 </script>
 </body>
 </html>
