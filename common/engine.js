@@ -1,87 +1,97 @@
-const Engine = (() => {
-  let canvas, ctx, W, H;
+import * as THREE from 'three';
+
+export const Engine = (() => {
+  let renderer, scene, camera;
   let level = null;
   let player = null;
   const keys = {};
+  let yaw = 0, pitch = 0;
+  let clock = null;
 
-  function init(c) {
-    canvas = c;
-    ctx = canvas.getContext('2d');
-    resize();
-    addEventListener('resize', resize);
+  function init() {
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    document.body.appendChild(renderer.domElement);
+
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0a0a0f);
+    scene.fog = new THREE.Fog(0x0a0a0f, 8, 40);
+
+    camera = new THREE.PerspectiveCamera(75, innerWidth / innerHeight, 0.1, 200);
+
+    addEventListener('resize', () => {
+      camera.aspect = innerWidth / innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight);
+    });
+
     addEventListener('keydown', e => { keys[e.key.toLowerCase()] = true; });
     addEventListener('keyup',   e => { keys[e.key.toLowerCase()] = false; });
-  }
 
-  function resize() {
-    W = canvas.width = innerWidth;
-    H = canvas.height = innerHeight;
+    // Pointer lock para olhar com o mouse
+    renderer.domElement.addEventListener('click', () => {
+      renderer.domElement.requestPointerLock();
+    });
+    addEventListener('mousemove', e => {
+      if (document.pointerLockElement !== renderer.domElement) return;
+      yaw   -= e.movementX * 0.002;
+      pitch -= e.movementY * 0.002;
+      pitch = Math.max(-Math.PI / 2 + 0.05, Math.min(Math.PI / 2 - 0.05, pitch));
+    });
+
+    clock = new THREE.Clock();
   }
 
   function loadLevel(lvl) {
     level = lvl;
+    level.build(scene);
+
     player = {
       x: lvl.spawn.x,
-      y: lvl.spawn.y,
-      r: 14,
-      speed: 3.0,
-      facing: 'down'
+      y: lvl.eyeHeight,
+      z: lvl.spawn.z,
+      r: 0.4,
+      speed: 4.5
     };
   }
 
-  function start() { requestAnimationFrame(loop); }
-
-  function update() {
-    let dx = 0, dy = 0;
-    if (keys['w'] || keys['arrowup'])    dy -= 1;
-    if (keys['s'] || keys['arrowdown'])  dy += 1;
-    if (keys['a'] || keys['arrowleft'])  dx -= 1;
-    if (keys['d'] || keys['arrowright']) dx += 1;
-
-    if (dx || dy) {
-      const len = Math.hypot(dx, dy);
-      player.x += (dx / len) * player.speed;
-      player.y += (dy / len) * player.speed;
-      if (Math.abs(dx) > Math.abs(dy)) player.facing = dx > 0 ? 'right' : 'left';
-      else player.facing = dy > 0 ? 'down' : 'up';
-    }
-
-    // Colisão simples com retângulos sólidos do nível
-    for (const r of level.solids) {
-      const cx = Math.max(r.x, Math.min(player.x, r.x + r.w));
-      const cy = Math.max(r.y, Math.min(player.y, r.y + r.h));
-      const ddx = player.x - cx, ddy = player.y - cy;
-      const dist = Math.hypot(ddx, ddy);
-      if (dist < player.r) {
-        if (dist === 0) { player.y = r.y - player.r; }
-        else {
-          const push = player.r - dist;
-          player.x += (ddx / dist) * push;
-          player.y += (ddy / dist) * push;
-        }
-      }
-    }
+  function start() {
+    renderer.setAnimationLoop(loop);
   }
 
-  function camera() {
-    return {
-      x: Math.max(0, Math.min(level.width  - W, player.x - W / 2)),
-      y: Math.max(0, Math.min(level.height - H, player.y - H / 2))
-    };
-  }
+  function update(dt) {
+    // Movimento relativo à direção da câmera
+    const forward = new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw));
+    const right   = new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw));
 
-  function draw() {
-    ctx.fillStyle = '#000';
-    ctx.fillRect(0, 0, W, H);
-    const cam = camera();
-    level.draw(ctx, cam, player);
+    const move = new THREE.Vector3();
+    if (keys['w'] || keys['arrowup'])    move.add(forward);
+    if (keys['s'] || keys['arrowdown'])  move.sub(forward);
+    if (keys['d'] || keys['arrowright']) move.add(right);
+    if (keys['a'] || keys['arrowleft'])  move.sub(right);
+
+    if (move.lengthSq() > 0) {
+      move.normalize().multiplyScalar(player.speed * dt);
+      const nx = player.x + move.x;
+      const nz = player.z + move.z;
+      const resolved = level.resolveCollision(nx, nz, player.r);
+      player.x = resolved.x;
+      player.z = resolved.z;
+    }
+
+    // Aplica posição e rotação na câmera
+    camera.position.set(player.x, player.y, player.z);
+    camera.rotation.order = 'YXZ';
+    camera.rotation.y = yaw;
+    camera.rotation.x = pitch;
   }
 
   function loop() {
-    update();
-    draw();
-    requestAnimationFrame(loop);
+    const dt = Math.min(clock.getDelta(), 0.05);
+    update(dt);
+    renderer.render(scene, camera);
   }
 
-  return { init, loadLevel, start, get player() { return player; } };
+  return { init, loadLevel, start };
 })();
